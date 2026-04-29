@@ -1,7 +1,7 @@
 // src/pages/Login.jsx
 import React, { useState } from 'react';
-import InputField from '../components/InputField';
-import { loginAPI } from '../services/authService';
+import InputField from '../../components/InputField';
+import { loginAPI } from '../../services/authService';
 import './Login.css'; // Ayrı CSS dosyamızı buraya bağladık!
 
 const Login = () => {
