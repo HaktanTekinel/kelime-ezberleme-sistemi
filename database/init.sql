@@ -151,3 +151,24 @@ CREATE TABLE public.word_samples (
 -- public.word_samples foreign keys
 
 ALTER TABLE public.word_samples ADD CONSTRAINT word_samples_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
+-- public.word_chain_stories definition
+
+-- Drop table
+
+-- DROP TABLE public.word_chain_stories;
+
+CREATE TABLE public.word_chain_stories (
+	id bigserial NOT NULL,
+	user_id int8 NOT NULL,
+	prompt_words_json jsonb NOT NULL,
+	story_text text NOT NULL,
+	image_url text NULL,
+	llm_model_name varchar(100) NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT word_chain_stories_pkey PRIMARY KEY (id)
+);
+
+
+-- public.word_chain_stories foreign keys
+
+ALTER TABLE public.word_chain_stories ADD CONSTRAINT word_chain_stories_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
