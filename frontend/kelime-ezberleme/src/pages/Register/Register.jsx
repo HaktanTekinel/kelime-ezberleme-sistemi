@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { registerAPI } from "../../services/authService";
-import "./Register.css";
+import "../../styles/auth.css";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ function Register() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -84,15 +85,16 @@ function Register() {
   };
 
   return (
-    <main className="register-page">
-      <section className="register-card">
+    <main className="auth-page">
+      <section className="auth-card">
         <h1>Kayıt Ol</h1>
-        <p className="register-subtitle">
+
+        <p className="auth-subtitle">
           Kelime ezberleme sistemine katılmak için hesabınızı oluşturun.
         </p>
 
-        <form onSubmit={handleSubmit} className="register-form">
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="auth-form-group">
             <label htmlFor="username">Kullanıcı Adı</label>
             <input
               id="username"
@@ -104,7 +106,7 @@ function Register() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="email">E-posta</label>
             <input
               id="email"
@@ -116,7 +118,7 @@ function Register() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="password">Şifre</label>
             <input
               id="password"
@@ -128,7 +130,7 @@ function Register() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="confirmPassword">Şifre Tekrar</label>
             <input
               id="confirmPassword"
@@ -141,16 +143,16 @@ function Register() {
           </div>
 
           {message.text && (
-            <p className={`form-message ${message.type}`}>{message.text}</p>
+            <p className={`auth-message ${message.type}`}>{message.text}</p>
           )}
 
-          <button type="submit" disabled={loading}>
+          <button className="auth-button" type="submit" disabled={loading}>
             {loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
           </button>
         </form>
 
-        <div className="register-footer">
-          <span>Zaten hesabınız var mı?</span>
+        <div className="auth-footer">
+          <span>Zaten hesabınız var mı? </span>
           <Link to="/login">Giriş Yap</Link>
         </div>
       </section>
