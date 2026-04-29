@@ -194,3 +194,25 @@ CREATE TABLE public.wordle_games (
 
 ALTER TABLE public.wordle_games ADD CONSTRAINT wordle_games_target_word_id_fkey FOREIGN KEY (target_word_id) REFERENCES public.words(id) ON DELETE CASCADE;
 ALTER TABLE public.wordle_games ADD CONSTRAINT wordle_games_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+-- public.report_snapshots definition
+
+-- Drop table
+
+-- DROP TABLE public.report_snapshots;
+
+CREATE TABLE public.report_snapshots (
+	id bigserial NOT NULL,
+	user_id int8 NOT NULL,
+	report_date date NOT NULL,
+	total_learned_words int4 DEFAULT 0 NOT NULL,
+	success_rate numeric(5, 2) DEFAULT 0.00 NOT NULL,
+	weak_topics_json jsonb NULL,
+	strong_topics_json jsonb NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT report_snapshots_pkey PRIMARY KEY (id)
+);
+
+
+-- public.report_snapshots foreign keys
+
+ALTER TABLE public.report_snapshots ADD CONSTRAINT report_snapshots_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
