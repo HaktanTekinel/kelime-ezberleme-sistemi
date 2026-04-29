@@ -33,11 +33,18 @@ CREATE TABLE public.words (
 -- public.words foreign keys
 
 ALTER TABLE public.words ADD CONSTRAINT words_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE SET NULL;
--- public.user_settings definition
 
--- Drop table
-
--- DROP TABLE public.user_settings;
+CREATE TABLE IF NOT EXISTS public.word_samples (
+    id BIGSERIAL PRIMARY KEY,
+    word_id BIGINT NOT NULL,
+    sample_text TEXT NOT NULL,
+    sample_order INT DEFAULT 1 NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT word_samples_word_id_fkey
+        FOREIGN KEY (word_id)
+        REFERENCES public.words(id)
+        ON DELETE CASCADE
+);
 
 CREATE TABLE public.user_settings (
 	id bigserial NOT NULL,
