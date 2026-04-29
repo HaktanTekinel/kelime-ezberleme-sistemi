@@ -21,3 +21,20 @@ export const loginAPI = async (userName, password) => {
 
   return response.json();
 };
+
+export const registerAPI = async ({ username, email, password }) => {
+  const response = await fetch(`${API_BASE_URL}/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ username, email, password }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Kayıt işlemi başarısız.");
+  }
+
+  return response.json();
+};
