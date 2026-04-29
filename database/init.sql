@@ -55,3 +55,31 @@ CREATE TABLE public.user_settings (
 -- public.user_settings foreign keys
 
 ALTER TABLE public.user_settings ADD CONSTRAINT user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+-- public.user_word_progress definition
+
+-- Drop table
+
+-- DROP TABLE public.user_word_progress;
+
+CREATE TABLE public.user_word_progress (
+	id bigserial NOT NULL,
+	user_id int8 NOT NULL,
+	word_id int8 NOT NULL,
+	current_stage int4 DEFAULT 0 NOT NULL,
+	consecutive_correct int4 DEFAULT 0 NOT NULL,
+	last_answer_correct bool NULL,
+	last_review_at timestamp NULL,
+	next_review_at timestamp NULL,
+	learned bool DEFAULT false NOT NULL,
+	reset_count int4 DEFAULT 0 NOT NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT uq_user_word UNIQUE (user_id, word_id),
+	CONSTRAINT user_word_progress_current_stage_check CHECK (((current_stage >= 0) AND (current_stage <= 6))),
+	CONSTRAINT user_word_progress_pkey PRIMARY KEY (id)
+);
+
+
+-- public.user_word_progress foreign keys
+
+ALTER TABLE public.user_word_progress ADD CONSTRAINT user_word_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE public.user_word_progress ADD CONSTRAINT user_word_progress_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
