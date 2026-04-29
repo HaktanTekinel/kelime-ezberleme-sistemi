@@ -106,3 +106,29 @@ CREATE TABLE public.quiz_sessions (
 -- public.quiz_sessions foreign keys
 
 ALTER TABLE public.quiz_sessions ADD CONSTRAINT quiz_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+-- public.quiz_answers definition
+
+-- Drop table
+
+-- DROP TABLE public.quiz_answers;
+
+CREATE TABLE public.quiz_answers (
+	id bigserial NOT NULL,
+	quiz_session_id int8 NOT NULL,
+	user_id int8 NOT NULL,
+	word_id int8 NOT NULL,
+	selected_answer text NULL,
+	correct_answer text NOT NULL,
+	is_correct bool NOT NULL,
+	question_type varchar(30) NOT NULL,
+	response_time_ms int4 NULL,
+	answered_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT quiz_answers_pkey PRIMARY KEY (id)
+);
+
+
+-- public.quiz_answers foreign keys
+
+ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_quiz_session_id_fkey FOREIGN KEY (quiz_session_id) REFERENCES public.quiz_sessions(id) ON DELETE CASCADE;
+ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
