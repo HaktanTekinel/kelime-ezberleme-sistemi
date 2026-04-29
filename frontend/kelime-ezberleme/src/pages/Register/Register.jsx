@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { registerAPI } from "../../services/authService";
+import { validateRegisterForm } from "../../validations/authValidation";
 import "../../styles/auth.css";
 
 function Register() {
@@ -11,8 +12,9 @@ function Register() {
     confirmPassword: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -21,39 +23,28 @@ function Register() {
       ...prevData,
       [name]: value,
     }));
-  };
 
-  const validateForm = () => {
-    if (!formData.username.trim()) {
-      return "Kullanıcı adı boş bırakılamaz.";
+    if (errors[name]) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: "",
+      }));
     }
-
-    if (!formData.email.trim()) {
-      return "E-posta boş bırakılamaz.";
-    }
-
-    if (formData.password.length < 6) {
-      return "Şifre en az 6 karakter olmalıdır.";
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      return "Şifreler eşleşmiyor.";
-    }
-
-    return null;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const validationError = validateForm();
+    const formErrors = validateRegisterForm(formData);
 
-    if (validationError) {
-      setMessage({ type: "error", text: validationError });
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      setMessage({ type: "", text: "" });
       return;
     }
 
     setLoading(true);
+    setErrors({});
     setMessage({ type: "", text: "" });
 
     try {
@@ -77,7 +68,7 @@ function Register() {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message,
+        text: error.message || "Kayıt işlemi başarısız.",
       });
     } finally {
       setLoading(false);
@@ -93,6 +84,10 @@ function Register() {
           Kelime ezberleme sistemine katılmak için hesabınızı oluşturun.
         </p>
 
+        {message.text && (
+          <p className={`auth-message ${message.type}`}>{message.text}</p>
+        )}
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="auth-form-group">
             <label htmlFor="username">Kullanıcı Adı</label>
@@ -104,6 +99,9 @@ function Register() {
               value={formData.username}
               onChange={handleChange}
             />
+            {errors.username && (
+              <p className="auth-message error">{errors.username}</p>
+            )}
           </div>
 
           <div className="auth-form-group">
@@ -116,6 +114,9 @@ function Register() {
               value={formData.email}
               onChange={handleChange}
             />
+            {errors.email && (
+              <p className="auth-message error">{errors.email}</p>
+            )}
           </div>
 
           <div className="auth-form-group">
@@ -128,6 +129,9 @@ function Register() {
               value={formData.password}
               onChange={handleChange}
             />
+            {errors.password && (
+              <p className="auth-message error">{errors.password}</p>
+            )}
           </div>
 
           <div className="auth-form-group">
@@ -140,11 +144,10 @@ function Register() {
               value={formData.confirmPassword}
               onChange={handleChange}
             />
+            {errors.confirmPassword && (
+              <p className="auth-message error">{errors.confirmPassword}</p>
+            )}
           </div>
-
-          {message.text && (
-            <p className={`auth-message ${message.type}`}>{message.text}</p>
-          )}
 
           <button className="auth-button" type="submit" disabled={loading}>
             {loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}

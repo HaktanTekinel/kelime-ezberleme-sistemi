@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import InputField from "../../components/InputField";
 import { loginAPI } from "../../services/authService";
+import { validateLoginForm } from "../../validations/authValidation";
 import "../../styles/auth.css";
 
 function Login() {
@@ -28,25 +29,11 @@ function Login() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.userName.trim()) {
-      newErrors.userName = "Kullanıcı adı gerekli.";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Şifre gerekli.";
-    }
-
-    return newErrors;
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setApiError("");
 
-    const formErrors = validateForm();
+    const formErrors = validateLoginForm(formData);
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
