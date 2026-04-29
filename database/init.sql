@@ -33,3 +33,25 @@ CREATE TABLE public.words (
 -- public.words foreign keys
 
 ALTER TABLE public.words ADD CONSTRAINT words_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE SET NULL;
+-- public.user_settings definition
+
+-- Drop table
+
+-- DROP TABLE public.user_settings;
+
+CREATE TABLE public.user_settings (
+	id bigserial NOT NULL,
+	user_id int8 NOT NULL,
+	daily_new_word_count int4 DEFAULT 10 NOT NULL,
+	quiz_question_count int4 DEFAULT 10 NOT NULL,
+	show_instant_feedback bool DEFAULT true NOT NULL,
+	allow_skip_questions bool DEFAULT true NOT NULL,
+	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT user_settings_pkey PRIMARY KEY (id),
+	CONSTRAINT user_settings_user_id_key UNIQUE (user_id)
+);
+
+
+-- public.user_settings foreign keys
+
+ALTER TABLE public.user_settings ADD CONSTRAINT user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
