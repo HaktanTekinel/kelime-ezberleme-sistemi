@@ -83,3 +83,26 @@ CREATE TABLE public.user_word_progress (
 
 ALTER TABLE public.user_word_progress ADD CONSTRAINT user_word_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 ALTER TABLE public.user_word_progress ADD CONSTRAINT user_word_progress_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
+-- public.quiz_sessions definition
+
+-- Drop table
+
+-- DROP TABLE public.quiz_sessions;
+
+CREATE TABLE public.quiz_sessions (
+	id bigserial NOT NULL,
+	user_id int8 NOT NULL,
+	session_type varchar(30) NOT NULL,
+	total_questions int4 DEFAULT 0 NOT NULL,
+	correct_count int4 DEFAULT 0 NOT NULL,
+	wrong_count int4 DEFAULT 0 NOT NULL,
+	skipped_count int4 DEFAULT 0 NOT NULL,
+	started_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	finished_at timestamp NULL,
+	CONSTRAINT quiz_sessions_pkey PRIMARY KEY (id)
+);
+
+
+-- public.quiz_sessions foreign keys
+
+ALTER TABLE public.quiz_sessions ADD CONSTRAINT quiz_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
