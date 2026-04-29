@@ -172,3 +172,25 @@ CREATE TABLE public.word_chain_stories (
 -- public.word_chain_stories foreign keys
 
 ALTER TABLE public.word_chain_stories ADD CONSTRAINT word_chain_stories_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+-- public.wordle_games definition
+
+-- Drop table
+
+-- DROP TABLE public.wordle_games;
+
+CREATE TABLE public.wordle_games (
+	id bigserial NOT NULL,
+	user_id int8 NOT NULL,
+	target_word_id int8 NOT NULL,
+	status varchar(20) DEFAULT 'active'::character varying NOT NULL,
+	attempt_count int4 DEFAULT 0 NOT NULL,
+	started_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	finished_at timestamp NULL,
+	CONSTRAINT wordle_games_pkey PRIMARY KEY (id)
+);
+
+
+-- public.wordle_games foreign keys
+
+ALTER TABLE public.wordle_games ADD CONSTRAINT wordle_games_target_word_id_fkey FOREIGN KEY (target_word_id) REFERENCES public.words(id) ON DELETE CASCADE;
+ALTER TABLE public.wordle_games ADD CONSTRAINT wordle_games_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
