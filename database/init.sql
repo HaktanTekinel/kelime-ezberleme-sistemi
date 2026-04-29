@@ -132,3 +132,22 @@ CREATE TABLE public.quiz_answers (
 ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_quiz_session_id_fkey FOREIGN KEY (quiz_session_id) REFERENCES public.quiz_sessions(id) ON DELETE CASCADE;
 ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
+-- public.word_samples definition
+
+-- Drop table
+
+-- DROP TABLE public.word_samples;
+
+CREATE TABLE public.word_samples (
+	id bigserial NOT NULL,
+	word_id int8 NOT NULL,
+	sample_text text NOT NULL,
+	sample_order int4 DEFAULT 1 NOT NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT word_samples_pkey PRIMARY KEY (id)
+);
+
+
+-- public.word_samples foreign keys
+
+ALTER TABLE public.word_samples ADD CONSTRAINT word_samples_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
