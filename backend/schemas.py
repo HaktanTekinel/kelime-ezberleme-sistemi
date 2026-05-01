@@ -5,13 +5,22 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class ORMBaseModel(BaseModel):
-	class Config:
-		orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class MessageResponse(BaseModel):
 	status: str = "success"
 	message: str
+
+
+class ForgotPasswordRequest(BaseModel):
+	email: EmailStr
+
+
+class ForgotPasswordResponse(BaseModel):
+	status: str = "success"
+	message: str
+	reset_token: Optional[str] = None
 
 
 class Token(BaseModel):
@@ -48,6 +57,11 @@ class UserRead(ORMBaseModel):
 
 class PasswordUpdate(BaseModel):
 	username: str
+	new_password: str
+
+
+class ResetPasswordRequest(BaseModel):
+	reset_token: str
 	new_password: str
 
 
@@ -93,6 +107,39 @@ class WordRead(ORMBaseModel):
 
 	class Config:
 		from_attributes = True
+
+
+class QuizQuestionRead(BaseModel):
+	word_id: int
+	eng_word: str
+	picture_url: Optional[str] = None
+	options: List[str]
+
+
+class QuizDailyResponse(BaseModel):
+	user_id: int
+	total_questions: int
+	due_count: int
+	new_count: int
+	questions: List[QuizQuestionRead]
+
+
+class QuizAnswerRequest(BaseModel):
+	user_id: int
+	word_id: int
+	selected_answer: str
+
+
+class QuizAnswerResponse(BaseModel):
+	user_id: int
+	word_id: int
+	is_correct: bool
+	correct_answer: str
+	current_stage: int
+	next_review_at: Optional[datetime] = None
+	is_learned: bool
+	consecutive_correct: int
+	reset_count: int
 
 
 class WordSampleBase(BaseModel):
