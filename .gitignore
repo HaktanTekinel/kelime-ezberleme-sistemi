@@ -1,0 +1,11 @@
+# Python backend
+backend/venv/
+backend/__pycache__/
+backend/**/*.pyc
+backend/*.db
+backend/app.db
+
+# Env files
+.env
+frontend/kelime-ezberleme/.env
+backend/.env
