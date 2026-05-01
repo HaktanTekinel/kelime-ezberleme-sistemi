@@ -1,40 +1,51 @@
-// src/services/authService.js
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-// Vite projelerinde çevre değişkenleri (environment variables) import.meta.env üzerinden okunur.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-export const loginAPI = async (userName, password) => {
-  // FastAPI varsayılan olarak JSON veya OAuth2 form data bekleyebilir. 
-  // Burada temiz bir JSON gönderimi (KISS prensibi) tasarlanmıştır.
-  const response = await fetch(`${API_BASE_URL}/api/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ userName, password }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Kullanıcı adı veya şifre hatalı.');
-  }
-
-  return response.json();
-};
-
-export const registerAPI = async ({ username, email, password }) => {
-  const response = await fetch(`${API_BASE_URL}/register`, {
-    method: "POST",
+async function request(endpoint, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
+      ...options.headers,
     },
-    body: JSON.stringify({ username, email, password }),
+    ...options,
   });
 
+  const data = await response.json().catch(() => null);
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Kayıt işlemi başarısız.");
+    throw new Error(data?.detail || data?.message || "Bir hata oluştu.");
   }
 
-  return response.json();
-};
+  return data;
+}
+
+export function registerAPI({ username, email, password }) {
+  return request("/register", {
+    method: "POST",
+    body: JSON.stringify({
+      username,
+      email,
+      password,
+    }),
+  });
+}
+
+export function loginAPI(usernameOrEmail, password) {
+  return request("/login", {
+    method: "POST",
+    body: JSON.stringify({
+      username_or_email: usernameOrEmail,
+      password,
+    }),
+  });
+}
+
+export function updatePasswordAPI({ username, newPassword }) {
+  return request("/forgot-password", {
+    method: "PUT",
+    body: JSON.stringify({
+      username,
+      new_password: newPassword,
+    }),
+  });
+}
