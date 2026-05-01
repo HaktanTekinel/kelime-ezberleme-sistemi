@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(__file__))
 import models
 import schemas
 from database import get_db
-from utils import hash_password, verify_password
+from utils import hash_password
 from auth import router as auth_router
 from quiz import router as quiz_router
 
@@ -116,37 +116,6 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return new_user
-
-
-# ============================================================
-# STORY-1: GİRİŞ / LOGIN
-# ============================================================
-
-@app.post("/login")
-def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(
-        (models.User.username == user.username_or_email) |
-        (models.User.email == user.username_or_email)
-    ).first()
-
-    if not db_user or not verify_password(user.password, db_user.password_hash):
-        raise HTTPException(
-            status_code=401,
-            detail="Hatalı kullanıcı adı/email veya şifre"
-        )
-
-    if not db_user.is_active:
-        raise HTTPException(
-            status_code=403,
-            detail="Kullanıcı hesabı pasif durumda"
-        )
-
-    return {
-        "message": "Giriş başarılı",
-        "user_id": db_user.id,
-        "username": db_user.username,
-        "email": db_user.email
-    }
 
 
 # ============================================================

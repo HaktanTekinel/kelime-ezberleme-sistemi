@@ -1,12 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class ORMBaseModel(BaseModel):
-	class Config:
-		orm_mode = True
+	model_config = ConfigDict(from_attributes=True)
 
 
 class MessageResponse(BaseModel):
@@ -19,8 +18,12 @@ class Token(BaseModel):
 	token_type: str = "bearer"
 
 
+class LoginResponse(Token):
+	user_id: int
+
+
 class TokenData(BaseModel):
-	username: Optional[str] = None
+	user_id: Optional[int] = None
 
 
 class UserBase(BaseModel):
@@ -29,7 +32,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-	password: str
+	password: str = Field(min_length=6, max_length=128)
 
 
 class UserLogin(BaseModel):
@@ -42,13 +45,10 @@ class UserRead(ORMBaseModel):
 	username: str
 	email: str
 
-	class Config:
-		from_attributes = True
-
 
 class PasswordUpdate(BaseModel):
 	username: str
-	new_password: str
+	new_password: str = Field(min_length=6, max_length=128)
 
 
 class UserSettingsBase(BaseModel):
@@ -90,9 +90,6 @@ class WordRead(ORMBaseModel):
 	eng_word: str
 	tur_word: str
 	picture_url: Optional[str] = None
-
-	class Config:
-		from_attributes = True
 
 
 class WordSampleBase(BaseModel):
@@ -232,3 +229,32 @@ class WordChainStoryRead(ORMBaseModel):
 	image_url: Optional[str] = None
 	llm_model_name: Optional[str] = None
 	created_at: Optional[datetime] = None
+
+
+class QuizQuestionRead(BaseModel):
+	word_id: int
+	eng_word: str
+	picture_url: Optional[str] = None
+	options: List[str]
+
+class QuizDailyResponse(BaseModel):
+	user_id: int
+	total_questions: int
+	due_count: int
+	new_count: int
+	questions: List[QuizQuestionRead]
+
+class QuizAnswerRequest(BaseModel):
+	word_id: int
+	selected_answer: str
+
+class QuizAnswerResponse(BaseModel):
+	user_id: int
+	word_id: int
+	is_correct: bool
+	correct_answer: str
+	current_stage: int
+	next_review_at: Optional[datetime] = None
+	is_learned: bool
+	consecutive_correct: int
+	reset_count: int
