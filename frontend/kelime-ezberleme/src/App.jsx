@@ -1,13 +1,31 @@
+<<<<<<< HEAD
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
+=======
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+>>>>>>> origin/develop
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
+<<<<<<< HEAD
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Routes>
+    </BrowserRouter>
+  );
+=======
     <>
       <section id="center">
         <div className="hero">
@@ -117,6 +135,7 @@ function App() {
       <section id="spacer"></section>
     </>
   )
+>>>>>>> origin/develop
 }
 
 export default App
