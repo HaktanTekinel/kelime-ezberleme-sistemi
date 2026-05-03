@@ -1,118 +1,111 @@
-from typing import Optional
-
-from fastapi import APIRouter, Depends, Header, HTTPException
-from sqlalchemy.orm import Session
 import os
 from datetime import datetime, timedelta
+import secrets
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-import models
-import schemas
+import models, schemas
 from database import get_db
+from utils import hash_password, verify_password
 
 router = APIRouter()
 
-# Secret config (use env var in production)
-SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-please-set-env")
+# MVP için sabit secret key. Gerçek projelerde .env dosyasında tutulur.
+SECRET_KEY = os.environ.get("SECRET_KEY", "kelime-ezberleme-super-gizli-anahtar-123")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# FastAPI'nin yetkilendirme şeması (Swagger'da sağ üstteki kilit butonunu aktif eder)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-
-def get_user_by_username_or_email(db: Session, username_or_email: str) -> Optional[models.User]:
-    return (
-        db.query(models.User)
-        .filter((models.User.username == username_or_email) | (models.User.email == username_or_email))
-        .first()
-    )
-
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
+# İŞTE SİHRİN GERÇEKLEŞTİĞİ FONKSİYON: Token'ı çözer ve içinden user_id'yi çıkarır
+def get_current_user_id(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Geçersiz veya süresi dolmuş token",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("sub")
+        user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
-        user_id = int(user_id)
-    except (JWTError, ValueError):
+        return int(user_id)
+    except JWTError:
         raise credentials_exception
 
-    user = db.query(models.User).filter(models.User.id == user_id, models.User.is_active == True).first()
-    if user is None:
-        raise credentials_exception
-    return user
-
+@router.post("/register", response_model=schemas.UserRead)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email zaten kayıtlı")
+    
+    new_user = models.User(
+        username=user.username,
+        email=user.email,
+        password_hash=hash_password(user.password)
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
 
 @router.post("/login", response_model=schemas.Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = get_user_by_username_or_email(db, form_data.username)
-    if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Hatalı kullanıcı veya şifre")
+def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(
+        (models.User.username == user.username_or_email) |
+        (models.User.email == user.username_or_email)
+    ).first()
 
-    access_token = create_access_token({"sub": str(user.id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    if not db_user or not verify_password(user.password, db_user.password_hash):
+        raise HTTPException(status_code=401, detail="Hatalı kullanıcı adı/email veya şifre")
 
+    # Başarılı girişte Token üretiliyor (sub içerisine user_id saklanıyor)
+    access_token = create_access_token(data={"sub": str(db_user.id)})
+    return {"access_token": access_token, "token_type": "bearer", "user_id": db_user.id}
 
 @router.post("/forgot-password", response_model=schemas.ForgotPasswordResponse)
 def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == payload.email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+    if user:
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.utcnow() + timedelta(hours=1)
+        pr = models.PasswordResetToken(token=token, user_id=user.id, expires_at=expires_at)
+        db.add(pr)
+        db.commit()
+        db.refresh(pr)
+        return schemas.ForgotPasswordResponse(message="Sıfırlama kodu oluşturuldu (Demo)", reset_token=token)
+    return schemas.ForgotPasswordResponse(message="Eğer sistemde böyle bir email varsa, sıfırlama kodu oluşturuldu.", reset_token=None)
 
-    # Create a short-lived reset token (1 hour)
-    reset_token = create_access_token({"sub": str(user.id), "action": "reset"}, expires_delta=timedelta(hours=1))
-
-    # In production we'd email the token. For MVP return it in response (simulated email).
-    return schemas.ForgotPasswordResponse(status="success", message="Reset token oluşturuldu", reset_token=reset_token)
-
-
-@router.post("/reset-password")
+@router.post("/reset-password", response_model=schemas.MessageResponse)
 def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
-    try:
-        data = jwt.decode(payload.reset_token, SECRET_KEY, algorithms=[ALGORITHM])
-        if data.get("action") != "reset":
-            raise JWTError()
-        user_id = int(data.get("sub"))
-    except JWTError:
-        raise HTTPException(status_code=400, detail="Geçersiz veya süresi dolmuş token")
+    pr = db.query(models.PasswordResetToken).filter(models.PasswordResetToken.token == payload.reset_token).first()
+    if not pr:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Geçersiz sıfırlama token'ı")
+    if pr.is_used:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu token zaten kullanılmış")
+    if pr.expires_at and pr.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token'ın süresi dolmuş")
 
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.query(models.User).filter(models.User.id == pr.user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kullanıcı bulunamadı")
 
-    user.password_hash = get_password_hash(payload.new_password)
+    user.password_hash = hash_password(payload.new_password)
+    pr.is_used = True
     db.commit()
-    return {"message": "Şifre başarıyla güncellendi", "user_id": user.id}
+    return schemas.MessageResponse(message="Şifreniz başarıyla güncellendi")
 
-
-@router.get("/me", response_model=schemas.UserRead)
-def read_current_user(current_user: models.User = Depends(get_current_user)):
-    return current_user
+@router.post("/logout", response_model=schemas.MessageResponse)
+def logout():
+    return schemas.MessageResponse(message="Çıkış yapıldı. Lütfen frontend tarafındaki token'ı silin.")

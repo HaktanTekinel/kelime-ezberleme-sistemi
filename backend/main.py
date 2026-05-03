@@ -1,38 +1,34 @@
 import os
 import sys
+import shutil
+from pathlib import Path
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from passlib.context import CryptContext
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 sys.path.append(os.path.dirname(__file__))
 
 import models
 import schemas
-from auth import router as auth_router, get_current_user
 from database import get_db, engine
+# Yeni token mantığımızı (get_current_user_id) auth dosyasından alıyoruz
+from auth import router as auth_router, get_current_user_id
 from quiz import router as quiz_router
 from users import router as users_router
 
+# Veritabanı tabloları yoksa otomatik oluşturur.
+models.Base.metadata.create_all(bind=engine)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
+# PR İNCELEME DÜZELTMESİ: API ile çakışmaması için klasör adı "uploads" yapıldı
+UPLOAD_DIR = Path("C:/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI()
 
-# Veritabanı tabloları yoksa otomatik oluşturur.
-# users, words, word_samples, user_word_progress tablolarını models.py dosyasına göre açar.
-models.Base.metadata.create_all(bind=engine)
-
+# PR İNCELEME DÜZELTMESİ: /words endpoint çakışması giderildi, path "/uploads" yapıldı
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 origins = [
     "http://localhost:5173",
@@ -40,7 +36,6 @@ origins = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,6 +45,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Router'ları (Alt uygulamaları) bağlıyoruz
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
@@ -59,87 +55,11 @@ app.include_router(users_router, prefix="/users", tags=["Users"])
 def home():
     return {"message": "Backend çalışıyor"}
 
+# NOT: register, login ve forgot_password fonksiyonları auth.py içine taşındığı için buradan silinmiştir.
 
-# STORY-1: KULLANICI KAYIT
-@app.post("/register", response_model=schemas.UserRead)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user_email = db.query(models.User).filter(models.User.email == user.email).first()
-
-    if db_user_email:
-        raise HTTPException(status_code=400, detail="Email zaten kayıtlı")
-
-    db_user_username = (
-        db.query(models.User)
-        .filter(models.User.username == user.username)
-        .first()
-    )
-
-    if db_user_username:
-        raise HTTPException(status_code=400, detail="Kullanıcı adı zaten kayıtlı")
-
-    new_user = models.User(
-        username=user.username,
-        email=user.email,
-        password_hash=hash_password(user.password),
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
-
-
-# STORY-1: GİRİŞ
-@app.post("/login")
-def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = (
-        db.query(models.User)
-        .filter(
-            (models.User.username == user.username_or_email)
-            | (models.User.email == user.username_or_email)
-        )
-        .first()
-    )
-
-    if not db_user or not verify_password(user.password, db_user.password_hash):
-        raise HTTPException(
-            status_code=401,
-            detail="Hatalı kullanıcı adı/email veya şifre",
-        )
-
-    return {
-        "message": "Giriş başarılı!",
-        "user_id": db_user.id,
-        "username": db_user.username,
-        "email": db_user.email,
-    }
-
-
-# STORY-1: ŞİFREMİ UNUTTUM / ŞİFRE GÜNCELLEME
-@app.put("/forgot-password")
-def forgot_password(payload: schemas.PasswordUpdate, db: Session = Depends(get_db)):
-    db_user = (
-        db.query(models.User)
-        .filter(models.User.username == payload.username)
-        .first()
-    )
-
-    if not db_user:
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
-
-    db_user.password_hash = hash_password(payload.new_password)
-    db.commit()
-
-    return {
-        "message": "Şifre güncellendi",
-        "user_id": db_user.id,
-    }
-
-
-# STORY-2: KELİME EKLEME
-@app.post("/words", status_code=201)
-def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+# STORY-2: KELİME EKLEME (Token korumalı)
+@app.post("/words", status_code=201, tags=["Words"])
+def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     new_word = models.Word(
         eng_word=word_data.eng_word,
         tur_word=word_data.tur_word,
@@ -148,7 +68,6 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), cu
         picture_url=word_data.picture_url,
         audio_url=word_data.audio_url,
     )
-
     db.add(new_word)
     db.commit()
     db.refresh(new_word)
@@ -162,23 +81,24 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), cu
         db.add(new_sample)
 
     db.commit()
+    return {"message": "Kelime ve örnek cümleler başarıyla eklendi", "word_id": new_word.id}
 
-    return {
-        "message": "Kelime ve örnek cümleler başarıyla eklendi",
-        "word_id": new_word.id,
-    }
+# STORY-2: KELİME LİSTELEME
+@app.get("/words", response_model=list[schemas.WordRead], tags=["Words"])
+def list_words(db: Session = Depends(get_db)):
+    words = db.query(models.Word).filter(models.Word.is_active == True).all()
+    return words
 
-
-@app.get("/words/{word_id}", response_model=schemas.WordRead)
+@app.get("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
 def get_word(word_id: int, db: Session = Depends(get_db)):
     word = db.query(models.Word).filter(models.Word.id == word_id, models.Word.is_active == True).first()
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
     return word
 
-
-@app.put("/words/{word_id}", response_model=schemas.WordRead)
-def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+# KELİME GÜNCELLEME (Token korumalı)
+@app.put("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
+def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     word = db.query(models.Word).filter(models.Word.id == word_id).first()
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
@@ -190,7 +110,7 @@ def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends
     word.picture_url = payload.picture_url
     word.audio_url = payload.audio_url
 
-    # remove old samples
+    # Eski örnek cümleleri silip yenilerini ekliyoruz
     db.query(models.WordSample).filter(models.WordSample.word_id == word.id).delete()
 
     for index, sample in enumerate(payload.samples, start=1):
@@ -201,21 +121,33 @@ def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends
     db.refresh(word)
     return word
 
-
-@app.delete("/words/{word_id}")
-def delete_word(word_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+# KELİME SİLME (Token korumalı)
+@app.delete("/words/{word_id}", tags=["Words"])
+def delete_word(word_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     word = db.query(models.Word).filter(models.Word.id == word_id).first()
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
-    # soft delete
+    # Veriyi veritabanından tamamen uçurmak yerine "is_active = False" (Soft Delete) yapıyoruz
     word.is_active = False
     db.commit()
     return {"message": "Kelime devre dışı bırakıldı", "word_id": word.id}
 
+# RESİM YÜKLEME (Token korumalı)
+@app.post("/words/{word_id}/image", tags=["Words"])
+def upload_word_image(word_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
-# STORY-2: KELİME LİSTELEME
-@app.get("/words", response_model=list[schemas.WordRead])
-def list_words(db: Session = Depends(get_db)):
-    words = db.query(models.Word).filter(models.Word.is_active == True).all()
-    return words
+    file_extension = file.filename.split(".")[-1] if file.filename and "." in file.filename else "bin"
+    file_location = UPLOAD_DIR / f"word_{word_id}.{file_extension}"
+
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+
+    # PR İNCELEME DÜZELTMESİ: /words/ yerine API çakışması yapmayan /uploads/ kullanılıyor
+    word.picture_url = f"/uploads/{file_location.name}"
+    db.commit()
+
+    return {"message": "Resim başarıyla yüklendi", "picture_url": word.picture_url}
