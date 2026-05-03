@@ -9,6 +9,9 @@ class User(Base):
 	password_hash = Column(String, nullable=False)
 	is_active = Column(Boolean, default=True, nullable=False)
 	role = Column(String(30), default="user", nullable=False)
+	daily_quiz_limit = Column(Integer, default=10, nullable=False)
+	total_correct_answers = Column(Integer, default=0, nullable=False)
+	total_wrong_answers = Column(Integer, default=0, nullable=False)
 	created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 	updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
 

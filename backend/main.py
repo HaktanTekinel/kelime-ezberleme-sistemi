@@ -10,7 +10,10 @@ sys.path.append(os.path.dirname(__file__))
 
 import models
 import schemas
+from auth import router as auth_router, get_current_user
 from database import get_db, engine
+from quiz import router as quiz_router
+from users import router as users_router
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -46,6 +49,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
 
 
 @app.get("/")
@@ -132,7 +139,7 @@ def forgot_password(payload: schemas.PasswordUpdate, db: Session = Depends(get_d
 
 # STORY-2: KELİME EKLEME
 @app.post("/words", status_code=201)
-def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db)):
+def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     new_word = models.Word(
         eng_word=word_data.eng_word,
         tur_word=word_data.tur_word,
@@ -160,6 +167,51 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db)):
         "message": "Kelime ve örnek cümleler başarıyla eklendi",
         "word_id": new_word.id,
     }
+
+
+@app.get("/words/{word_id}", response_model=schemas.WordRead)
+def get_word(word_id: int, db: Session = Depends(get_db)):
+    word = db.query(models.Word).filter(models.Word.id == word_id, models.Word.is_active == True).first()
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+    return word
+
+
+@app.put("/words/{word_id}", response_model=schemas.WordRead)
+def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    word.eng_word = payload.eng_word
+    word.tur_word = payload.tur_word
+    word.topic = payload.topic
+    word.difficulty_level = payload.difficulty_level
+    word.picture_url = payload.picture_url
+    word.audio_url = payload.audio_url
+
+    # remove old samples
+    db.query(models.WordSample).filter(models.WordSample.word_id == word.id).delete()
+
+    for index, sample in enumerate(payload.samples, start=1):
+        new_sample = models.WordSample(word_id=word.id, sample_text=sample, sample_order=index)
+        db.add(new_sample)
+
+    db.commit()
+    db.refresh(word)
+    return word
+
+
+@app.delete("/words/{word_id}")
+def delete_word(word_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    # soft delete
+    word.is_active = False
+    db.commit()
+    return {"message": "Kelime devre dışı bırakıldı", "word_id": word.id}
 
 
 # STORY-2: KELİME LİSTELEME

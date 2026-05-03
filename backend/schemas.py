@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class ORMBaseModel(BaseModel):
-    model_config = {"from_attributes": True}
+	model_config = ConfigDict(from_attributes=True)
 
 
 class MessageResponse(BaseModel):
@@ -29,7 +29,7 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-	username: Optional[str] = None
+	user_id: Optional[int] = None
 
 
 class UserBase(BaseModel):
@@ -38,7 +38,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-	password: str
+	password: str = Field(min_length=6, max_length=128)
 
 
 class UserLogin(BaseModel):
@@ -50,14 +50,12 @@ class UserRead(ORMBaseModel):
 	id: int
 	username: str
 	email: str
-
-	class Config:
-		from_attributes = True
+	daily_quiz_limit: int
 
 
 class PasswordUpdate(BaseModel):
 	username: str
-	new_password: str
+	new_password: str = Field(min_length=6, max_length=128)
 
 
 class ResetPasswordRequest(BaseModel):
@@ -104,9 +102,9 @@ class WordRead(ORMBaseModel):
 	eng_word: str
 	tur_word: str
 	picture_url: Optional[str] = None
-
-	class Config:
-		from_attributes = True
+	topic: Optional[str] = None
+	audio_url: Optional[str] = None
+	difficulty_level: int
 
 
 class QuizQuestionRead(BaseModel):
@@ -140,6 +138,24 @@ class QuizAnswerResponse(BaseModel):
 	is_learned: bool
 	consecutive_correct: int
 	reset_count: int
+
+
+class UserSettingsUpdate(BaseModel):
+	daily_quiz_limit: int = Field(default=10, ge=1, le=100)
+
+
+class UserSettingsResponse(BaseModel):
+	user_id: int
+	daily_quiz_limit: int
+	message: str = "Ayar güncellendi"
+
+
+class UserStatsResponse(BaseModel):
+	user_id: int
+	total_learned_words: int
+	total_correct_answers: int
+	total_wrong_answers: int
+	success_rate: float
 
 
 class WordSampleBase(BaseModel):
