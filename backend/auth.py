@@ -7,17 +7,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
 import models, schemas
 from database import get_db
 from utils import hash_password, verify_password
 
+# .env dosyasından environment değişkenlerini yükle
+load_dotenv()
+
 router = APIRouter()
 
-# MVP için sabit secret key. Gerçek projelerde .env dosyasında tutulur.
+# .env dosyasından veya environment'tan değer oku
 SECRET_KEY = os.environ.get("SECRET_KEY", "kelime-ezberleme-super-gizli-anahtar-123")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ALGORITHM = os.environ.get("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 # FastAPI'nin yetkilendirme şeması (Swagger'da sağ üstteki kilit butonunu aktif eder)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -109,3 +113,23 @@ def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(
 @router.post("/logout", response_model=schemas.MessageResponse)
 def logout():
     return schemas.MessageResponse(message="Çıkış yapıldı. Lütfen frontend tarafındaki token'ı silin.")
+
+def get_current_user(
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """JWT'den user_id çıkardıktan sonra veritabanından user'ı çeker"""
+    user = db.query(models.User).filter(models.User.id == current_user_id).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Kullanıcı bulunamadı"
+        )
+
+    return user
+
+@router.get("/me", response_model=schemas.UserRead)
+def get_me(current_user: models.User = Depends(get_current_user)):
+    """Mevcut oturum açmış kullanıcının bilgilerini döner"""
+    return current_user

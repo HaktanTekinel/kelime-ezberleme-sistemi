@@ -7,6 +7,7 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -17,6 +18,9 @@ from database import get_db, engine
 from auth import router as auth_router, get_current_user_id
 from quiz import router as quiz_router
 from users import router as users_router
+
+# .env dosyasından environment değişkenlerini yükle
+load_dotenv()
 
 # Veritabanı tabloları yoksa otomatik oluşturur.
 models.Base.metadata.create_all(bind=engine)
@@ -30,12 +34,9 @@ app = FastAPI()
 # PR İNCELEME DÜZELTMESİ: /words endpoint çakışması giderildi, path "/uploads" yapıldı
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-]
+# .env'den CORS origins'i oku, virgülle ayrılmış
+cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174")
+origins = [origin.strip() for origin in cors_origins_str.split(",")]
 
 app.add_middleware(
     CORSMiddleware,

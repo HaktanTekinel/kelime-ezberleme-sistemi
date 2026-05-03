@@ -88,6 +88,23 @@ class UserSettingsRead(ORMBaseModel):
     updated_at: Optional[datetime] = None
 
 
+class UserSettingsUpdate(BaseModel):
+    daily_quiz_limit: int = Field(default=10, ge=1, le=100)
+
+
+class UserSettingsResponse(BaseModel):
+    user_id: int
+    daily_quiz_limit: int
+
+
+class UserStatsResponse(BaseModel):
+    user_id: int
+    total_learned_words: int
+    total_correct_answers: int
+    total_wrong_answers: int
+    success_rate: float
+
+
 class WordBase(BaseModel):
     eng_word: str = Field(min_length=1, max_length=150)
     tur_word: str = Field(min_length=1, max_length=150)

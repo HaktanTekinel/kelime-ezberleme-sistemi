@@ -1,52 +1,102 @@
 # Database
 
-Bu klasör, kelime ezberleme sistemi projesinin PostgreSQL veritabanı kurulum dosyalarını içerir.
+Kelime ezberleme sistemi projesinin veritabanı yönetimi.
 
-## Dosyalar
+## Mevcut Strateji (MVP)
 
-- `init.sql`: Projede kullanılan veritabanı tablolarını ve ilişkilerini oluşturur.
+Şu anda **SQLAlchemy ORM** modelleri kullanılıyor:
+- `backend/models.py` — tüm tablo tanımlamaları
+- `backend/database.py` — database bağlantısı ve session yönetimi
+- `main.py` → `models.Base.metadata.create_all(bind=engine)` — otomatik tablo oluşturması
 
-## Veritabanı Yapısı
+**Başlat & Çalıştır:**
+```bash
+python backend/main.py
+```
+İlk çalıştırmada tüm tablolar otomatik oluşturulur (SQLite veya PostgreSQL'e bağlı olarak).
 
-Bu projede kullanıcılar, kelimeler, quizler, kelime öğrenme ilerlemesi, Wordle oyunu, hikâye üretimi ve raporlama işlemleri için tablolar bulunmaktadır.
+### .env Konfigurasyonu
 
-## Tablolar
+```
+DATABASE_URL=sqlite:///./kelime_ezberleme.db
+```
+
+PostgreSQL için:
+```
+DATABASE_URL=postgresql://user:password@localhost/kelime_ezberleme_db
+```
+
+## İleri Adım: Alembic Migration
+
+Proje büyüdükçe **schema versiyonlaması** gerekecektir. O zaman:
+
+```bash
+# Alembic kurulumu
+pip install alembic
+
+# Başlat
+alembic init -t async migrations
+
+# Migration oluştur
+alembic revision --autogenerate -m "Add new column to users"
+
+# Uygula
+alembic upgrade head
+```
+
+Bu adımda:
+- `backend/models.py` — tek kaynak of truth olarak kalır
+- `migrations/` — her değişikliğin version kontrol kaydı
+- `init.sql` → **kaldırılır** (model'den generate edilir)
+
+## DB Şeması (Mevcut Tablolar)
+
+Aşağıdaki tablolar SQLAlchemy'de tanımlanmıştır (`backend/models.py`):
 
 ### users
-
-Kullanıcı bilgilerini tutar.
-
-Tutulan temel bilgiler:
-
-- kullanıcı adı
-- e-posta
-- şifre hash değeri
-- aktiflik durumu
-- kullanıcı rolü
-- oluşturulma ve güncellenme tarihi
-
-Bu tablo sistemdeki ana kullanıcı tablosudur. Diğer birçok tablo `users` tablosuna bağlıdır.
-
----
+- `id` (PK)
+- `username` (UNIQUE)
+- `email` (UNIQUE)
+- `password_hash`
+- `is_active` (bool, default=True)
+- `role` (default="user")
+- `daily_quiz_limit` (int, default=10)
+- `total_correct_answers`, `total_wrong_answers`
+- `created_at`, `updated_at` (TIMESTAMP)
 
 ### words
+- `id` (PK)
+- `eng_word`, `tur_word`
+- `topic`, `difficulty_level`
+- `picture_url`, `audio_url`
+- `is_active` (Soft delete)
+- `created_at`, `updated_at`
 
-Sistemdeki kelimeleri tutar.
+### word_samples
+- `id` (PK)
+- `word_id` (FK → words.id)
+- `sample_text`, `sample_order`
+- `created_at`
 
-Tutulan temel bilgiler:
+### user_word_progress
+- `id` (PK)
+- `user_id` (FK → users.id)
+- `word_id` (FK → words.id)
+- `current_stage` (0-6, spaced repetition)
+- `next_review_at` (TIMESTAMP)
+- `is_learned` (bool)
+- `consecutive_correct`, `reset_count`
+- `last_answer_correct`, `updated_at`
+- **UNIQUE**: (user_id, word_id)
 
-- İngilizce kelime
-- Türkçe karşılığı
-- görsel bağlantısı
-- ses dosyası bağlantısı
-- konu
-- zorluk seviyesi
-- kelimeyi ekleyen kullanıcı
-- aktiflik durumu
+### password_reset_tokens
+- `id` (PK)
+- `token` (UNIQUE)
+- `user_id` (FK → users.id)
+- `expires_at` (TIMESTAMP)
+- `is_used` (bool)
+- `created_at`
 
-`created_by` alanı `users` tablosundaki kullanıcıya bağlıdır. Kullanıcı silinirse kelimeyi ekleyen kullanıcı bilgisi boş bırakılır.
-
----
 
 ### user_settings
 
