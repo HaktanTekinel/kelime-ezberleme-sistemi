@@ -5,10 +5,16 @@ function Home() {
   return (
     <div className="home-page">
       <header className="home-navbar">
-        <div className="home-logo">
-          <span className="logo-icon">6x</span>
-          <span>Kelime Hafızam</span>
-        </div>
+        <Link to="/" className="home-logo">
+          <span className="logo-icon">
+            <span>6</span>
+          </span>
+
+          <span className="logo-text">
+            <strong>Kelime Hafızam</strong>
+            <small>6 tekrar ile öğren</small>
+          </span>
+        </Link>
 
         <nav className="home-nav-links">
           <a href="#features">Özellikler</a>
@@ -92,6 +98,7 @@ function Home() {
                 <span>Tekrar ilerlemesi</span>
                 <strong>3 / 6</strong>
               </div>
+
               <div className="progress-bar">
                 <div className="progress-fill"></div>
               </div>
@@ -221,6 +228,7 @@ function Home() {
             Hesabını oluştur, kelimelerini ekle ve tekrar sistemiyle gelişimini
             takip et.
           </p>
+
           <Link to="/register" className="primary-button">
             Ücretsiz Kayıt Ol
           </Link>
