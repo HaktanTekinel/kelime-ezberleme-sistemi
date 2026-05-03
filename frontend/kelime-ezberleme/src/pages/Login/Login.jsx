@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout/AuthLayout";
 import { loginAPI } from "../../services/authService";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     username_or_email: "",
     password: "",
@@ -47,12 +49,18 @@ function Login() {
     setMessage({ type: "", text: "" });
 
     try {
-      await loginAPI(formData);
+      const data = await loginAPI(formData);
+
+      localStorage.setItem("user", JSON.stringify(data));
 
       setMessage({
         type: "success",
-        text: "Giriş başarılı.",
+        text: "Giriş başarılı. Ana sayfaya yönlendiriliyorsunuz.",
       });
+
+      setTimeout(() => {
+        navigate("/");
+      }, 700);
     } catch (error) {
       setMessage({
         type: "error",

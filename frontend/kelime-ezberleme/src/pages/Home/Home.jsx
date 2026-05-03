@@ -1,7 +1,30 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 
 function Home() {
+  const navigate = useNavigate();
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      return null;
+    }
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setCurrentUser(null);
+    navigate("/");
+  };
+
   return (
     <div className="home-page">
       <header className="home-navbar">
@@ -23,12 +46,31 @@ function Home() {
         </nav>
 
         <div className="home-auth-buttons">
-          <Link to="/login" className="nav-login-button">
-            Giriş Yap
-          </Link>
-          <Link to="/register" className="nav-register-button">
-            Kayıt Ol
-          </Link>
+          {currentUser ? (
+            <div className="home-user-menu">
+              <span className="home-user-greeting">
+                Merhaba, {currentUser.username}
+              </span>
+
+              <button
+                type="button"
+                className="nav-logout-button"
+                onClick={handleLogout}
+              >
+                Çıkış Yap
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" className="nav-login-button">
+                Giriş Yap
+              </Link>
+
+              <Link to="/register" className="nav-register-button">
+                Kayıt Ol
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -50,12 +92,21 @@ function Home() {
             </p>
 
             <div className="hero-buttons">
-              <Link to="/register" className="primary-button">
-                Hemen Başla
-              </Link>
-              <Link to="/login" className="secondary-button">
-                Hesabım Var
-              </Link>
+              {currentUser ? (
+                <Link to="#modules" className="primary-button">
+                  Öğrenmeye Devam Et
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register" className="primary-button">
+                    Hemen Başla
+                  </Link>
+
+                  <Link to="/login" className="secondary-button">
+                    Hesabım Var
+                  </Link>
+                </>
+              )}
             </div>
 
             <div className="hero-stats">
@@ -223,15 +274,35 @@ function Home() {
         </section>
 
         <section className="cta-section">
-          <h2>Kelime öğrenmeye bugün başla</h2>
-          <p>
-            Hesabını oluştur, kelimelerini ekle ve tekrar sistemiyle gelişimini
-            takip et.
-          </p>
+          {currentUser ? (
+            <>
+              <h2>Hoş geldin, {currentUser.username}</h2>
+              <p>
+                Kelime öğrenme sürecine devam et, tekrarlarını tamamla ve
+                gelişimini takip et.
+              </p>
 
-          <Link to="/register" className="primary-button">
-            Ücretsiz Kayıt Ol
-          </Link>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                Yukarı Dön
+              </button>
+            </>
+          ) : (
+            <>
+              <h2>Kelime öğrenmeye bugün başla</h2>
+              <p>
+                Hesabını oluştur, kelimelerini ekle ve tekrar sistemiyle
+                gelişimini takip et.
+              </p>
+
+              <Link to="/register" className="primary-button">
+                Ücretsiz Kayıt Ol
+              </Link>
+            </>
+          )}
         </section>
       </main>
     </div>
