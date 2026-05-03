@@ -1,11 +1,15 @@
-# Python backend
-backend/venv/
-backend/__pycache__/
-backend/**/*.pyc
-backend/*.db
-backend/app.db
-
-# Env files
+# Gizli Çevre Değişkenleri
 .env
-frontend/kelime-ezberleme/.env
-backend/.env
+
+# Veritabanı dosyası (Localde kalmalı)
+app.db
+
+# Python Önbellek Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal Ortamlar
+.venv/
+venv/
+env/
