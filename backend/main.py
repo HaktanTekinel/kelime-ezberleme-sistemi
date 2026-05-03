@@ -12,8 +12,7 @@ sys.path.append(os.path.dirname(__file__))
 import models
 import schemas
 from database import get_db
-from utils import hash_password
-from auth import router as auth_router
+from auth import router as auth_router, get_current_user_id
 from quiz import router as quiz_router
 
 
@@ -89,61 +88,9 @@ def root():
 
 
 # ============================================================
-# STORY-1: KULLANICI KAYIT
+# NOTE: Auth endpoints (/register, /login, /forgot-password, /reset-password) 
+# are now in auth.py under /auth/* routes
 # ============================================================
-
-@app.post("/register", response_model=schemas.UserRead)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(models.User).filter(
-        (models.User.email == user.email) |
-        (models.User.username == user.username)
-    ).first()
-
-    if existing_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email veya kullanıcı adı zaten kayıtlı"
-        )
-
-    new_user = models.User(
-        username=user.username,
-        email=user.email,
-        password_hash=hash_password(user.password)
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
-
-
-# ============================================================
-# STORY-1: ŞİFREMİ UNUTTUM / DEMO ŞİFRE GÜNCELLEME
-# Not:
-# Bu demo versiyonda mail gönderimi yapılmaz.
-# Kullanıcı adı verilerek yeni şifre atanır.
-# ============================================================
-
-@app.put("/forgot-password")
-def forgot_password(payload: schemas.PasswordUpdate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(
-        models.User.username == payload.username
-    ).first()
-
-    if not db_user:
-        raise HTTPException(
-            status_code=404,
-            detail="Kullanıcı bulunamadı"
-        )
-
-    db_user.password_hash = hash_password(payload.new_password)
-    db.commit()
-
-    return {
-        "message": "Şifre başarıyla güncellendi",
-        "user_id": db_user.id
-    }
 
 
 # ============================================================
@@ -151,7 +98,7 @@ def forgot_password(payload: schemas.PasswordUpdate, db: Session = Depends(get_d
 # ============================================================
 
 @app.post("/words", status_code=201)
-def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db)):
+def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     new_word = models.Word(
         eng_word=word_data.eng_word,
         tur_word=word_data.tur_word,
@@ -207,7 +154,8 @@ def list_words(db: Session = Depends(get_db)):
 def upload_word_image(
     word_id: int,
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id)
 ):
     word = db.query(models.Word).filter(
         models.Word.id == word_id

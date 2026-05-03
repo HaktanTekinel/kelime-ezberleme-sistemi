@@ -76,3 +76,100 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
 
     return user
+
+
+def get_current_user_id(token: str = Depends(oauth2_scheme)):
+    """Extract user_id from JWT token without database dependency."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Kimlik doğrulanamadı",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+        return int(user_id)
+    except (jwt.PyJWTError, ValueError):
+        raise credentials_exception
+
+
+@router.get("/me", response_model=schemas.UserRead)
+def get_me(current_user: models.User = Depends(get_current_user)):
+    """Get current user info from JWT token."""
+    return current_user
+
+
+@router.post("/register", response_model=schemas.UserRead, status_code=201)
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    """Register a new user."""
+    # Check if user exists
+    db_user = db.query(models.User).filter(
+        (models.User.username == user.username) |
+        (models.User.email == user.email)
+    ).first()
+
+    if db_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Kullanıcı adı veya email zaten kullanılan"
+        )
+
+    # Create new user with hashed password
+    from utils import hash_password
+    new_user = models.User(
+        username=user.username,
+        email=user.email,
+        password_hash=hash_password(user.password),
+        is_active=True
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+@router.post("/logout")
+def logout(current_user_id: int = Depends(get_current_user_id)):
+    """Logout endpoint (JWT is stateless, just client-side removal needed)."""
+    return {"message": "Başarıyla çıkış yapıldı"}
+
+
+@router.post("/forgot-password")
+def forgot_password(email: schemas.EmailRequest, db: Session = Depends(get_db)):
+    """Request password reset email."""
+    db_user = db.query(models.User).filter(models.User.email == email.email).first()
+
+    if not db_user:
+        # Security: Don't reveal if email exists
+        return {"message": "E-mail adresi bulunursa şifre sıfırlama bağlantısı gönderilecektir"}
+
+    # In production: Send actual email with reset token
+    # For now: Just return success message
+    return {"message": "E-mail adresi bulunursa şifre sıfırlama bağlantısı gönderilecektir"}
+
+
+@router.post("/reset-password")
+def reset_password(reset_request: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password with reset token."""
+    # In production: Verify reset token validity and expiration
+    # For now: Simple password reset
+
+    db_user = db.query(models.User).filter(
+        models.User.email == reset_request.email
+    ).first()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Kullanıcı bulunamadı"
+        )
+
+    # Update password
+    from utils import hash_password
+    db_user.password_hash = hash_password(reset_request.new_password)
+    db.commit()
+
+    return {"message": "Şifre başarıyla sıfırlandı"}
