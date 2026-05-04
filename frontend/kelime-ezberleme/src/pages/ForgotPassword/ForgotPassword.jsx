@@ -26,6 +26,10 @@ function ForgotPassword() {
       return "Kullanıcı adı boş bırakılamaz.";
     }
 
+    if (!formData.newPassword) {
+      return "Yeni şifre boş bırakılamaz.";
+    }
+
     if (formData.newPassword.length < 6) {
       return "Yeni şifre en az 6 karakter olmalıdır.";
     }

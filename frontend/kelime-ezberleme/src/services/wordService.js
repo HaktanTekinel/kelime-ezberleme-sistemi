@@ -1,28 +1,31 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-export async function getWordsAPI() {
-  const response = await fetch(`${API_URL}/words`);
-
-  if (!response.ok) {
-    throw new Error("Kelimeler getirilemedi.");
-  }
-
-  return response.json();
-}
-
-export async function createWordAPI(wordData) {
-  const response = await fetch(`${API_URL}/words`, {
-    method: "POST",
+async function request(endpoint, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
+      ...options.headers,
     },
-    body: JSON.stringify(wordData),
+    ...options,
   });
 
+  const data = await response.json().catch(() => null);
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Kelime eklenemedi.");
+    throw new Error(data?.detail || data?.message || "Bir hata oluştu.");
   }
 
-  return response.json();
+  return data;
+}
+
+export function getWordsAPI() {
+  return request("/words");
+}
+
+export function createWordAPI(wordData) {
+  return request("/words", {
+    method: "POST",
+    body: JSON.stringify(wordData),
+  });
 }

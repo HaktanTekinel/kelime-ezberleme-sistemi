@@ -9,6 +9,9 @@ class User(Base):
 	password_hash = Column(String, nullable=False)
 	is_active = Column(Boolean, default=True, nullable=False)
 	role = Column(String(30), default="user", nullable=False)
+	daily_quiz_limit = Column(Integer, default=10, nullable=False)
+	total_correct_answers = Column(Integer, default=0, nullable=False)
+	total_wrong_answers = Column(Integer, default=0, nullable=False)
 	created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 	updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
 
@@ -52,3 +55,14 @@ class UserWordProgress(Base):
 	last_answer_correct = Column(Boolean, nullable=True)
 	reset_count = Column(Integer, default=0, nullable=False)
 	updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class PasswordResetToken(Base):
+	__tablename__ = "password_reset_tokens"
+
+	id = Column(Integer, primary_key=True, index=True)
+	token = Column(String(128), unique=True, nullable=False)
+	user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+	expires_at = Column(TIMESTAMP, nullable=True)
+	is_used = Column(Boolean, default=False, nullable=False)
+	created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)

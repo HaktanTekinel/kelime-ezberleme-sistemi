@@ -1,32 +1,29 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-import sys
 import os
+import sys
+import shutil
+from pathlib import Path
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 
 sys.path.append(os.path.dirname(__file__))
 
 import models
 import schemas
 from database import get_db, engine
+from auth import router as auth_router, get_current_user_id
+from quiz import router as quiz_router
+from users import router as users_router
 
+load_dotenv()
 
-# Veritabanında olmayan tabloları oluşturur:
-# users, words, word_samples, user_word_progress...
 models.Base.metadata.create_all(bind=engine)
 
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
+UPLOAD_DIR = Path("C:/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
     title="Kelime Ezberleme Sistemi API",
@@ -34,107 +31,39 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-# Local frontend adreslerine izin verir.
-# localhost:5173, localhost:5174, 127.0.0.1:5173 gibi portlarda çalışır.
+cors_origins_str = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
+)
+origins = [origin.strip() for origin in cors_origins_str.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):\d+$",
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
+
 
 @app.get("/")
-def root():
-    return {"message": "Kelime ezberleme backend çalışıyor"}
-
-
-# STORY-1: KULLANICI KAYIT
-@app.post("/register", response_model=schemas.UserRead)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user_by_email = (
-        db.query(models.User)
-        .filter(models.User.email == user.email)
-        .first()
-    )
-
-    if db_user_by_email:
-        raise HTTPException(status_code=400, detail="Email zaten kayıtlı")
-
-    db_user_by_username = (
-        db.query(models.User)
-        .filter(models.User.username == user.username)
-        .first()
-    )
-
-    if db_user_by_username:
-        raise HTTPException(status_code=400, detail="Kullanıcı adı zaten kayıtlı")
-
-    new_user = models.User(
-        username=user.username,
-        email=user.email,
-        password_hash=hash_password(user.password),
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
-
-
-# STORY-1: GİRİŞ
-@app.post("/login")
-def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = (
-        db.query(models.User)
-        .filter(
-            (models.User.username == user.username_or_email)
-            | (models.User.email == user.username_or_email)
-        )
-        .first()
-    )
-
-    if not db_user or not verify_password(user.password, db_user.password_hash):
-        raise HTTPException(
-            status_code=401,
-            detail="Hatalı kullanıcı adı/email veya şifre",
-        )
-
-    return {
-        "message": "Giriş başarılı!",
-        "user_id": db_user.id,
-        "username": db_user.username,
-        "email": db_user.email,
-    }
-
-
-# STORY-1: ŞİFREMİ UNUTTUM
-@app.put("/forgot-password")
-def forgot_password(payload: schemas.PasswordUpdate, db: Session = Depends(get_db)):
-    db_user = (
-        db.query(models.User)
-        .filter(models.User.username == payload.username)
-        .first()
-    )
-
-    if not db_user:
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
-
-    db_user.password_hash = hash_password(payload.new_password)
-    db.commit()
-
-    return {
-        "message": "Şifre güncellendi",
-        "user_id": db_user.id,
-    }
+def home():
+    return {"message": "Backend çalışıyor"}
 
 
 # STORY-2: KELİME EKLEME
-@app.post("/words", status_code=201)
-def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db)):
+@app.post("/words", status_code=201, tags=["Words"])
+def create_word(
+    word_data: schemas.WordCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     new_word = models.Word(
         eng_word=word_data.eng_word,
         tur_word=word_data.tur_word,
@@ -148,10 +77,11 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_word)
 
-    for sample in word_data.samples:
+    for index, sample in enumerate(word_data.samples, start=1):
         new_sample = models.WordSample(
             word_id=new_word.id,
             sample_text=sample,
+            sample_order=index,
         )
         db.add(new_sample)
 
@@ -164,12 +94,108 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db)):
 
 
 # STORY-2: KELİME LİSTELEME
-@app.get("/words", response_model=list[schemas.WordRead])
+@app.get("/words", response_model=list[schemas.WordRead], tags=["Words"])
 def list_words(db: Session = Depends(get_db)):
-    words = (
+    words = db.query(models.Word).filter(models.Word.is_active == True).all()
+    return words
+
+
+@app.get("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
+def get_word(word_id: int, db: Session = Depends(get_db)):
+    word = (
         db.query(models.Word)
-        .filter(models.Word.is_active == True)
-        .all()
+        .filter(models.Word.id == word_id, models.Word.is_active == True)
+        .first()
     )
 
-    return words
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    return word
+
+
+# KELİME GÜNCELLEME
+@app.put("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
+def update_word(
+    word_id: int,
+    payload: schemas.WordCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    word.eng_word = payload.eng_word
+    word.tur_word = payload.tur_word
+    word.topic = payload.topic
+    word.difficulty_level = payload.difficulty_level
+    word.picture_url = payload.picture_url
+    word.audio_url = payload.audio_url
+
+    db.query(models.WordSample).filter(models.WordSample.word_id == word.id).delete()
+
+    for index, sample in enumerate(payload.samples, start=1):
+        new_sample = models.WordSample(
+            word_id=word.id,
+            sample_text=sample,
+            sample_order=index,
+        )
+        db.add(new_sample)
+
+    db.commit()
+    db.refresh(word)
+
+    return word
+
+
+# KELİME SİLME
+@app.delete("/words/{word_id}", tags=["Words"])
+def delete_word(
+    word_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    word.is_active = False
+    db.commit()
+
+    return {"message": "Kelime devre dışı bırakıldı", "word_id": word.id}
+
+
+# RESİM YÜKLEME
+@app.post("/words/{word_id}/image", tags=["Words"])
+def upload_word_image(
+    word_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    file_extension = (
+        file.filename.split(".")[-1]
+        if file.filename and "." in file.filename
+        else "bin"
+    )
+
+    file_location = UPLOAD_DIR / f"word_{word_id}.{file_extension}"
+
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+
+    word.picture_url = f"/uploads/{file_location.name}"
+    db.commit()
+
+    return {
+        "message": "Resim başarıyla yüklendi",
+        "picture_url": word.picture_url,
+    }

@@ -1,0 +1,15 @@
+# Gizli Çevre Değişkenleri
+.env
+
+# Veritabanı dosyası (Localde kalmalı)
+app.db
+
+# Python Önbellek Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal Ortamlar
+.venv/
+venv/
+env/
