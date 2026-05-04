@@ -670,4 +670,9 @@
   .answer-options {
     grid-template-columns: 1fr;
   }
+
+  .module-card {
+  text-decoration: none;
+  color: inherit;
+}
 }

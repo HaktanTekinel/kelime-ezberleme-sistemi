@@ -51,7 +51,15 @@ function Login() {
     try {
       const data = await loginAPI(formData);
 
-      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("token", data.access_token);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...data,
+          username: formData.username_or_email,
+        })
+      );
 
       setMessage({
         type: "success",

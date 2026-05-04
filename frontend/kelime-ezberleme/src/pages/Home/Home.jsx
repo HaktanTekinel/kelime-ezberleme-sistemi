@@ -21,8 +21,9 @@ function Home() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setCurrentUser(null);
-    navigate("/");
+    navigate("/login");
   };
 
   return (
@@ -93,8 +94,8 @@ function Home() {
 
             <div className="hero-buttons">
               {currentUser ? (
-                <Link to="#modules" className="primary-button">
-                  Öğrenmeye Devam Et
+                <Link to="/words" className="primary-button">
+                  Kelime Ekle
                 </Link>
               ) : (
                 <>
@@ -114,10 +115,12 @@ function Home() {
                 <strong>6</strong>
                 <span>Tekrar Aşaması</span>
               </div>
+
               <div>
                 <strong>10+</strong>
                 <span>Günlük Kelime</span>
               </div>
+
               <div>
                 <strong>%</strong>
                 <span>Başarı Analizi</span>
@@ -202,6 +205,7 @@ function Home() {
           <div className="steps-list">
             <div className="step-item">
               <span>01</span>
+
               <div>
                 <h3>Hesabını oluştur</h3>
                 <p>Kayıt ol ve kişisel kelime öğrenme alanına giriş yap.</p>
@@ -210,6 +214,7 @@ function Home() {
 
             <div className="step-item">
               <span>02</span>
+
               <div>
                 <h3>Kelimeleri ekle</h3>
                 <p>Öğrenmek istediğin kelimeleri örnek cümlelerle kaydet.</p>
@@ -218,6 +223,7 @@ function Home() {
 
             <div className="step-item">
               <span>03</span>
+
               <div>
                 <h3>Quiz çöz</h3>
                 <p>Sistem sana tekrar zamanı gelen kelimeleri sorar.</p>
@@ -226,6 +232,7 @@ function Home() {
 
             <div className="step-item">
               <span>04</span>
+
               <div>
                 <h3>Gelişimini izle</h3>
                 <p>Başarı yüzdelerini ve öğrendiğin kelimeleri raporda gör.</p>
@@ -246,10 +253,10 @@ function Home() {
               <p>Kullanıcı hesabı oluşturma, giriş yapma ve şifremi unuttum.</p>
             </div>
 
-            <div className="module-card">
+            <Link to="/words" className="module-card">
               <h3>Kelime Yönetimi</h3>
               <p>Kelime ekleme, listeleme ve örnek cümlelerle destekleme.</p>
-            </div>
+            </Link>
 
             <div className="module-card">
               <h3>Sınav Modülü</h3>
@@ -277,22 +284,20 @@ function Home() {
           {currentUser ? (
             <>
               <h2>Hoş geldin, {currentUser.username}</h2>
+
               <p>
                 Kelime öğrenme sürecine devam et, tekrarlarını tamamla ve
                 gelişimini takip et.
               </p>
 
-              <button
-                type="button"
-                className="primary-button"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              >
-                Yukarı Dön
-              </button>
+              <Link to="/words" className="primary-button">
+                Kelime Yönetimine Git
+              </Link>
             </>
           ) : (
             <>
               <h2>Kelime öğrenmeye bugün başla</h2>
+
               <p>
                 Hesabını oluştur, kelimelerini ekle ve tekrar sistemiyle
                 gelişimini takip et.
