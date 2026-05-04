@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import {
   API_BASE_URL,
   createWordAPI,
-  getAuthToken,
   listWordsAPI,
   uploadWordImageAPI,
 } from "../../services/wordService";
+import { getAuthToken } from "../../services/apiClient";
+import { validateWordForm } from "../../validations/wordsValidation";
 import "./Words.css";
 
 const initialFormData = {
@@ -98,99 +99,6 @@ function Words() {
       .filter(Boolean);
   };
 
-  const isValidUrl = (value) => {
-    if (!value.trim()) {
-      return true;
-    }
-
-    try {
-      new URL(value);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const validateForm = () => {
-    const errors = {};
-
-    const engWord = formData.eng_word.trim();
-    const turWord = formData.tur_word.trim();
-    const topic = formData.topic.trim();
-    const difficulty = Number(formData.difficulty_level);
-    const samples = getSamples();
-
-    if (!engWord) {
-      errors.eng_word = "İngilizce kelime boş bırakılamaz.";
-    } else if (engWord.length > 150) {
-      errors.eng_word = "İngilizce kelime en fazla 150 karakter olabilir.";
-    } else if (!/^[A-Za-zğüşöçıİĞÜŞÖÇ\s'-]+$/.test(engWord)) {
-      errors.eng_word =
-        "İngilizce kelime sadece harf, boşluk, tire veya kesme işareti içermelidir.";
-    }
-
-    if (!turWord) {
-      errors.tur_word = "Türkçe karşılık boş bırakılamaz.";
-    } else if (turWord.length > 150) {
-      errors.tur_word = "Türkçe karşılık en fazla 150 karakter olabilir.";
-    }
-
-    const sameWordExists = words.some(
-      (word) => word.eng_word.toLowerCase() === engWord.toLowerCase()
-    );
-
-    if (sameWordExists) {
-      errors.eng_word = "Bu İngilizce kelime zaten kelime havuzunda var.";
-    }
-
-    if (topic.length > 80) {
-      errors.topic = "Konu en fazla 80 karakter olabilir.";
-    }
-
-    if (!difficulty || difficulty < 1 || difficulty > 10) {
-      errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
-    }
-
-    if (samples.length === 0) {
-      errors.samplesText = "En az 1 örnek cümle yazmalısınız.";
-    } else if (samples.length > 5) {
-      errors.samplesText = "En fazla 5 örnek cümle ekleyebilirsiniz.";
-    } else {
-      const tooLongSample = samples.find((sample) => sample.length > 500);
-
-      if (tooLongSample) {
-        errors.samplesText = "Her örnek cümle en fazla 500 karakter olabilir.";
-      }
-    }
-
-    if (!isValidUrl(formData.picture_url)) {
-      errors.picture_url = "Geçerli bir görsel URL girin veya boş bırakın.";
-    }
-
-    if (!isValidUrl(formData.audio_url)) {
-      errors.audio_url = "Geçerli bir ses URL girin veya boş bırakın.";
-    }
-
-    if (formData.pictureFile) {
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
-      const maxSize = 2 * 1024 * 1024;
-
-      if (!allowedTypes.includes(formData.pictureFile.type)) {
-        errors.pictureFile = "Görsel dosyası JPG, PNG veya WEBP olmalıdır.";
-      } else if (formData.pictureFile.size > maxSize) {
-        errors.pictureFile = "Görsel dosyası en fazla 2 MB olabilir.";
-      }
-    }
-
-    setFieldErrors(errors);
-
-    if (Object.keys(errors).length > 0) {
-      return "Lütfen formdaki hataları düzeltin.";
-    }
-
-    return null;
-  };
-
   const resetForm = () => {
     setFormData(initialFormData);
     setFieldErrors({});
@@ -205,10 +113,16 @@ function Words() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const validationError = validateForm();
+    const samples = getSamples();
+    const errors = validateWordForm(formData, words, samples);
 
-    if (validationError) {
-      setMessage({ type: "error", text: validationError });
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      setMessage({
+        type: "error",
+        text: "Lütfen formdaki hataları düzeltin.",
+      });
       return;
     }
 
@@ -222,7 +136,7 @@ function Words() {
       topic: formData.topic.trim() || null,
       picture_url: formData.picture_url.trim() || null,
       audio_url: formData.audio_url.trim() || null,
-      samples: getSamples(),
+      samples,
     };
 
     try {
@@ -275,6 +189,10 @@ function Words() {
             Ana Sayfa
           </Link>
 
+          <Link to="/word-list" className="words-secondary-link">
+            Kelime Listesi
+          </Link>
+
           {!isLoggedIn && (
             <Link to="/login" className="words-primary-link">
               Giriş Yap
@@ -312,6 +230,7 @@ function Words() {
                   value={formData.eng_word}
                   onChange={handleChange}
                 />
+
                 {fieldErrors.eng_word && (
                   <small className="field-error">{fieldErrors.eng_word}</small>
                 )}
@@ -327,6 +246,7 @@ function Words() {
                   value={formData.tur_word}
                   onChange={handleChange}
                 />
+
                 {fieldErrors.tur_word && (
                   <small className="field-error">{fieldErrors.tur_word}</small>
                 )}
@@ -342,6 +262,7 @@ function Words() {
                   value={formData.topic}
                   onChange={handleChange}
                 />
+
                 {fieldErrors.topic && (
                   <small className="field-error">{fieldErrors.topic}</small>
                 )}
@@ -366,6 +287,7 @@ function Words() {
                   <option value="9">9</option>
                   <option value="10">10 - Zor</option>
                 </select>
+
                 {fieldErrors.difficulty_level && (
                   <small className="field-error">
                     {fieldErrors.difficulty_level}
@@ -384,7 +306,9 @@ function Words() {
                 onChange={handleChange}
                 rows={5}
               />
+
               <small>Her satır ayrı bir örnek cümle olarak kaydedilir.</small>
+
               {fieldErrors.samplesText && (
                 <small className="field-error">{fieldErrors.samplesText}</small>
               )}
@@ -401,6 +325,7 @@ function Words() {
                   value={formData.picture_url}
                   onChange={handleChange}
                 />
+
                 {fieldErrors.picture_url && (
                   <small className="field-error">
                     {fieldErrors.picture_url}
@@ -418,6 +343,7 @@ function Words() {
                   value={formData.audio_url}
                   onChange={handleChange}
                 />
+
                 {fieldErrors.audio_url && (
                   <small className="field-error">{fieldErrors.audio_url}</small>
                 )}
@@ -433,9 +359,11 @@ function Words() {
                 accept="image/*"
                 onChange={handleFileChange}
               />
+
               <small>
                 JPG, PNG veya WEBP yükleyebilirsin. Maksimum dosya boyutu 2 MB.
               </small>
+
               {fieldErrors.pictureFile && (
                 <small className="field-error">{fieldErrors.pictureFile}</small>
               )}
@@ -455,7 +383,7 @@ function Words() {
           <div className="card-title word-list-title">
             <div>
               <span>Kelime Havuzu</span>
-              <h2>Kayıtlı Kelimeler</h2>
+              <h2>Son Eklenen Kelimeler</h2>
             </div>
 
             <strong>{words.length} kelime</strong>
@@ -477,40 +405,46 @@ function Words() {
               değiştirebilirsin.
             </p>
           ) : (
-            <div className="word-list">
-              {filteredWords.map((word) => (
-                <article className="word-item word-card-modern" key={word.id}>
-                  {word.picture_url ? (
-                    <img
-                      className="word-image"
-                      src={getImageUrl(word.picture_url)}
-                      alt={word.eng_word}
-                    />
-                  ) : (
-                    <div className="word-image-placeholder">
-                      {word.eng_word.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+            <>
+              <div className="word-list">
+                {filteredWords.slice(0, 5).map((word) => (
+                  <article className="word-item word-card-modern" key={word.id}>
+                    {word.picture_url ? (
+                      <img
+                        className="word-image"
+                        src={getImageUrl(word.picture_url)}
+                        alt={word.eng_word}
+                      />
+                    ) : (
+                      <div className="word-image-placeholder">
+                        {word.eng_word.charAt(0).toUpperCase()}
+                      </div>
+                    )}
 
-                  <div className="word-info">
-                    <div className="word-title-row">
-                      <div>
-                        <h3>{word.eng_word}</h3>
-                        <p>{word.tur_word}</p>
+                    <div className="word-info">
+                      <div className="word-title-row">
+                        <div>
+                          <h3>{word.eng_word}</h3>
+                          <p>{word.tur_word}</p>
+                        </div>
+
+                        <span>Seviye {word.difficulty_level}</span>
                       </div>
 
-                      <span>Seviye {word.difficulty_level}</span>
+                      <div className="word-meta">
+                        <span>{word.topic || "Konu yok"}</span>
+                        {word.audio_url && <span>Ses var</span>}
+                        {word.picture_url && <span>Görsel var</span>}
+                      </div>
                     </div>
+                  </article>
+                ))}
+              </div>
 
-                    <div className="word-meta">
-                      <span>{word.topic || "Konu yok"}</span>
-                      {word.audio_url && <span>Ses var</span>}
-                      {word.picture_url && <span>Görsel var</span>}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+              <Link to="/word-list" className="word-list-page-link">
+                Tüm kelimeleri görüntüle
+              </Link>
+            </>
           )}
         </section>
       </main>

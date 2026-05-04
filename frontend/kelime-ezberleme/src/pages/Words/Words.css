@@ -461,4 +461,15 @@
   font-weight: 900;
   flex-shrink: 0;
 }
+.word-list-page-link {
+  display: block;
+  margin-top: 16px;
+  padding: 13px 16px;
+  border-radius: 16px;
+  text-align: center;
+  text-decoration: none;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 900;
+}
 }

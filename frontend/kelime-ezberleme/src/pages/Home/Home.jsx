@@ -94,9 +94,15 @@ function Home() {
 
             <div className="hero-buttons">
               {currentUser ? (
-                <Link to="/words" className="primary-button">
-                  Kelime Ekle
-                </Link>
+                <>
+                  <Link to="/words" className="primary-button">
+                    Kelime Ekle
+                  </Link>
+
+                  <Link to="/word-list" className="secondary-button">
+                    Kelime Listesi
+                  </Link>
+                </>
               ) : (
                 <>
                   <Link to="/register" className="primary-button">
@@ -253,7 +259,7 @@ function Home() {
               <p>Kullanıcı hesabı oluşturma, giriş yapma ve şifremi unuttum.</p>
             </div>
 
-            <Link to="/words" className="module-card">
+            <Link to="/word-list" className="module-card">
               <h3>Kelime Yönetimi</h3>
               <p>Kelime ekleme, listeleme ve örnek cümlelerle destekleme.</p>
             </Link>
@@ -286,13 +292,19 @@ function Home() {
               <h2>Hoş geldin, {currentUser.username}</h2>
 
               <p>
-                Kelime öğrenme sürecine devam et, tekrarlarını tamamla ve
-                gelişimini takip et.
+                Kelime öğrenme sürecine devam et, kelimelerini yönet ve
+                tekrarlarını tamamla.
               </p>
 
-              <Link to="/words" className="primary-button">
-                Kelime Yönetimine Git
-              </Link>
+              <div className="hero-buttons">
+                <Link to="/words" className="primary-button">
+                  Kelime Ekle
+                </Link>
+
+                <Link to="/word-list" className="secondary-button">
+                  Kelime Listesine Git
+                </Link>
+              </div>
             </>
           ) : (
             <>

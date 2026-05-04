@@ -4,6 +4,7 @@ import Register from "./pages/Register/Register";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import Home from "./pages/Home/Home";
 import Words from "./pages/Words/Words";
+import WordList from "./pages/WordList/WordList";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/words" element={<Words />} />
+        <Route path="/word-list" element={<WordList />} />
       </Routes>
     </BrowserRouter>
   );
