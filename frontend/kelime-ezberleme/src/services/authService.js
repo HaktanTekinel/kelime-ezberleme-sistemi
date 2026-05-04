@@ -1,51 +1,80 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+import { API_BASE_URL, handleResponse } from "./apiClient";
 
-async function request(endpoint, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+export const registerAPI = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...options.headers,
     },
-    ...options,
+    body: JSON.stringify(formData),
   });
 
-  const data = await response.json().catch(() => null);
+  return handleResponse(response);
+};
 
-  if (!response.ok) {
-    throw new Error(data?.detail || data?.message || "Bir hata oluştu.");
-  }
-
-  return data;
-}
-
-export function registerAPI({ username, email, password }) {
-  return request("/register", {
+export const loginAPI = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  return handleResponse(response);
+};
+
+/*
+  Eski ForgotPassword.jsx bu fonksiyonu kullandığı için bırakıyoruz.
+  Backend tarafı farklı çalışıyorsa sadece bu sayfa hata verir,
+  ama site komple beyaz ekran olmaz.
+*/
+export const updatePasswordAPI = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
-      username,
-      email,
-      password,
+      reset_token: formData.reset_token || formData.resetToken || "",
+      new_password: formData.newPassword || formData.new_password || "",
     }),
   });
-}
 
-export function loginAPI(usernameOrEmail, password) {
-  return request("/login", {
+  return handleResponse(response);
+};
+
+export const forgotPasswordAPI = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: "POST",
-    body: JSON.stringify({
-      username_or_email: usernameOrEmail,
-      password,
-    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
   });
-}
 
-export function updatePasswordAPI({ username, newPassword }) {
-  return request("/forgot-password", {
-    method: "PUT",
+  return handleResponse(response);
+};
+
+export const resetPasswordAPI = async (resetToken, newPassword) => {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
-      username,
+      reset_token: resetToken,
       new_password: newPassword,
     }),
   });
-}
+
+  return handleResponse(response);
+};
+
+export const logoutAPI = async () => {
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+  });
+
+  return handleResponse(response);
+};

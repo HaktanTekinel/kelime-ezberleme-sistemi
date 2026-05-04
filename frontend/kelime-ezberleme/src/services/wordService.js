@@ -1,31 +1,71 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+import { API_BASE_URL, getAuthHeaders, handleResponse } from "./apiClient";
 
-async function request(endpoint, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+export const listWordsAPI = async () => {
+  const response = await fetch(`${API_BASE_URL}/words`, {
+    method: "GET",
+  });
+
+  return handleResponse(response);
+};
+
+export const getWordByIdAPI = async (wordId) => {
+  const response = await fetch(`${API_BASE_URL}/words/${wordId}`, {
+    method: "GET",
+  });
+
+  return handleResponse(response);
+};
+
+export const createWordAPI = async (wordData) => {
+  const response = await fetch(`${API_BASE_URL}/words`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...getAuthHeaders(),
     },
-    ...options,
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.detail || data?.message || "Bir hata oluştu.");
-  }
-
-  return data;
-}
-
-export function getWordsAPI() {
-  return request("/words");
-}
-
-export function createWordAPI(wordData) {
-  return request("/words", {
-    method: "POST",
     body: JSON.stringify(wordData),
   });
-}
+
+  return handleResponse(response);
+};
+
+export const updateWordAPI = async (wordId, wordData) => {
+  const response = await fetch(`${API_BASE_URL}/words/${wordId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(wordData),
+  });
+
+  return handleResponse(response);
+};
+
+export const deleteWordAPI = async (wordId) => {
+  const response = await fetch(`${API_BASE_URL}/words/${wordId}`, {
+    method: "DELETE",
+    headers: {
+      ...getAuthHeaders(),
+    },
+  });
+
+  return handleResponse(response);
+};
+
+export const uploadWordImageAPI = async (wordId, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/words/${wordId}/image`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+    },
+    body: formData,
+  });
+
+  return handleResponse(response);
+};
+
+export { API_BASE_URL };

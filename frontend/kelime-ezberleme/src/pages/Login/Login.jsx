@@ -1,99 +1,130 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import InputField from "../../components/InputField";
+import { Link, useNavigate } from "react-router-dom";
+import AuthLayout from "../../components/AuthLayout/AuthLayout";
 import { loginAPI } from "../../services/authService";
-import { validateLoginForm } from "../../validations/authValidation";
-import "../../styles/auth.css";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    userName: "",
+    username_or_email: "",
     password: "",
   });
 
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (event, fieldName) => {
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
     setFormData((prevData) => ({
       ...prevData,
-      [fieldName]: event.target.value,
+      [name]: value,
     }));
+  };
 
-    if (errors[fieldName]) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [fieldName]: "",
-      }));
+  const validateForm = () => {
+    if (!formData.username_or_email.trim()) {
+      return "Kullanıcı adı veya e-posta boş bırakılamaz.";
     }
+
+    if (!formData.password.trim()) {
+      return "Şifre boş bırakılamaz.";
+    }
+
+    return null;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setApiError("");
 
-    const formErrors = validateLoginForm(formData);
+    const validationError = validateForm();
 
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
+    if (validationError) {
+      setMessage({ type: "error", text: validationError });
       return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
+    setMessage({ type: "", text: "" });
 
     try {
-      const data = await loginAPI(formData.userName, formData.password);
-      console.log("Giriş başarılı:", data);
-      alert("Sisteme başarıyla giriş yapıldı!");
+      const data = await loginAPI(formData);
+
+      localStorage.setItem("token", data.access_token);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...data,
+          username: formData.username_or_email,
+        })
+      );
+
+      setMessage({
+        type: "success",
+        text: "Giriş başarılı. Ana sayfaya yönlendiriliyorsunuz.",
+      });
+
+      setTimeout(() => {
+        navigate("/");
+      }, 700);
     } catch (error) {
-      setApiError(error.message || "Giriş işlemi başarısız.");
+      setMessage({
+        type: "error",
+        text: error.message || "Giriş işlemi başarısız.",
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <main className="auth-page">
-      <section className="auth-card">
-        <h1>Giriş Yap</h1>
-
-        <p className="auth-subtitle">
-          Kelime ezberleme sistemine devam etmek için hesabınıza giriş yapın.
-        </p>
-
-        {apiError && <p className="auth-message error">{apiError}</p>}
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          <InputField
-            label="Kullanıcı Adı"
-            type="text"
-            value={formData.userName}
-            onChange={(event) => handleChange(event, "userName")}
-            placeholder="Kullanıcı adınızı girin"
-            error={errors.userName}
-          />
-
-          <InputField
-            label="Şifre"
-            type="password"
-            value={formData.password}
-            onChange={(event) => handleChange(event, "password")}
-            placeholder="Şifrenizi girin"
-            error={errors.password}
-          />
-
-          <button className="auth-button" type="submit" disabled={isLoading}>
-            {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
-          </button>
-        </form>
-
-        <div className="auth-footer auth-footer-between">
+    <AuthLayout
+      title="Giriş Yap"
+      subtitle="Kelime ezberleme sistemine devam etmek için hesabınıza giriş yapın."
+      footer={
+        <>
           <Link to="/forgot-password">Şifremi Unuttum</Link>
+          <span>|</span>
           <Link to="/register">Kayıt Ol</Link>
+        </>
+      }
+    >
+      {message.text && (
+        <p className={`auth-message ${message.type}`}>{message.text}</p>
+      )}
+
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="auth-form-group">
+          <label htmlFor="username_or_email">Kullanıcı Adı veya E-posta</label>
+          <input
+            id="username_or_email"
+            name="username_or_email"
+            type="text"
+            placeholder="Kullanıcı adınızı veya e-postanızı girin"
+            value={formData.username_or_email}
+            onChange={handleChange}
+          />
         </div>
-      </section>
-    </main>
+
+        <div className="auth-form-group">
+          <label htmlFor="password">Şifre</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Şifrenizi girin"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </div>
+
+        <button className="auth-button" type="submit" disabled={loading}>
+          {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }
 

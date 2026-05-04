@@ -3,39 +3,40 @@ import sys
 import shutil
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(__file__))
 
 import models
 import schemas
 from database import get_db, engine
-# Yeni token mantığımızı (get_current_user_id) auth dosyasından alıyoruz
 from auth import router as auth_router, get_current_user_id
 from quiz import router as quiz_router
 from users import router as users_router
 
-# .env dosyasından environment değişkenlerini yükle
 load_dotenv()
 
-# Veritabanı tabloları yoksa otomatik oluşturur.
 models.Base.metadata.create_all(bind=engine)
 
-# PR İNCELEME DÜZELTMESİ: API ile çakışmaması için klasör adı "uploads" yapıldı
 UPLOAD_DIR = Path("C:/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-app = FastAPI()
+app = FastAPI(
+    title="Kelime Ezberleme Sistemi API",
+    description="6 tekrar prensibi içeren kelime ezberleme sistemi backend API",
+    version="1.0.0",
+)
 
-# PR İNCELEME DÜZELTMESİ: /words endpoint çakışması giderildi, path "/uploads" yapıldı
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-# .env'den CORS origins'i oku, virgülle ayrılmış
-cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174")
+cors_origins_str = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
+)
 origins = [origin.strip() for origin in cors_origins_str.split(",")]
 
 app.add_middleware(
@@ -46,7 +47,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Router'ları (Alt uygulamaları) bağlıyoruz
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
@@ -56,11 +56,14 @@ app.include_router(users_router, prefix="/users", tags=["Users"])
 def home():
     return {"message": "Backend çalışıyor"}
 
-# NOT: register, login ve forgot_password fonksiyonları auth.py içine taşındığı için buradan silinmiştir.
 
-# STORY-2: KELİME EKLEME (Token korumalı)
+# STORY-2: KELİME EKLEME
 @app.post("/words", status_code=201, tags=["Words"])
-def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def create_word(
+    word_data: schemas.WordCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     new_word = models.Word(
         eng_word=word_data.eng_word,
         tur_word=word_data.tur_word,
@@ -69,6 +72,7 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), us
         picture_url=word_data.picture_url,
         audio_url=word_data.audio_url,
     )
+
     db.add(new_word)
     db.commit()
     db.refresh(new_word)
@@ -82,7 +86,12 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), us
         db.add(new_sample)
 
     db.commit()
-    return {"message": "Kelime ve örnek cümleler başarıyla eklendi", "word_id": new_word.id}
+
+    return {
+        "message": "Kelime ve örnek cümleler başarıyla eklendi",
+        "word_id": new_word.id,
+    }
+
 
 # STORY-2: KELİME LİSTELEME
 @app.get("/words", response_model=list[schemas.WordRead], tags=["Words"])
@@ -90,17 +99,31 @@ def list_words(db: Session = Depends(get_db)):
     words = db.query(models.Word).filter(models.Word.is_active == True).all()
     return words
 
+
 @app.get("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
 def get_word(word_id: int, db: Session = Depends(get_db)):
-    word = db.query(models.Word).filter(models.Word.id == word_id, models.Word.is_active == True).first()
+    word = (
+        db.query(models.Word)
+        .filter(models.Word.id == word_id, models.Word.is_active == True)
+        .first()
+    )
+
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
     return word
 
-# KELİME GÜNCELLEME (Token korumalı)
+
+# KELİME GÜNCELLEME
 @app.put("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
-def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def update_word(
+    word_id: int,
+    payload: schemas.WordCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
@@ -111,44 +134,68 @@ def update_word(word_id: int, payload: schemas.WordCreate, db: Session = Depends
     word.picture_url = payload.picture_url
     word.audio_url = payload.audio_url
 
-    # Eski örnek cümleleri silip yenilerini ekliyoruz
     db.query(models.WordSample).filter(models.WordSample.word_id == word.id).delete()
 
     for index, sample in enumerate(payload.samples, start=1):
-        new_sample = models.WordSample(word_id=word.id, sample_text=sample, sample_order=index)
+        new_sample = models.WordSample(
+            word_id=word.id,
+            sample_text=sample,
+            sample_order=index,
+        )
         db.add(new_sample)
 
     db.commit()
     db.refresh(word)
+
     return word
 
-# KELİME SİLME (Token korumalı)
+
+# KELİME SİLME
 @app.delete("/words/{word_id}", tags=["Words"])
-def delete_word(word_id: int, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def delete_word(
+    word_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
-    # Veriyi veritabanından tamamen uçurmak yerine "is_active = False" (Soft Delete) yapıyoruz
     word.is_active = False
     db.commit()
+
     return {"message": "Kelime devre dışı bırakıldı", "word_id": word.id}
 
-# RESİM YÜKLEME (Token korumalı)
+
+# RESİM YÜKLEME
 @app.post("/words/{word_id}/image", tags=["Words"])
-def upload_word_image(word_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+def upload_word_image(
+    word_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
     if not word:
         raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
-    file_extension = file.filename.split(".")[-1] if file.filename and "." in file.filename else "bin"
+    file_extension = (
+        file.filename.split(".")[-1]
+        if file.filename and "." in file.filename
+        else "bin"
+    )
+
     file_location = UPLOAD_DIR / f"word_{word_id}.{file_extension}"
 
     with open(file_location, "wb+") as file_object:
         shutil.copyfileobj(file.file, file_object)
 
-    # PR İNCELEME DÜZELTMESİ: /words/ yerine API çakışması yapmayan /uploads/ kullanılıyor
     word.picture_url = f"/uploads/{file_location.name}"
     db.commit()
 
-    return {"message": "Resim başarıyla yüklendi", "picture_url": word.picture_url}
+    return {
+        "message": "Resim başarıyla yüklendi",
+        "picture_url": word.picture_url,
+    }
