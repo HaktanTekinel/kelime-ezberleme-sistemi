@@ -13,3 +13,6 @@ __pycache__/
 .venv/
 venv/
 env/
+
+*.db
+backend/*.db
