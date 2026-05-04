@@ -5,6 +5,7 @@ import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import Home from "./pages/Home/Home";
 import Words from "./pages/Words/Words";
 import WordList from "./pages/WordList/WordList";
+import Quiz from "./pages/Quiz/Quiz";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/words" element={<Words />} />
         <Route path="/word-list" element={<WordList />} />
+        <Route path="/quiz" element={<Quiz />} />
       </Routes>
     </BrowserRouter>
   );

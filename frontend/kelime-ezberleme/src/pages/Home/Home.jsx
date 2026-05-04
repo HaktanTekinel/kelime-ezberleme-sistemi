@@ -99,8 +99,8 @@ function Home() {
                     Kelime Ekle
                   </Link>
 
-                  <Link to="/word-list" className="secondary-button">
-                    Kelime Listesi
+                  <Link to="/quiz" className="secondary-button">
+                    Quiz Çöz
                   </Link>
                 </>
               ) : (
@@ -264,10 +264,10 @@ function Home() {
               <p>Kelime ekleme, listeleme ve örnek cümlelerle destekleme.</p>
             </Link>
 
-            <div className="module-card">
+            <Link to="/quiz" className="module-card">
               <h3>Sınav Modülü</h3>
               <p>6 tekrar prensibine göre quiz sorularının hazırlanması.</p>
-            </div>
+            </Link>
 
             <div className="module-card">
               <h3>Ayarlar</h3>
@@ -301,8 +301,12 @@ function Home() {
                   Kelime Ekle
                 </Link>
 
+                <Link to="/quiz" className="secondary-button">
+                  Quiz Çöz
+                </Link>
+
                 <Link to="/word-list" className="secondary-button">
-                  Kelime Listesine Git
+                  Kelime Listesi
                 </Link>
               </div>
             </>
