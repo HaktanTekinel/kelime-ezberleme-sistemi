@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   API_BASE_URL,
@@ -6,7 +6,6 @@ import {
   listWordsAPI,
   uploadWordImageAPI,
 } from "../../services/wordService";
-import { getAuthToken } from "../../services/apiClient";
 import { validateWordForm } from "../../validations/wordsValidation";
 import "./Words.css";
 
@@ -21,76 +20,108 @@ const initialFormData = {
   pictureFile: null,
 };
 
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
+function pickValue(source, keys) {
+  if (!source) {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    if (hasValue(source[key])) {
+      return source[key];
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeWord(word, index) {
+  const samples =
+    pickValue(word, ["samples", "word_samples", "wordSamples", "examples"]) || [];
+
+  return {
+    id: pickValue(word, ["id", "word_id", "wordId", "WordID"]) || index,
+    eng_word:
+      pickValue(word, [
+        "eng_word",
+        "engWord",
+        "eng_word_name",
+        "engWordName",
+        "EngWordName",
+      ]) || "",
+    tur_word:
+      pickValue(word, [
+        "tur_word",
+        "turWord",
+        "tur_word_name",
+        "turWordName",
+        "TurWordName",
+      ]) || "",
+    topic: pickValue(word, ["topic", "category", "level"]) || "",
+    difficulty_level:
+      pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"]) || 1,
+    picture_url:
+      pickValue(word, ["picture_url", "pictureUrl", "image_url", "imageUrl", "picture"]) ||
+      "",
+    audio_url: pickValue(word, ["audio_url", "audioUrl"]) || "",
+    samples: Array.isArray(samples) ? samples : [],
+  };
+}
+
+function normalizeWordList(data) {
+  const rawWords = Array.isArray(data)
+    ? data
+    : data?.words || data?.items || data?.results || [];
+
+  return Array.isArray(rawWords)
+    ? rawWords.map((word, index) => normalizeWord(word, index))
+    : [];
+}
+
+function getImageUrl(pictureUrl) {
+  if (!pictureUrl) {
+    return "";
+  }
+
+  if (pictureUrl.startsWith("http")) {
+    return pictureUrl;
+  }
+
+  return `${API_BASE_URL}${pictureUrl}`;
+}
+
 function Words() {
   const [formData, setFormData] = useState(initialFormData);
   const [words, setWords] = useState([]);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [fieldErrors, setFieldErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [listLoading, setListLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isLoggedIn = useMemo(() => Boolean(getAuthToken()), []);
-
-  const getImageUrl = (pictureUrl) => {
-    if (!pictureUrl) {
-      return "";
-    }
-
-    if (pictureUrl.startsWith("http")) {
-      return pictureUrl;
-    }
-
-    return `${API_BASE_URL}${pictureUrl}`;
-  };
-
-  const loadWords = async () => {
+  const loadWords = useCallback(async () => {
     setListLoading(true);
 
     try {
       const data = await listWordsAPI();
-      setWords(Array.isArray(data) ? data : []);
-    } catch (error) {
+      setWords(normalizeWordList(data));
+    } catch {
+      setWords([]);
       setMessage({
         type: "error",
-        text: error.message || "Kelimeler yüklenemedi.",
+        text: "Kelimeler şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.",
       });
     } finally {
       setListLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadWords();
-  }, []);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0] || null;
-
-    setFormData((prevData) => ({
-      ...prevData,
-      pictureFile: file,
-    }));
-
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      pictureFile: "",
-    }));
-  };
+  }, [loadWords]);
 
   const getSamples = () => {
     return formData.samplesText
@@ -110,6 +141,38 @@ function Words() {
     }
   };
 
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
+    }));
+
+    setMessage({ type: "", text: "" });
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0] || null;
+
+    setFormData((prevData) => ({
+      ...prevData,
+      pictureFile: file,
+    }));
+
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      pictureFile: "",
+    }));
+
+    setMessage({ type: "", text: "" });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -121,12 +184,12 @@ function Words() {
     if (Object.keys(errors).length > 0) {
       setMessage({
         type: "error",
-        text: "Lütfen formdaki hataları düzeltin.",
+        text: "Lütfen formdaki bilgileri kontrol edin.",
       });
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     setMessage({ type: "", text: "" });
 
     const payload = {
@@ -141,14 +204,16 @@ function Words() {
 
     try {
       const createdWord = await createWordAPI(payload);
+      const createdWordId =
+        createdWord?.word_id || createdWord?.wordId || createdWord?.id;
 
-      if (formData.pictureFile && createdWord?.word_id) {
-        await uploadWordImageAPI(createdWord.word_id, formData.pictureFile);
+      if (formData.pictureFile && createdWordId) {
+        await uploadWordImageAPI(createdWordId, formData.pictureFile);
       }
 
       setMessage({
         type: "success",
-        text: "Kelime başarıyla eklendi.",
+        text: "Kelime başarıyla kaydedildi.",
       });
 
       resetForm();
@@ -156,237 +221,218 @@ function Words() {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Kelime eklenemedi.",
+        text: error.message || "Kelime kaydedilemedi. Lütfen tekrar deneyin.",
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const filteredWords = words.filter((word) => {
-    const search = searchTerm.toLowerCase();
+  const filteredWords = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
 
-    return (
-      word.eng_word.toLowerCase().includes(search) ||
-      word.tur_word.toLowerCase().includes(search) ||
-      (word.topic || "").toLowerCase().includes(search)
-    );
-  });
+    if (!search) {
+      return words;
+    }
+
+    return words.filter((word) => {
+      return (
+        word.eng_word.toLowerCase().includes(search) ||
+        word.tur_word.toLowerCase().includes(search) ||
+        (word.topic || "").toLowerCase().includes(search)
+      );
+    });
+  }, [words, searchTerm]);
 
   return (
     <div className="words-page">
-      <header className="words-header">
+      <section className="words-hero">
         <div>
-          <h1>Kelime Yönetimi</h1>
+          <h2>Kelime Ekle</h2>
           <p>
             İngilizce kelime, Türkçe karşılık, örnek cümle ve görsel bilgisi
-            ekleyerek kelime havuzunu oluştur.
+            ekleyerek kelime havuzunu genişlet.
           </p>
         </div>
 
-        <div className="words-header-actions">
-          <Link to="/" className="words-secondary-link">
-            Ana Sayfa
-          </Link>
-
-          <Link to="/word-list" className="words-secondary-link">
-            Kelime Listesi
-          </Link>
-
-          {!isLoggedIn && (
-            <Link to="/login" className="words-primary-link">
-              Giriş Yap
-            </Link>
-          )}
+        <div className="words-hero-actions">
+          <Link to="/home">Ana Sayfa</Link>
+          <Link to="/words">Kelime Listesi</Link>
         </div>
-      </header>
+      </section>
 
-      <main className="words-layout">
-        <section className="word-form-card">
-          <div className="card-title">
-            <span>Yeni Kelime</span>
-            <h2>Kelime Ekle</h2>
+      {message.text && (
+        <section className={`words-message ${message.type}`}>
+          {message.text}
+        </section>
+      )}
+
+      <section className="words-layout">
+        <form className="word-form-card" onSubmit={handleSubmit}>
+          <div className="word-card-header">
+            <div>
+              <p>Yeni kelime</p>
+              <h3>Kelime bilgileri</h3>
+            </div>
+
+            <div className="word-card-icon">➕</div>
           </div>
 
-          {!isLoggedIn && (
-            <div className="words-warning">
-              Kelime eklemek için önce giriş yapmalısınız.
-            </div>
-          )}
-
-          {message.text && (
-            <p className={`words-message ${message.type}`}>{message.text}</p>
-          )}
-
-          <form className="word-form" onSubmit={handleSubmit}>
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="eng_word">İngilizce Kelime</label>
-                <input
-                  id="eng_word"
-                  name="eng_word"
-                  type="text"
-                  placeholder="Örn: memory"
-                  value={formData.eng_word}
-                  onChange={handleChange}
-                />
-
-                {fieldErrors.eng_word && (
-                  <small className="field-error">{fieldErrors.eng_word}</small>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="tur_word">Türkçe Karşılığı</label>
-                <input
-                  id="tur_word"
-                  name="tur_word"
-                  type="text"
-                  placeholder="Örn: hafıza"
-                  value={formData.tur_word}
-                  onChange={handleChange}
-                />
-
-                {fieldErrors.tur_word && (
-                  <small className="field-error">{fieldErrors.tur_word}</small>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="topic">Konu</label>
-                <input
-                  id="topic"
-                  name="topic"
-                  type="text"
-                  placeholder="Örn: Günlük hayat"
-                  value={formData.topic}
-                  onChange={handleChange}
-                />
-
-                {fieldErrors.topic && (
-                  <small className="field-error">{fieldErrors.topic}</small>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="difficulty_level">Zorluk Seviyesi</label>
-                <select
-                  id="difficulty_level"
-                  name="difficulty_level"
-                  value={formData.difficulty_level}
-                  onChange={handleChange}
-                >
-                  <option value="1">1 - Çok Kolay</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5 - Orta</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10 - Zor</option>
-                </select>
-
-                {fieldErrors.difficulty_level && (
-                  <small className="field-error">
-                    {fieldErrors.difficulty_level}
-                  </small>
-                )}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="samplesText">Örnek Cümleler</label>
-              <textarea
-                id="samplesText"
-                name="samplesText"
-                placeholder={`Her satıra 1 örnek cümle yaz.\nÖrn:\nI have a good memory.\nThis memory is important.`}
-                value={formData.samplesText}
-                onChange={handleChange}
-                rows={5}
-              />
-
-              <small>Her satır ayrı bir örnek cümle olarak kaydedilir.</small>
-
-              {fieldErrors.samplesText && (
-                <small className="field-error">{fieldErrors.samplesText}</small>
-              )}
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="picture_url">Görsel URL</label>
-                <input
-                  id="picture_url"
-                  name="picture_url"
-                  type="text"
-                  placeholder="Opsiyonel görsel bağlantısı"
-                  value={formData.picture_url}
-                  onChange={handleChange}
-                />
-
-                {fieldErrors.picture_url && (
-                  <small className="field-error">
-                    {fieldErrors.picture_url}
-                  </small>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="audio_url">Ses URL</label>
-                <input
-                  id="audio_url"
-                  name="audio_url"
-                  type="text"
-                  placeholder="Opsiyonel ses bağlantısı"
-                  value={formData.audio_url}
-                  onChange={handleChange}
-                />
-
-                {fieldErrors.audio_url && (
-                  <small className="field-error">{fieldErrors.audio_url}</small>
-                )}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="pictureFile">Görsel Dosyası</label>
+          <div className="form-grid">
+            <label className="form-field">
+              <span>İngilizce kelime</span>
               <input
-                id="pictureFile"
-                name="pictureFile"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
+                name="eng_word"
+                type="text"
+                placeholder="Örn: memory"
+                value={formData.eng_word}
+                onChange={handleChange}
               />
-
-              <small>
-                JPG, PNG veya WEBP yükleyebilirsin. Maksimum dosya boyutu 2 MB.
-              </small>
-
-              {fieldErrors.pictureFile && (
-                <small className="field-error">{fieldErrors.pictureFile}</small>
+              {fieldErrors.eng_word && (
+                <small>{fieldErrors.eng_word}</small>
               )}
-            </div>
+            </label>
+
+            <label className="form-field">
+              <span>Türkçe karşılığı</span>
+              <input
+                name="tur_word"
+                type="text"
+                placeholder="Örn: hafıza"
+                value={formData.tur_word}
+                onChange={handleChange}
+              />
+              {fieldErrors.tur_word && (
+                <small>{fieldErrors.tur_word}</small>
+              )}
+            </label>
+
+            <label className="form-field">
+              <span>Konu</span>
+              <input
+                name="topic"
+                type="text"
+                placeholder="Örn: Günlük hayat"
+                value={formData.topic}
+                onChange={handleChange}
+              />
+              {fieldErrors.topic && <small>{fieldErrors.topic}</small>}
+            </label>
+
+            <label className="form-field">
+              <span>Zorluk seviyesi</span>
+              <select
+                name="difficulty_level"
+                value={formData.difficulty_level}
+                onChange={handleChange}
+              >
+                <option value="1">1 - Çok kolay</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 - Orta</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10 - Zor</option>
+              </select>
+              {fieldErrors.difficulty_level && (
+                <small>{fieldErrors.difficulty_level}</small>
+              )}
+            </label>
+          </div>
+
+          <label className="form-field">
+            <span>Örnek cümleler</span>
+            <textarea
+              name="samplesText"
+              placeholder={`Her satıra bir örnek cümle yaz.\nÖrn:\nI have a good memory.\nThis memory is important.`}
+              value={formData.samplesText}
+              onChange={handleChange}
+              rows={5}
+            />
+            {fieldErrors.samplesText ? (
+              <small>{fieldErrors.samplesText}</small>
+            ) : (
+              <em>Her satır ayrı bir örnek cümle olarak kaydedilir.</em>
+            )}
+          </label>
+
+          <div className="form-grid">
+            <label className="form-field">
+              <span>Görsel URL</span>
+              <input
+                name="picture_url"
+                type="text"
+                placeholder="Opsiyonel görsel bağlantısı"
+                value={formData.picture_url}
+                onChange={handleChange}
+              />
+              {fieldErrors.picture_url && (
+                <small>{fieldErrors.picture_url}</small>
+              )}
+            </label>
+
+            <label className="form-field">
+              <span>Ses URL</span>
+              <input
+                name="audio_url"
+                type="text"
+                placeholder="Opsiyonel ses bağlantısı"
+                value={formData.audio_url}
+                onChange={handleChange}
+              />
+              {fieldErrors.audio_url && (
+                <small>{fieldErrors.audio_url}</small>
+              )}
+            </label>
+          </div>
+
+          <label className="form-field">
+            <span>Görsel dosyası</span>
+            <input
+              id="pictureFile"
+              name="pictureFile"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            {fieldErrors.pictureFile ? (
+              <small>{fieldErrors.pictureFile}</small>
+            ) : (
+              <em>JPG, PNG veya WEBP dosyası yükleyebilirsin.</em>
+            )}
+          </label>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="secondary-word-button"
+              onClick={resetForm}
+              disabled={saving}
+            >
+              Temizle
+            </button>
 
             <button
-              className="word-submit-button"
               type="submit"
-              disabled={loading || !isLoggedIn}
+              className="primary-word-button"
+              disabled={saving}
             >
-              {loading ? "Kaydediliyor..." : "Kelimeyi Kaydet"}
+              {saving ? "Kaydediliyor..." : "Kelimeyi Kaydet"}
             </button>
-          </form>
-        </section>
+          </div>
+        </form>
 
-        <section className="word-list-card">
-          <div className="card-title word-list-title">
+        <aside className="recent-words-card">
+          <div className="word-card-header">
             <div>
-              <span>Kelime Havuzu</span>
-              <h2>Son Eklenen Kelimeler</h2>
+              <p>Kelime havuzu</p>
+              <h3>Son eklenenler</h3>
             </div>
 
-            <strong>{words.length} kelime</strong>
+            <strong>{words.length}</strong>
           </div>
 
           <input
@@ -398,56 +444,42 @@ function Words() {
           />
 
           {listLoading ? (
-            <p className="words-empty">Kelimeler yükleniyor...</p>
+            <div className="words-state">Kelimeler yükleniyor...</div>
           ) : filteredWords.length === 0 ? (
-            <p className="words-empty">
-              Kelime bulunamadı. Yeni kelime ekleyebilir veya arama metnini
-              değiştirebilirsin.
-            </p>
+            <div className="words-state">
+              Henüz gösterilecek kelime bulunmuyor.
+            </div>
           ) : (
-            <>
-              <div className="word-list">
-                {filteredWords.slice(0, 5).map((word) => (
-                  <article className="word-item word-card-modern" key={word.id}>
-                    {word.picture_url ? (
-                      <img
-                        className="word-image"
-                        src={getImageUrl(word.picture_url)}
-                        alt={word.eng_word}
-                      />
-                    ) : (
-                      <div className="word-image-placeholder">
-                        {word.eng_word.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-
-                    <div className="word-info">
-                      <div className="word-title-row">
-                        <div>
-                          <h3>{word.eng_word}</h3>
-                          <p>{word.tur_word}</p>
-                        </div>
-
-                        <span>Seviye {word.difficulty_level}</span>
-                      </div>
-
-                      <div className="word-meta">
-                        <span>{word.topic || "Konu yok"}</span>
-                        {word.audio_url && <span>Ses var</span>}
-                        {word.picture_url && <span>Görsel var</span>}
-                      </div>
+            <div className="recent-word-list">
+              {filteredWords.slice(0, 5).map((word) => (
+                <article className="recent-word-item" key={word.id}>
+                  {word.picture_url ? (
+                    <img src={getImageUrl(word.picture_url)} alt={word.eng_word} />
+                  ) : (
+                    <div className="recent-word-placeholder">
+                      {word.eng_word.charAt(0).toUpperCase()}
                     </div>
-                  </article>
-                ))}
-              </div>
+                  )}
 
-              <Link to="/word-list" className="word-list-page-link">
-                Tüm kelimeleri görüntüle
-              </Link>
-            </>
+                  <div>
+                    <h4>{word.eng_word}</h4>
+                    <p>{word.tur_word}</p>
+
+                    <div className="recent-word-meta">
+                      <span>Seviye {word.difficulty_level}</span>
+                      {word.topic && <span>{word.topic}</span>}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
-        </section>
-      </main>
+
+          <Link to="/words" className="all-words-link">
+            Tüm kelimeleri görüntüle
+          </Link>
+        </aside>
+      </section>
     </div>
   );
 }

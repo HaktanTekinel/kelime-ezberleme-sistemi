@@ -20,7 +20,9 @@ export const submitQuizAnswerAPI = async ({ word_id, selected_answer }) => {
     },
     body: JSON.stringify({
       word_id,
+      wordId: word_id,
       selected_answer,
+      selectedAnswer: selected_answer,
     }),
   });
 

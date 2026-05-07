@@ -1,5 +1,9 @@
 import "./QuizQuestionCard.css";
 
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
 function QuizQuestionCard({
   question,
   selectedAnswer,
@@ -10,6 +14,8 @@ function QuizQuestionCard({
   if (!question) {
     return null;
   }
+
+  const options = Array.isArray(question.options) ? question.options : [];
 
   const getOptionClassName = (option) => {
     if (!answerResult) {
@@ -52,22 +58,34 @@ function QuizQuestionCard({
           <p>
             Bu kelimenin doğru Türkçe anlamını aşağıdaki seçeneklerden seç.
           </p>
+
+          {hasValue(question.current_stage) && (
+            <div className="question-stage-pill">
+              Tekrar aşaması: {question.current_stage}/6
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="quiz-options-grid">
-        {question.options.map((option) => (
-          <button
-            key={option}
-            type="button"
-            className={getOptionClassName(option)}
-            onClick={() => onSelectAnswer(option)}
-            disabled={Boolean(answerResult)}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
+      {options.length > 0 ? (
+        <div className="quiz-options-grid">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={getOptionClassName(option)}
+              onClick={() => onSelectAnswer(option)}
+              disabled={Boolean(answerResult)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="quiz-option-empty">
+          Bu soru için seçenek bulunamadı.
+        </div>
+      )}
 
       {answerResult && (
         <div
@@ -77,18 +95,23 @@ function QuizQuestionCard({
         >
           <h3>{answerResult.is_correct ? "Doğru cevap!" : "Yanlış cevap"}</h3>
 
-          <p>
-            Doğru cevap: <strong>{answerResult.correct_answer}</strong>
-          </p>
+          {answerResult.correct_answer && (
+            <p>
+              Doğru cevap: <strong>{answerResult.correct_answer}</strong>
+            </p>
+          )}
 
-          <p>
-            Tekrar aşaması:{" "}
-            <strong>{answerResult.current_stage} / 6</strong>
-          </p>
+          {hasValue(answerResult.current_stage) && (
+            <p>
+              Tekrar aşaması: <strong>{answerResult.current_stage} / 6</strong>
+            </p>
+          )}
 
           {answerResult.is_learned && (
-            <p>Bu kelime öğrenilmiş kelimeler arasına alınmaya hazır.</p>
+            <p>Bu kelime kalıcı öğrenme aşamasına ulaştı.</p>
           )}
+
+          {answerResult.message && <p>{answerResult.message}</p>}
         </div>
       )}
     </div>

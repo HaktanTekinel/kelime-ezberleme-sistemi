@@ -1,338 +1,223 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./Landing.css";
 
+const features = [
+  {
+    icon: "🔁",
+    title: "6 Sefer Tekrar",
+    text: "Kelimeler belirli aralıklarla tekrar edilerek kalıcı öğrenme hedeflenir.",
+  },
+  {
+    icon: "🧠",
+    title: "Quiz Modülü",
+    text: "Tekrar zamanı gelen kelimeler quiz içinde çözülür ve öğrenme aşaması ilerler.",
+  },
+  {
+    icon: "📚",
+    title: "Kelime Havuzu",
+    text: "İngilizce kelime, Türkçe anlam, örnek cümle ve görsel bilgisiyle kelime eklenebilir.",
+  },
+  {
+    icon: "📊",
+    title: "Analiz Raporu",
+    text: "Doğru, yanlış ve başarı oranları üzerinden öğrenme gelişimi takip edilir.",
+  },
+];
+
+const steps = [
+  {
+    number: "01",
+    title: "Kelime ekle",
+    text: "Çalışmak istediğin kelimeleri anlamları ve örnek cümleleriyle kaydet.",
+  },
+  {
+    number: "02",
+    title: "Quiz çöz",
+    text: "Günlük tekrarlarını çözerek kelimelerin öğrenme aşamasını ilerlet.",
+  },
+  {
+    number: "03",
+    title: "Gelişimini takip et",
+    text: "Analiz raporu üzerinden öğrenme durumunu ve başarı oranını görüntüle.",
+  },
+];
+
 function Landing() {
-  const navigate = useNavigate();
-
-  const [currentUser, setCurrentUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (!storedUser) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(storedUser);
-    } catch {
-      return null;
-    }
-  });
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("access_token");
-
-    setCurrentUser(null);
-    navigate("/login");
-  };
-
   return (
-    <div className="home-page">
-      <header className="home-navbar">
-        <Link to="/" className="home-logo">
-          <span className="logo-icon">
-            <span>6</span>
-          </span>
+    <main className="landing-page">
+      <nav className="landing-navbar">
+        <Link to="/" className="landing-brand">
+          <span>6</span>
 
-          <span className="logo-text">
+          <div>
             <strong>Kelime Hafızam</strong>
             <small>6 tekrar ile öğren</small>
-          </span>
+          </div>
         </Link>
 
-        <nav className="home-nav-links">
-          <a href="#features">Özellikler</a>
-          <a href="#how-it-works">Nasıl Çalışır?</a>
-          <a href="#modules">Modüller</a>
-        </nav>
+        <div className="landing-nav-actions">
+          <Link to="/login" className="landing-login-link">
+            Giriş Yap
+          </Link>
 
-        <div className="home-auth-buttons">
-          {currentUser ? (
-            <div className="home-user-menu">
-              <span className="home-user-greeting">
-                Merhaba, {currentUser.username || "Öğrenci"}
-              </span>
-
-              <Link to="/home" className="nav-login-button">
-                Panele Git
-              </Link>
-
-              <button
-                type="button"
-                className="nav-logout-button"
-                onClick={handleLogout}
-              >
-                Çıkış Yap
-              </button>
-            </div>
-          ) : (
-            <>
-              <Link to="/login" className="nav-login-button">
-                Giriş Yap
-              </Link>
-
-              <Link to="/register" className="nav-register-button">
-                Kayıt Ol
-              </Link>
-            </>
-          )}
+          <Link to="/register" className="landing-register-link">
+            Kayıt Ol
+          </Link>
         </div>
-      </header>
+      </nav>
 
-      <main>
-        <section className="hero-section">
-          <div className="hero-content">
-            <span className="hero-badge">6 Sefer Tekrar Prensibi</span>
+      <section className="landing-hero">
+        <div className="landing-hero-content">
+          <span className="landing-pill">Kelime öğrenme sistemi</span>
 
-            <h1>
-              Kelimeleri sadece ezberleme,{" "}
-              <span>kalıcı olarak öğren.</span>
-            </h1>
+          <h1>
+            İngilizce kelimeleri
+            <span> düzenli tekrarlarla </span>
+            kalıcı hale getir.
+          </h1>
 
-            <p>
-              Kelime Hafızam, İngilizce kelimeleri düzenli tekrar sistemiyle
-              öğrenmeni sağlayan bir kelime ezberleme uygulamasıdır. Sistem,
-              doğru bildiğin kelimeleri belirli aralıklarla tekrar sorarak uzun
-              süreli hafızaya yerleşmesini hedefler.
-            </p>
+          <p>
+            Kelime Hafızam; kelime ekleme, quiz, tekrar takibi, analiz raporu,
+            bulmaca ve yaratıcı hikaye çalışmalarıyla kelime öğrenme sürecini
+            tek panelde toplar.
+          </p>
 
-            <div className="hero-buttons">
-              {currentUser ? (
-                <>
-                  <Link to="/home" className="primary-button">
-                    Panele Git
-                  </Link>
+          <div className="landing-hero-actions">
+            <Link to="/register" className="landing-primary-button">
+              Hemen Başla
+            </Link>
 
-                  <Link to="/quiz" className="secondary-button">
-                    Quiz Çöz
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/register" className="primary-button">
-                    Hemen Başla
-                  </Link>
+            <Link to="/login" className="landing-secondary-button">
+              Hesabım Var
+            </Link>
+          </div>
+        </div>
 
-                  <Link to="/login" className="secondary-button">
-                    Hesabım Var
-                  </Link>
-                </>
-              )}
+        <div className="landing-preview-card">
+          <div className="preview-top">
+            <div>
+              <span>Bugünkü çalışma</span>
+              <strong>6 aşamalı tekrar planı</strong>
             </div>
 
-            <div className="hero-stats">
-              <div>
-                <strong>6</strong>
-                <span>Tekrar Aşaması</span>
-              </div>
-
-              <div>
-                <strong>10+</strong>
-                <span>Günlük Kelime</span>
-              </div>
-
-              <div>
-                <strong>%</strong>
-                <span>Başarı Analizi</span>
-              </div>
-            </div>
+            <div className="preview-icon">🎯</div>
           </div>
 
-          <div className="hero-card">
-            <div className="quiz-card-header">
-              <span>Bugünkü tekrar</span>
-              <strong>Quiz</strong>
+          <div className="preview-word-card active">
+            <div>
+              <span>Quiz</span>
+              <strong>Tekrar zamanı gelen kelimeler</strong>
             </div>
 
-            <div className="word-card">
-              <span className="word-label">İngilizce Kelime</span>
-              <h2>Memory</h2>
-              <p>Türkçe karşılığını seç</p>
-            </div>
-
-            <div className="answer-options">
-              <button>Hafıza</button>
-              <button>Kitap</button>
-              <button>Kalem</button>
-              <button>Okul</button>
-            </div>
-
-            <div className="progress-box">
-              <div className="progress-info">
-                <span>Tekrar ilerlemesi</span>
-                <strong>3 / 6</strong>
-              </div>
-
-              <div className="progress-bar">
-                <div className="progress-fill"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="features-section">
-          <div className="section-title">
-            <span>Öne Çıkanlar</span>
-            <h2>Uygulama ne işe yarar?</h2>
+            <small>Çöz</small>
           </div>
 
-          <div className="features-grid">
-            <article className="feature-card">
-              <div className="feature-icon">📚</div>
-              <h3>Kelime Ekleme</h3>
-              <p>
-                İngilizce kelime, Türkçe karşılık, örnek cümle ve görsel
-                bilgisiyle kişisel kelime havuzu oluşturulur.
-              </p>
+          <div className="preview-word-card">
+            <div>
+              <span>Kelime Havuzu</span>
+              <strong>Kelime, anlam ve örnek cümle</strong>
+            </div>
+
+            <small>Ekle</small>
+          </div>
+
+          <div className="preview-word-card">
+            <div>
+              <span>Analiz</span>
+              <strong>Başarı oranı ve gelişim takibi</strong>
+            </div>
+
+            <small>İncele</small>
+          </div>
+
+          <div className="preview-progress">
+            <div className="preview-progress-header">
+              <span>Tekrar aşamaları</span>
+              <strong>1 / 6</strong>
+            </div>
+
+            <div className="preview-progress-track">
+              <div />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-features">
+        {features.map((feature) => (
+          <article className="landing-feature-card" key={feature.title}>
+            <div className="feature-icon">{feature.icon}</div>
+
+            <h3>{feature.title}</h3>
+
+            <p>{feature.text}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="landing-how-it-works">
+        <div className="section-title">
+          <span>Nasıl çalışır?</span>
+          <h2>Basit, düzenli ve takip edilebilir öğrenme akışı</h2>
+        </div>
+
+        <div className="landing-steps">
+          {steps.map((step) => (
+            <article className="landing-step-card" key={step.number}>
+              <span>{step.number}</span>
+
+              <h3>{step.title}</h3>
+
+              <p>{step.text}</p>
             </article>
+          ))}
+        </div>
+      </section>
 
-            <article className="feature-card">
-              <div className="feature-icon">🧠</div>
-              <h3>6 Tekrar Sistemi</h3>
-              <p>
-                Kullanıcı kelimeyi 6 farklı zamanda doğru bildikçe kelime
-                öğrenilmiş kabul edilir.
-              </p>
-            </article>
+      <section className="landing-extra-modules">
+        <div>
+          <span className="landing-pill">Ek çalışma modülleri</span>
 
-            <article className="feature-card">
-              <div className="feature-icon">📊</div>
-              <h3>Analiz Raporu</h3>
-              <p>
-                Kullanıcı doğru, yanlış ve öğrenilen kelimeler üzerinden başarı
-                durumunu takip edebilir.
-              </p>
-            </article>
-          </div>
-        </section>
+          <h2>Bulmaca ve Word Chain ile öğrenmeyi güçlendir.</h2>
 
-        <section id="how-it-works" className="steps-section">
-          <div className="section-title">
-            <span>Akış</span>
-            <h2>Nasıl çalışır?</h2>
+          <p>
+            Öğrenilen kelimelerle bulmaca çözülebilir, seçilen kelimelerle
+            hikaye ve görsel çalışmaları oluşturulabilir.
+          </p>
+        </div>
+
+        <div className="extra-module-list">
+          <div>
+            <strong>🧩 Bulmaca</strong>
+            <span>Öğrenilen kelimelerden oluşan kelime oyunu.</span>
           </div>
 
-          <div className="steps-list">
-            <div className="step-item">
-              <span>01</span>
-
-              <div>
-                <h3>Hesabını oluştur</h3>
-                <p>Kayıt ol ve kişisel kelime öğrenme alanına giriş yap.</p>
-              </div>
-            </div>
-
-            <div className="step-item">
-              <span>02</span>
-
-              <div>
-                <h3>Kelimeleri ekle</h3>
-                <p>Öğrenmek istediğin kelimeleri örnek cümlelerle kaydet.</p>
-              </div>
-            </div>
-
-            <div className="step-item">
-              <span>03</span>
-
-              <div>
-                <h3>Quiz çöz</h3>
-                <p>Sistem sana tekrar zamanı gelen kelimeleri sorar.</p>
-              </div>
-            </div>
-
-            <div className="step-item">
-              <span>04</span>
-
-              <div>
-                <h3>Gelişimini izle</h3>
-                <p>Başarı yüzdelerini ve öğrendiğin kelimeleri raporda gör.</p>
-              </div>
-            </div>
+          <div>
+            <strong>🔗 Word Chain</strong>
+            <span>Seçilen kelimelerle hikaye ve görsel çalışması.</span>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section id="modules" className="modules-section">
-          <div className="section-title">
-            <span>Proje Modülleri</span>
-            <h2>Sprintlerde geliştirilecek ekranlar</h2>
-          </div>
+      <section className="landing-cta">
+        <h2>Kelime çalışmalarını düzenli hale getirmeye hazır mısın?</h2>
 
-          <div className="modules-grid">
-            <div className="module-card active">
-              <h3>Giriş / Kayıt</h3>
-              <p>Kullanıcı hesabı oluşturma, giriş yapma ve şifremi unuttum.</p>
-            </div>
+        <p>
+          Hesap oluşturarak kelime havuzunu oluşturabilir, quiz çözebilir ve
+          öğrenme gelişimini takip edebilirsin.
+        </p>
 
-            <Link to="/words" className="module-card">
-              <h3>Kelime Yönetimi</h3>
-              <p>Kelime ekleme, listeleme ve örnek cümlelerle destekleme.</p>
-            </Link>
+        <div className="landing-cta-actions">
+          <Link to="/register" className="landing-primary-button">
+            Kayıt Ol
+          </Link>
 
-            <Link to="/quiz" className="module-card">
-              <h3>Sınav Modülü</h3>
-              <p>6 tekrar prensibine göre quiz sorularının hazırlanması.</p>
-            </Link>
-
-            <Link to="/settings" className="module-card">
-              <h3>Ayarlar</h3>
-              <p>Günlük yeni kelime sayısı gibi kullanıcı tercihleri.</p>
-            </Link>
-
-            <Link to="/reports" className="module-card">
-              <h3>Analiz Raporu</h3>
-              <p>Başarı oranı, öğrenilen kelimeler ve çıktı alınabilir rapor.</p>
-            </Link>
-
-            <Link to="/puzzle" className="module-card">
-              <h3>Bulmaca / LLM</h3>
-              <p>Wordle, hikaye ve görsel üretimi gibi ek proje özellikleri.</p>
-            </Link>
-          </div>
-        </section>
-
-        <section className="cta-section">
-          {currentUser ? (
-            <>
-              <h2>Hoş geldin, {currentUser.username || "Öğrenci"}</h2>
-
-              <p>
-                Kelime öğrenme sürecine devam et, kelimelerini yönet ve
-                tekrarlarını tamamla.
-              </p>
-
-              <div className="hero-buttons">
-                <Link to="/home" className="primary-button">
-                  Panele Git
-                </Link>
-
-                <Link to="/quiz" className="secondary-button">
-                  Quiz Çöz
-                </Link>
-
-                <Link to="/words" className="secondary-button">
-                  Kelime Listesi
-                </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2>Kelime öğrenmeye bugün başla</h2>
-
-              <p>
-                Hesabını oluştur, kelimelerini ekle ve tekrar sistemiyle
-                gelişimini takip et.
-              </p>
-
-              <Link to="/register" className="primary-button">
-                Ücretsiz Kayıt Ol
-              </Link>
-            </>
-          )}
-        </section>
-      </main>
-    </div>
+          <Link to="/login" className="landing-secondary-button">
+            Giriş Yap
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }
 

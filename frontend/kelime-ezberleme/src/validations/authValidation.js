@@ -1,65 +1,95 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export const isValidEmail = (email) => {
-  return EMAIL_PATTERN.test(email);
-};
-
-export const validateLoginForm = ({ userName, password }) => {
-  const errors = {};
-
-  if (!userName.trim()) {
-    errors.userName = "Kullanıcı adı gerekli.";
+  if (!email) {
+    return false;
   }
 
-  if (!password) {
-    errors.password = "Şifre gerekli.";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+};
+
+export const isValidPassword = (password) => {
+  return typeof password === "string" && password.length >= 6;
+};
+
+export const isValidUsername = (username) => {
+  return typeof username === "string" && username.trim().length >= 3;
+};
+
+export const validateLoginForm = (formData) => {
+  const errors = {};
+
+  if (!formData.username_or_email?.trim()) {
+    errors.username_or_email = "Kullanıcı adı veya e-posta boş bırakılamaz.";
+  }
+
+  if (!formData.password) {
+    errors.password = "Şifre boş bırakılamaz.";
+  } else if (!isValidPassword(formData.password)) {
+    errors.password = "Şifre en az 6 karakter olmalıdır.";
   }
 
   return errors;
 };
 
-export const validateRegisterForm = ({
-  username,
-  email,
-  password,
-  confirmPassword,
-}) => {
+export const validateRegisterForm = (formData) => {
   const errors = {};
 
-  if (!username.trim()) {
+  if (!formData.username?.trim()) {
     errors.username = "Kullanıcı adı boş bırakılamaz.";
-  } else if (username.trim().length < 3) {
+  } else if (!isValidUsername(formData.username)) {
     errors.username = "Kullanıcı adı en az 3 karakter olmalıdır.";
   }
 
-  if (!email.trim()) {
-    errors.email = "E-posta boş bırakılamaz.";
-  } else if (!isValidEmail(email)) {
+  if (!formData.email?.trim()) {
+    errors.email = "E-posta adresi boş bırakılamaz.";
+  } else if (!isValidEmail(formData.email)) {
     errors.email = "Geçerli bir e-posta adresi giriniz.";
   }
 
-  if (!password) {
+  if (!formData.password) {
     errors.password = "Şifre boş bırakılamaz.";
-  } else if (password.length < 6) {
+  } else if (!isValidPassword(formData.password)) {
     errors.password = "Şifre en az 6 karakter olmalıdır.";
   }
 
-  if (!confirmPassword) {
+  if (!formData.confirmPassword) {
     errors.confirmPassword = "Şifre tekrar alanı boş bırakılamaz.";
-  } else if (password !== confirmPassword) {
+  } else if (formData.password !== formData.confirmPassword) {
     errors.confirmPassword = "Şifreler eşleşmiyor.";
   }
 
   return errors;
 };
 
-export const validateForgotPasswordForm = (email) => {
+export const validateForgotPasswordEmail = (email) => {
+  if (!email?.trim()) {
+    return "E-posta adresi boş bırakılamaz.";
+  }
+
+  if (!isValidEmail(email)) {
+    return "Geçerli bir e-posta adresi giriniz.";
+  }
+
+  return "";
+};
+
+export const validateResetPasswordForm = (formData) => {
   const errors = {};
 
-  if (!email.trim()) {
-    errors.email = "E-posta boş bırakılamaz.";
-  } else if (!isValidEmail(email)) {
-    errors.email = "Geçerli bir e-posta adresi giriniz.";
+  if (!formData.resetToken?.trim()) {
+    errors.resetToken = "Sıfırlama kodu boş bırakılamaz.";
+  }
+
+  if (!formData.newPassword) {
+    errors.newPassword = "Yeni şifre boş bırakılamaz.";
+  } else if (!isValidPassword(formData.newPassword)) {
+    errors.newPassword = "Yeni şifre en az 6 karakter olmalıdır.";
+  }
+
+  if (!formData.confirmPassword) {
+    errors.confirmPassword = "Yeni şifre tekrar alanı boş bırakılamaz.";
+  } else if (formData.newPassword !== formData.confirmPassword) {
+    errors.confirmPassword = "Şifreler eşleşmiyor.";
   }
 
   return errors;

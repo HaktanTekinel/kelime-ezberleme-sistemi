@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { clearAuthData } from "../../services/apiClient";
 import "./AppLayout.css";
 
 function getCurrentUser() {
@@ -22,46 +23,77 @@ function getCurrentUser() {
 }
 
 function getInitials(name) {
-  return name
+  return String(name || "Öğrenci")
     .split(" ")
+    .filter(Boolean)
     .map((part) => part[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
 }
 
+const NAV_ITEMS = [
+  { path: "/home", label: "Ana Sayfa", icon: "🏠", keywords: ["ana", "home", "panel"] },
+  { path: "/words", label: "Kelimelerim", icon: "📚", keywords: ["kelime", "kelimeler", "liste", "words"] },
+  { path: "/add-word", label: "Kelime Ekle", icon: "➕", keywords: ["ekle", "yeni", "word add"] },
+  { path: "/quiz", label: "Quiz", icon: "🧠", keywords: ["quiz", "test", "sınav", "tekrar"] },
+  { path: "/puzzle", label: "Bulmaca", icon: "🧩", keywords: ["bulmaca", "wordle", "oyun"] },
+  { path: "/word-chain", label: "Word Chain", icon: "🔗", keywords: ["word chain", "hikaye", "llm", "görsel"] },
+  { path: "/reports", label: "Analiz Raporu", icon: "📊", keywords: ["rapor", "analiz", "başarı", "istatistik"] },
+  { path: "/settings", label: "Ayarlar", icon: "⚙️", keywords: ["ayar", "ayarlar", "hedef"] },
+];
+
 function AppLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const currentUser = getCurrentUser();
 
-  const navItems = [
-    { path: "/home", label: "Ana Sayfa", icon: "🏠" },
-    { path: "/words", label: "Kelimelerim", icon: "📚" },
-    { path: "/add-word", label: "Kelime Ekle", icon: "➕" },
-    { path: "/quiz", label: "Quiz", icon: "🧠" },
-    { path: "/puzzle", label: "Bulmaca", icon: "🧩" },
-    { path: "/word-chain", label: "Word Chain", icon: "🔗" },
-    { path: "/reports", label: "Analiz Raporu", icon: "📊" },
-    { path: "/settings", label: "Ayarlar", icon: "⚙️" },
-  ];
+  const searchResults = useMemo(() => {
+    const search = searchText.trim().toLocaleLowerCase("tr-TR");
+
+    if (!search) {
+      return [];
+    }
+
+    return NAV_ITEMS.filter((item) => {
+      const labelMatch = item.label.toLocaleLowerCase("tr-TR").includes(search);
+
+      const keywordMatch = item.keywords.some((keyword) =>
+        keyword.toLocaleLowerCase("tr-TR").includes(search)
+      );
+
+      return labelMatch || keywordMatch;
+    }).slice(0, 5);
+  }, [searchText]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("username");
-    localStorage.removeItem("userName");
-
+    clearAuthData();
     navigate("/login", { replace: true });
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+
+    if (searchResults.length > 0) {
+      navigate(searchResults[0].path);
+      setSearchText("");
+    }
+  };
+
+  const handleSearchNavigate = (path) => {
+    navigate(path);
+    setSearchText("");
   };
 
   return (
     <div className="app-layout">
       <button
         className="mobile-menu-button"
+        type="button"
         onClick={() => setSidebarOpen(true)}
+        aria-label="Menüyü aç"
       >
         ☰
       </button>
@@ -79,7 +111,9 @@ function AppLayout() {
 
           <button
             className="sidebar-close-button"
+            type="button"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Menüyü kapat"
           >
             ×
           </button>
@@ -95,7 +129,7 @@ function AppLayout() {
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map((item) => (
+          {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -111,15 +145,7 @@ function AppLayout() {
         </nav>
 
         <div className="sidebar-bottom">
-          <div className="daily-goal-card">
-            <span className="goal-icon">🔥</span>
-            <div>
-              <strong>Günlük Seri</strong>
-              <p>5 gün üst üste çalışma</p>
-            </div>
-          </div>
-
-          <button className="logout-button" onClick={handleLogout}>
+          <button className="logout-button" type="button" onClick={handleLogout}>
             Çıkış Yap
           </button>
         </div>
@@ -140,15 +166,51 @@ function AppLayout() {
           </div>
 
           <div className="topbar-actions">
-            <div className="search-box">
+            <form className="search-box" onSubmit={handleSearchSubmit}>
               <span>🔎</span>
-              <input type="text" placeholder="Kelime veya modül ara..." />
-            </div>
 
-            <div className="streak-badge">
-              <span>🔥</span>
-              <strong>5</strong>
-            </div>
+              <input
+                type="text"
+                placeholder="Kelime veya modül ara..."
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+              />
+
+              {searchText.trim() && (
+                <button
+                  type="button"
+                  className="search-clear-button"
+                  onClick={() => setSearchText("")}
+                  aria-label="Aramayı temizle"
+                >
+                  ×
+                </button>
+              )}
+
+              {searchText.trim() && (
+                <div className="search-results">
+                  {searchResults.length > 0 ? (
+                    searchResults.map((item) => (
+                      <button
+                        key={item.path}
+                        type="button"
+                        onClick={() => handleSearchNavigate(item.path)}
+                      >
+                        <span>{item.icon}</span>
+                        <div>
+                          <strong>{item.label}</strong>
+                          <small>Sayfaya git</small>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="search-empty-result">
+                      Sonuç bulunamadı.
+                    </div>
+                  )}
+                </div>
+              )}
+            </form>
 
             <div className="topbar-avatar">{getInitials(currentUser)}</div>
           </div>

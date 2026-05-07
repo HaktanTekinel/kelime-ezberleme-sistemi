@@ -1,18 +1,26 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout/AuthLayout";
 import { loginAPI } from "../../services/authService";
+import { saveAuthData } from "../../services/apiClient";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     username_or_email: "",
     password: "",
   });
 
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState({
+    type: "",
+    text: "",
+  });
+
   const [loading, setLoading] = useState(false);
+
+  const redirectPath = location.state?.from || "/home";
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -21,18 +29,27 @@ function Login() {
       ...prevData,
       [name]: value,
     }));
+
+    setMessage({
+      type: "",
+      text: "",
+    });
   };
 
   const validateForm = () => {
     if (!formData.username_or_email.trim()) {
-      return "Kullanıcı adı veya e-posta boş bırakılamaz.";
+      return "Kullanıcı adı veya e-posta alanı boş bırakılamaz.";
     }
 
-    if (!formData.password.trim()) {
-      return "Şifre boş bırakılamaz.";
+    if (!formData.password) {
+      return "Şifre alanı boş bırakılamaz.";
     }
 
-    return null;
+    if (formData.password.length < 6) {
+      return "Şifre en az 6 karakter olmalıdır.";
+    }
+
+    return "";
   };
 
   const handleSubmit = async (event) => {
@@ -41,38 +58,38 @@ function Login() {
     const validationError = validateForm();
 
     if (validationError) {
-      setMessage({ type: "error", text: validationError });
+      setMessage({
+        type: "error",
+        text: validationError,
+      });
       return;
     }
 
     setLoading(true);
-    setMessage({ type: "", text: "" });
+    setMessage({
+      type: "",
+      text: "",
+    });
 
     try {
-      const data = await loginAPI(formData);
-
-      localStorage.setItem("token", data.access_token);
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...data,
-          username: data.username || formData.username_or_email,
-        })
-      );
-
-      setMessage({
-        type: "success",
-        text: "Giriş başarılı. Panele yönlendiriliyorsunuz.",
+      const data = await loginAPI({
+        username_or_email: formData.username_or_email.trim(),
+        password: formData.password,
       });
 
-      setTimeout(() => {
-        navigate("/home", { replace: true });
-      }, 700);
+      const authData = saveAuthData(data, formData.username_or_email.trim());
+
+      if (!authData.token) {
+        throw new Error("Giriş başarılı fakat erişim anahtarı alınamadı.");
+      }
+
+      navigate(redirectPath, { replace: true });
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Giriş işlemi başarısız.",
+        text:
+          error.message ||
+          "Giriş yapılamadı. Kullanıcı bilgilerini kontrol edip tekrar deneyin.",
       });
     } finally {
       setLoading(false);
@@ -82,11 +99,11 @@ function Login() {
   return (
     <AuthLayout
       title="Giriş Yap"
-      subtitle="Kelime ezberleme sistemine devam etmek için hesabınıza giriş yapın."
+      subtitle="Kelime ezberleme sistemine devam etmek için hesabına giriş yap."
       footer={
         <>
           <Link to="/forgot-password">Şifremi Unuttum</Link>
-          <span>|</span>
+          <span>·</span>
           <Link to="/register">Kayıt Ol</Link>
         </>
       }
@@ -105,6 +122,7 @@ function Login() {
             placeholder="Kullanıcı adınızı veya e-postanızı girin"
             value={formData.username_or_email}
             onChange={handleChange}
+            autoComplete="username"
           />
         </div>
 
@@ -117,6 +135,7 @@ function Login() {
             placeholder="Şifrenizi girin"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="current-password"
           />
         </div>
 

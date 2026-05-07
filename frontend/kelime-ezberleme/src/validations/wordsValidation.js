@@ -1,79 +1,160 @@
+const MAX_IMAGE_SIZE_MB = 5;
+
 const isValidUrl = (value) => {
-  if (!value.trim()) {
+  if (!value) {
     return true;
   }
 
   try {
-    new URL(value);
-    return true;
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch {
     return false;
   }
 };
 
-export const validateWordForm = (formData, words, samples) => {
+const normalizeWord = (value) => {
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase("tr-TR");
+};
+
+const getWordEnglishName = (word) => {
+  return (
+    word.eng_word ||
+    word.engWord ||
+    word.eng_word_name ||
+    word.engWordName ||
+    word.EngWordName ||
+    ""
+  );
+};
+
+export const validateWordForm = (formData, existingWords = [], samples = []) => {
   const errors = {};
 
-  const engWord = formData.eng_word.trim();
-  const turWord = formData.tur_word.trim();
-  const topic = formData.topic.trim();
-  const difficulty = Number(formData.difficulty_level);
+  const englishWord = formData.eng_word?.trim();
+  const turkishWord = formData.tur_word?.trim();
+  const topic = formData.topic?.trim();
+  const difficultyLevel = Number(formData.difficulty_level);
 
-  if (!engWord) {
+  if (!englishWord) {
     errors.eng_word = "İngilizce kelime boş bırakılamaz.";
-  } else if (engWord.length > 150) {
-    errors.eng_word = "İngilizce kelime en fazla 150 karakter olabilir.";
-  } else if (!/^[A-Za-zğüşöçıİĞÜŞÖÇ\s'-]+$/.test(engWord)) {
-    errors.eng_word =
-      "İngilizce kelime sadece harf, boşluk, tire veya kesme işareti içermelidir.";
+  } else if (englishWord.length < 2) {
+    errors.eng_word = "İngilizce kelime en az 2 karakter olmalıdır.";
+  } else if (!/^[a-zA-Z\s'-]+$/.test(englishWord)) {
+    errors.eng_word = "İngilizce kelime yalnızca harf, boşluk, tire veya kesme işareti içerebilir.";
   }
 
-  if (!turWord) {
+  const isDuplicate = existingWords.some((word) => {
+    const currentWord = normalizeWord(getWordEnglishName(word));
+    return currentWord === normalizeWord(englishWord);
+  });
+
+  if (isDuplicate) {
+    errors.eng_word = "Bu İngilizce kelime zaten listede bulunuyor.";
+  }
+
+  if (!turkishWord) {
     errors.tur_word = "Türkçe karşılık boş bırakılamaz.";
-  } else if (turWord.length > 150) {
-    errors.tur_word = "Türkçe karşılık en fazla 150 karakter olabilir.";
+  } else if (turkishWord.length < 2) {
+    errors.tur_word = "Türkçe karşılık en az 2 karakter olmalıdır.";
   }
 
-  const sameWordExists = words.some(
-    (word) => word.eng_word.toLowerCase() === engWord.toLowerCase()
-  );
-
-  if (sameWordExists) {
-    errors.eng_word = "Bu İngilizce kelime zaten kelime havuzunda var.";
+  if (topic && topic.length > 60) {
+    errors.topic = "Konu alanı en fazla 60 karakter olabilir.";
   }
 
-  if (topic.length > 80) {
-    errors.topic = "Konu en fazla 80 karakter olabilir.";
-  }
-
-  if (!difficulty || difficulty < 1 || difficulty > 10) {
+  if (!Number.isInteger(difficultyLevel)) {
+    errors.difficulty_level = "Zorluk seviyesi tam sayı olmalıdır.";
+  } else if (difficultyLevel < 1 || difficultyLevel > 10) {
     errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
   }
 
-  if (samples.length === 0) {
-    errors.samplesText = "En az 1 örnek cümle yazmalısınız.";
-  } else if (samples.length > 5) {
-    errors.samplesText = "En fazla 5 örnek cümle ekleyebilirsiniz.";
-  } else if (samples.some((sample) => sample.length > 500)) {
-    errors.samplesText = "Her örnek cümle en fazla 500 karakter olabilir.";
+  if (!Array.isArray(samples) || samples.length === 0) {
+    errors.samplesText = "En az bir örnek cümle eklemelisin.";
+  } else {
+    const hasShortSample = samples.some((sample) => sample.length < 8);
+
+    if (hasShortSample) {
+      errors.samplesText = "Örnek cümleler en az 8 karakter olmalıdır.";
+    }
   }
 
-  if (!isValidUrl(formData.picture_url)) {
-    errors.picture_url = "Geçerli bir görsel URL girin veya boş bırakın.";
+  if (formData.picture_url && !isValidUrl(formData.picture_url.trim())) {
+    errors.picture_url = "Geçerli bir görsel URL giriniz.";
   }
 
-  if (!isValidUrl(formData.audio_url)) {
-    errors.audio_url = "Geçerli bir ses URL girin veya boş bırakın.";
+  if (formData.audio_url && !isValidUrl(formData.audio_url.trim())) {
+    errors.audio_url = "Geçerli bir ses URL giriniz.";
   }
 
   if (formData.pictureFile) {
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
-    const maxSize = 2 * 1024 * 1024;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
     if (!allowedTypes.includes(formData.pictureFile.type)) {
-      errors.pictureFile = "Görsel dosyası JPG, PNG veya WEBP olmalıdır.";
-    } else if (formData.pictureFile.size > maxSize) {
-      errors.pictureFile = "Görsel dosyası en fazla 2 MB olabilir.";
+      errors.pictureFile = "Görsel JPG, PNG veya WEBP formatında olmalıdır.";
+    }
+
+    const maxSizeInBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+    if (formData.pictureFile.size > maxSizeInBytes) {
+      errors.pictureFile = `Görsel dosyası en fazla ${MAX_IMAGE_SIZE_MB} MB olabilir.`;
+    }
+  }
+
+  return errors;
+};
+
+export const validateWordEditForm = (formData) => {
+  const errors = {};
+
+  const englishWord = formData.eng_word?.trim();
+  const turkishWord = formData.tur_word?.trim();
+  const topic = formData.topic?.trim();
+  const difficultyLevel = Number(formData.difficulty_level);
+
+  if (!englishWord) {
+    errors.eng_word = "İngilizce kelime boş bırakılamaz.";
+  } else if (englishWord.length < 2) {
+    errors.eng_word = "İngilizce kelime en az 2 karakter olmalıdır.";
+  }
+
+  if (!turkishWord) {
+    errors.tur_word = "Türkçe karşılık boş bırakılamaz.";
+  } else if (turkishWord.length < 2) {
+    errors.tur_word = "Türkçe karşılık en az 2 karakter olmalıdır.";
+  }
+
+  if (topic && topic.length > 60) {
+    errors.topic = "Konu alanı en fazla 60 karakter olabilir.";
+  }
+
+  if (!Number.isInteger(difficultyLevel)) {
+    errors.difficulty_level = "Zorluk seviyesi tam sayı olmalıdır.";
+  } else if (difficultyLevel < 1 || difficultyLevel > 10) {
+    errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+  }
+
+  if (formData.picture_url && !isValidUrl(formData.picture_url.trim())) {
+    errors.picture_url = "Geçerli bir görsel URL giriniz.";
+  }
+
+  if (formData.audio_url && !isValidUrl(formData.audio_url.trim())) {
+    errors.audio_url = "Geçerli bir ses URL giriniz.";
+  }
+
+  if (formData.pictureFile) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(formData.pictureFile.type)) {
+      errors.pictureFile = "Görsel JPG, PNG veya WEBP formatında olmalıdır.";
+    }
+
+    const maxSizeInBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+    if (formData.pictureFile.size > maxSizeInBytes) {
+      errors.pictureFile = `Görsel dosyası en fazla ${MAX_IMAGE_SIZE_MB} MB olabilir.`;
     }
   }
 

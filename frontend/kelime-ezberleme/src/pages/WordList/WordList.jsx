@@ -1,56 +1,198 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   API_BASE_URL,
   deleteWordAPI,
   listWordsAPI,
+  updateWordAPI,
+  uploadWordImageAPI,
 } from "../../services/wordService";
-import { getAuthToken } from "../../services/apiClient";
 import "./WordList.css";
+
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
+function pickValue(source, keys) {
+  if (!source) {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    if (hasValue(source[key])) {
+      return source[key];
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeSamples(samples) {
+  if (!Array.isArray(samples)) {
+    return [];
+  }
+
+  return samples
+    .map((sample) => {
+      if (typeof sample === "string") {
+        return sample;
+      }
+
+      return (
+        sample.sample_text ||
+        sample.sampleText ||
+        sample.text ||
+        sample.sentence ||
+        ""
+      );
+    })
+    .filter(Boolean);
+}
+
+function normalizeWord(word, index) {
+  return {
+    id: pickValue(word, ["id", "word_id", "wordId", "WordID"]) || index,
+    eng_word:
+      pickValue(word, [
+        "eng_word",
+        "engWord",
+        "eng_word_name",
+        "engWordName",
+        "EngWordName",
+      ]) || "",
+    tur_word:
+      pickValue(word, [
+        "tur_word",
+        "turWord",
+        "tur_word_name",
+        "turWordName",
+        "TurWordName",
+      ]) || "",
+    topic: pickValue(word, ["topic", "category", "level"]) || "",
+    difficulty_level:
+      Number(
+        pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"])
+      ) || 1,
+    picture_url:
+      pickValue(word, [
+        "picture_url",
+        "pictureUrl",
+        "image_url",
+        "imageUrl",
+        "picture",
+      ]) || "",
+    audio_url: pickValue(word, ["audio_url", "audioUrl"]) || "",
+    samples: normalizeSamples(
+      pickValue(word, ["samples", "word_samples", "wordSamples", "examples"])
+    ),
+  };
+}
+
+function normalizeWordList(data) {
+  const rawWords = Array.isArray(data)
+    ? data
+    : data?.words || data?.items || data?.results || [];
+
+  return Array.isArray(rawWords)
+    ? rawWords.map((word, index) => normalizeWord(word, index))
+    : [];
+}
+
+function getAssetUrl(url) {
+  if (!url) {
+    return "";
+  }
+
+  if (url.startsWith("http")) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${url}`;
+}
+
+function getDifficultyText(level) {
+  if (level <= 3) {
+    return "Kolay";
+  }
+
+  if (level <= 7) {
+    return "Orta";
+  }
+
+  return "Zor";
+}
+
+function getDifficultyClass(level) {
+  if (level <= 3) {
+    return "easy";
+  }
+
+  if (level <= 7) {
+    return "medium";
+  }
+
+  return "hard";
+}
+
+function getInitialEditForm(word) {
+  return {
+    eng_word: word.eng_word || "",
+    tur_word: word.tur_word || "",
+    topic: word.topic || "",
+    difficulty_level: String(word.difficulty_level || 1),
+    picture_url: word.picture_url || "",
+    audio_url: word.audio_url || "",
+    samplesText: Array.isArray(word.samples) ? word.samples.join("\n") : "",
+    pictureFile: null,
+  };
+}
 
 function WordList() {
   const [words, setWords] = useState([]);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [topicFilter, setTopicFilter] = useState("all");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [sortType, setSortType] = useState("newest");
 
-  const isLoggedIn = Boolean(getAuthToken());
+  const [editingWord, setEditingWord] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    eng_word: "",
+    tur_word: "",
+    topic: "",
+    difficulty_level: "1",
+    picture_url: "",
+    audio_url: "",
+    samplesText: "",
+    pictureFile: null,
+  });
 
-  const loadWords = async () => {
+  const [editErrors, setEditErrors] = useState({});
+
+  const loadWords = useCallback(async () => {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
     try {
       const data = await listWordsAPI();
-      setWords(Array.isArray(data) ? data : []);
-    } catch (error) {
+      setWords(normalizeWordList(data));
+    } catch {
+      setWords([]);
       setMessage({
         type: "error",
-        text: error.message || "Kelimeler yüklenemedi.",
+        text: "Kelimeler şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadWords();
-  }, []);
-
-  const getAssetUrl = (url) => {
-    if (!url) {
-      return "";
-    }
-
-    if (url.startsWith("http")) {
-      return url;
-    }
-
-    return `${API_BASE_URL}${url}`;
-  };
+  }, [loadWords]);
 
   const topicOptions = useMemo(() => {
     const topics = words
@@ -59,19 +201,15 @@ function WordList() {
       .map((topic) => topic.trim())
       .filter(Boolean);
 
-    return [...new Set(topics)].sort((a, b) => a.localeCompare(b));
+    return [...new Set(topics)].sort((a, b) => a.localeCompare(b, "tr"));
   }, [words]);
 
   const stats = useMemo(() => {
-    const withImage = words.filter((word) => Boolean(word.picture_url)).length;
-    const withAudio = words.filter((word) => Boolean(word.audio_url)).length;
-    const topicCount = topicOptions.length;
-
     return {
       total: words.length,
-      withImage,
-      withAudio,
-      topicCount,
+      withImage: words.filter((word) => Boolean(word.picture_url)).length,
+      withAudio: words.filter((word) => Boolean(word.audio_url)).length,
+      topicCount: topicOptions.length,
     };
   }, [words, topicOptions]);
 
@@ -84,8 +222,7 @@ function WordList() {
         word.tur_word.toLowerCase().includes(search) ||
         (word.topic || "").toLowerCase().includes(search);
 
-      const matchesTopic =
-        topicFilter === "all" || word.topic === topicFilter;
+      const matchesTopic = topicFilter === "all" || word.topic === topicFilter;
 
       const matchesDifficulty =
         difficultyFilter === "all" ||
@@ -96,11 +233,11 @@ function WordList() {
 
     return [...result].sort((a, b) => {
       if (sortType === "az") {
-        return a.eng_word.localeCompare(b.eng_word);
+        return a.eng_word.localeCompare(b.eng_word, "en");
       }
 
       if (sortType === "za") {
-        return b.eng_word.localeCompare(a.eng_word);
+        return b.eng_word.localeCompare(a.eng_word, "en");
       }
 
       if (sortType === "difficultyHigh") {
@@ -111,9 +248,143 @@ function WordList() {
         return a.difficulty_level - b.difficulty_level;
       }
 
-      return b.id - a.id;
+      return Number(b.id) - Number(a.id);
     });
   }, [words, searchTerm, topicFilter, difficultyFilter, sortType]);
+
+  const openEditModal = (word) => {
+    setEditingWord(word);
+    setEditFormData(getInitialEditForm(word));
+    setEditErrors({});
+    setMessage({ type: "", text: "" });
+  };
+
+  const closeEditModal = () => {
+    if (savingEdit) {
+      return;
+    }
+
+    setEditingWord(null);
+    setEditErrors({});
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+
+    setEditFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+
+    setEditErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
+    }));
+  };
+
+  const handleEditFileChange = (event) => {
+    const file = event.target.files?.[0] || null;
+
+    setEditFormData((prevData) => ({
+      ...prevData,
+      pictureFile: file,
+    }));
+
+    setEditErrors((prevErrors) => ({
+      ...prevErrors,
+      pictureFile: "",
+    }));
+  };
+
+  const getEditSamples = () => {
+    return editFormData.samplesText
+      .split("\n")
+      .map((sample) => sample.trim())
+      .filter(Boolean);
+  };
+
+  const validateEditForm = () => {
+    const errors = {};
+    const difficulty = Number(editFormData.difficulty_level);
+
+    if (!editFormData.eng_word.trim()) {
+      errors.eng_word = "İngilizce kelime boş bırakılamaz.";
+    }
+
+    if (!editFormData.tur_word.trim()) {
+      errors.tur_word = "Türkçe karşılık boş bırakılamaz.";
+    }
+
+    if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 10) {
+      errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+    }
+
+    if (editFormData.pictureFile) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+      if (!allowedTypes.includes(editFormData.pictureFile.type)) {
+        errors.pictureFile = "Görsel JPG, PNG veya WEBP formatında olmalıdır.";
+      }
+
+      if (editFormData.pictureFile.size > 5 * 1024 * 1024) {
+        errors.pictureFile = "Görsel dosyası en fazla 5 MB olabilir.";
+      }
+    }
+
+    return errors;
+  };
+
+  const handleEditSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!editingWord) {
+      return;
+    }
+
+    const errors = validateEditForm();
+    setEditErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
+    setSavingEdit(true);
+    setMessage({ type: "", text: "" });
+
+    const payload = {
+      eng_word: editFormData.eng_word.trim(),
+      tur_word: editFormData.tur_word.trim(),
+      difficulty_level: Number(editFormData.difficulty_level),
+      topic: editFormData.topic.trim() || null,
+      picture_url: editFormData.picture_url.trim() || null,
+      audio_url: editFormData.audio_url.trim() || null,
+      samples: getEditSamples(),
+    };
+
+    try {
+      await updateWordAPI(editingWord.id, payload);
+
+      if (editFormData.pictureFile) {
+        await uploadWordImageAPI(editingWord.id, editFormData.pictureFile);
+      }
+
+      setMessage({
+        type: "success",
+        text: "Kelime başarıyla güncellendi.",
+      });
+
+      setEditingWord(null);
+      await loadWords();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text:
+          error.message || "Kelime güncellenemedi. Lütfen tekrar deneyin.",
+      });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const handleDeleteWord = async (wordId) => {
     const isConfirmed = window.confirm(
@@ -136,266 +407,369 @@ function WordList() {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Kelime silinemedi.",
+        text: error.message || "Kelime silinemedi. Lütfen tekrar deneyin.",
       });
     }
   };
 
-  const getDifficultyText = (level) => {
-    if (level <= 3) {
-      return "Kolay";
-    }
-
-    if (level <= 7) {
-      return "Orta";
-    }
-
-    return "Zor";
-  };
-
-  const getDifficultyClass = (level) => {
-    if (level <= 3) {
-      return "easy";
-    }
-
-    if (level <= 7) {
-      return "medium";
-    }
-
-    return "hard";
-  };
-
   return (
     <div className="word-list-page">
-      <header className="word-list-header">
+      <section className="word-list-hero">
         <div>
-          <span className="page-eyebrow">Kelime Havuzu</span>
-
-          <h1>Kelime Listesi</h1>
-
+          <h2>Kelime Listesi</h2>
           <p>
-            Eklenen kelimeleri konu, zorluk ve arama kriterlerine göre incele.
-            Bu ekran kelime tekrar ve quiz modüllerinin temel veri kaynağıdır.
+            Kelime havuzundaki kayıtları arayabilir, filtreleyebilir ve çalışma
+            içeriklerini inceleyebilirsin.
           </p>
         </div>
 
-        <div className="word-list-header-actions">
-          <Link to="/" className="list-secondary-button">
-            Ana Sayfa
-          </Link>
-
-          <Link to="/words" className="list-primary-button">
-            Yeni Kelime Ekle
-          </Link>
+        <div className="word-list-hero-actions">
+          <Link to="/home">Ana Sayfa</Link>
+          <Link to="/add-word">Yeni Kelime Ekle</Link>
         </div>
-      </header>
+      </section>
 
-      <main className="word-list-container">
-        <section className="word-stats-grid">
-          <article className="word-stat-card">
-            <span>Toplam</span>
-            <strong>{stats.total}</strong>
-            <p>Kayıtlı kelime</p>
-          </article>
-
-          <article className="word-stat-card">
-            <span>Görsel</span>
-            <strong>{stats.withImage}</strong>
-            <p>Resimli kelime</p>
-          </article>
-
-          <article className="word-stat-card">
-            <span>Ses</span>
-            <strong>{stats.withAudio}</strong>
-            <p>Ses bağlantılı kelime</p>
-          </article>
-
-          <article className="word-stat-card">
-            <span>Konu</span>
-            <strong>{stats.topicCount}</strong>
-            <p>Farklı konu</p>
-          </article>
+      {message.text && (
+        <section className={`word-list-message ${message.type}`}>
+          {message.text}
         </section>
+      )}
 
-        <section className="word-list-panel">
-          <div className="word-list-toolbar">
-            <div className="search-box">
-              <label htmlFor="searchTerm">Kelime Ara</label>
-              <input
-                id="searchTerm"
-                type="text"
-                placeholder="İngilizce, Türkçe veya konu ara..."
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-              />
-            </div>
+      <section className="word-stats-grid">
+        <article className="word-stat-card">
+          <span>Toplam</span>
+          <strong>{stats.total}</strong>
+          <p>Kayıtlı kelime</p>
+        </article>
 
-            <div className="filter-box">
-              <label htmlFor="topicFilter">Konu</label>
-              <select
-                id="topicFilter"
-                value={topicFilter}
-                onChange={(event) => setTopicFilter(event.target.value)}
-              >
-                <option value="all">Tüm konular</option>
+        <article className="word-stat-card">
+          <span>Görsel</span>
+          <strong>{stats.withImage}</strong>
+          <p>Resimli kelime</p>
+        </article>
 
-                {topicOptions.map((topic) => (
-                  <option key={topic} value={topic}>
-                    {topic}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <article className="word-stat-card">
+          <span>Ses</span>
+          <strong>{stats.withAudio}</strong>
+          <p>Ses bağlantılı kelime</p>
+        </article>
 
-            <div className="filter-box">
-              <label htmlFor="difficultyFilter">Zorluk</label>
-              <select
-                id="difficultyFilter"
-                value={difficultyFilter}
-                onChange={(event) => setDifficultyFilter(event.target.value)}
-              >
-                <option value="all">Tüm seviyeler</option>
-                <option value="1">Seviye 1</option>
-                <option value="2">Seviye 2</option>
-                <option value="3">Seviye 3</option>
-                <option value="4">Seviye 4</option>
-                <option value="5">Seviye 5</option>
-                <option value="6">Seviye 6</option>
-                <option value="7">Seviye 7</option>
-                <option value="8">Seviye 8</option>
-                <option value="9">Seviye 9</option>
-                <option value="10">Seviye 10</option>
-              </select>
-            </div>
+        <article className="word-stat-card">
+          <span>Konu</span>
+          <strong>{stats.topicCount}</strong>
+          <p>Farklı konu</p>
+        </article>
+      </section>
 
-            <div className="filter-box">
-              <label htmlFor="sortType">Sıralama</label>
-              <select
-                id="sortType"
-                value={sortType}
-                onChange={(event) => setSortType(event.target.value)}
-              >
-                <option value="newest">Yeni eklenen</option>
-                <option value="az">A-Z</option>
-                <option value="za">Z-A</option>
-                <option value="difficultyHigh">Zorluk yüksek</option>
-                <option value="difficultyLow">Zorluk düşük</option>
-              </select>
-            </div>
-          </div>
+      <section className="word-list-panel">
+        <div className="word-list-toolbar">
+          <label>
+            <span>Kelime ara</span>
+            <input
+              type="text"
+              placeholder="İngilizce, Türkçe veya konu ara..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+          </label>
 
-          {message.text && (
-            <p className={`word-list-message ${message.type}`}>
-              {message.text}
-            </p>
-          )}
-
-          <div className="word-list-summary">
-            <span>
-              Gösterilen: <strong>{filteredWords.length}</strong>
-            </span>
-
-            <button
-              type="button"
-              className="refresh-button"
-              onClick={loadWords}
-              disabled={loading}
+          <label>
+            <span>Konu</span>
+            <select
+              value={topicFilter}
+              onChange={(event) => setTopicFilter(event.target.value)}
             >
-              {loading ? "Yükleniyor..." : "Yenile"}
-            </button>
+              <option value="all">Tüm konular</option>
+
+              {topicOptions.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Zorluk</span>
+            <select
+              value={difficultyFilter}
+              onChange={(event) => setDifficultyFilter(event.target.value)}
+            >
+              <option value="all">Tüm seviyeler</option>
+              <option value="1">Seviye 1</option>
+              <option value="2">Seviye 2</option>
+              <option value="3">Seviye 3</option>
+              <option value="4">Seviye 4</option>
+              <option value="5">Seviye 5</option>
+              <option value="6">Seviye 6</option>
+              <option value="7">Seviye 7</option>
+              <option value="8">Seviye 8</option>
+              <option value="9">Seviye 9</option>
+              <option value="10">Seviye 10</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Sıralama</span>
+            <select
+              value={sortType}
+              onChange={(event) => setSortType(event.target.value)}
+            >
+              <option value="newest">Yeni eklenen</option>
+              <option value="az">A-Z</option>
+              <option value="za">Z-A</option>
+              <option value="difficultyHigh">Zorluk yüksek</option>
+              <option value="difficultyLow">Zorluk düşük</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="word-list-summary">
+          <span>
+            Gösterilen: <strong>{filteredWords.length}</strong>
+          </span>
+
+          <button type="button" onClick={loadWords} disabled={loading}>
+            {loading ? "Yükleniyor..." : "Yenile"}
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="word-list-state">
+            <h3>Kelimeler yükleniyor...</h3>
+            <p>Kelime havuzu hazırlanıyor.</p>
           </div>
+        ) : filteredWords.length === 0 ? (
+          <div className="word-list-state">
+            <h3>Kelime bulunamadı</h3>
+            <p>
+              Arama veya filtreleri değiştir. Henüz kelime eklenmediyse yeni
+              kelime ekleme ekranına geçebilirsin.
+            </p>
 
-          {loading ? (
-            <div className="word-list-empty">
-              <h2>Kelimeler yükleniyor...</h2>
-              <p>Backend üzerinden kelime havuzu getiriliyor.</p>
-            </div>
-          ) : filteredWords.length === 0 ? (
-            <div className="word-list-empty">
-              <h2>Kelime bulunamadı</h2>
-              <p>
-                Arama veya filtreleri değiştir. Henüz kelime eklenmediyse yeni
-                kelime ekleme ekranına geçebilirsin.
-              </p>
+            <Link to="/add-word">Kelime Ekle</Link>
+          </div>
+        ) : (
+          <div className="word-cards-grid">
+            {filteredWords.map((word) => (
+              <article className="word-list-card-item" key={word.id}>
+                <div className="word-card-media">
+                  {word.picture_url ? (
+                    <img
+                      src={getAssetUrl(word.picture_url)}
+                      alt={word.eng_word}
+                    />
+                  ) : (
+                    <div className="word-card-placeholder">
+                      {word.eng_word.charAt(0).toUpperCase()}
+                    </div>
+                  )}
 
-              <Link to="/words" className="list-primary-button">
-                Kelime Ekle
-              </Link>
-            </div>
-          ) : (
-            <div className="word-cards-grid">
-              {filteredWords.map((word) => (
-                <article className="word-list-card-item" key={word.id}>
-                  <div className="word-card-media">
-                    {word.picture_url ? (
-                      <img
-                        src={getAssetUrl(word.picture_url)}
-                        alt={word.eng_word}
-                      />
-                    ) : (
-                      <div className="word-card-placeholder">
-                        {word.eng_word.charAt(0).toUpperCase()}
-                      </div>
+                  <span
+                    className={`difficulty-badge ${getDifficultyClass(
+                      word.difficulty_level
+                    )}`}
+                  >
+                    {getDifficultyText(word.difficulty_level)}
+                  </span>
+                </div>
+
+                <div className="word-card-body">
+                  <div className="word-card-title-row">
+                    <div>
+                      <h3>{word.eng_word}</h3>
+                      <p>{word.tur_word}</p>
+                    </div>
+
+                    <span>Seviye {word.difficulty_level}</span>
+                  </div>
+
+                  <div className="word-card-meta">
+                    {word.topic && <span>{word.topic}</span>}
+                    {word.picture_url && <span>Görsel</span>}
+                    {word.audio_url && <span>Ses</span>}
+                  </div>
+
+                  {word.samples.length > 0 && (
+                    <div className="word-sample-box">
+                      <strong>Örnek cümle</strong>
+                      <p>{word.samples[0]}</p>
+
+                      {word.samples.length > 1 && (
+                        <small>+{word.samples.length - 1} örnek daha</small>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="word-card-actions">
+                    {word.audio_url && (
+                      <a
+                        href={getAssetUrl(word.audio_url)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Sesi Aç
+                      </a>
                     )}
 
-                    <span
-                      className={`difficulty-badge ${getDifficultyClass(
-                        word.difficulty_level
-                      )}`}
+                    <button
+                      type="button"
+                      className="edit-word-button"
+                      onClick={() => openEditModal(word)}
                     >
-                      {getDifficultyText(word.difficulty_level)}
-                    </span>
+                      Düzenle
+                    </button>
+
+                    <button
+                      type="button"
+                      className="delete-word-button"
+                      onClick={() => handleDeleteWord(word.id)}
+                    >
+                      Sil
+                    </button>
                   </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
-                  <div className="word-card-body">
-                    <div className="word-card-title-row">
-                      <div>
-                        <h2>{word.eng_word}</h2>
-                        <p>{word.tur_word}</p>
-                      </div>
+      {editingWord && (
+        <div className="word-edit-overlay">
+          <form className="word-edit-modal" onSubmit={handleEditSubmit}>
+            <div className="word-edit-header">
+              <div>
+                <p>Kelime düzenle</p>
+                <h3>{editingWord.eng_word}</h3>
+              </div>
 
-                      <span className="level-pill">
-                        Seviye {word.difficulty_level}
-                      </span>
-                    </div>
-
-                    <div className="word-card-tags">
-                      <span>{word.topic || "Konu yok"}</span>
-                      {word.picture_url && <span>Görsel var</span>}
-                      {word.audio_url && <span>Ses var</span>}
-                    </div>
-
-                    <div className="word-card-actions">
-                      {word.audio_url ? (
-                        <a
-                          href={getAssetUrl(word.audio_url)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="audio-link"
-                        >
-                          Sesi Aç
-                        </a>
-                      ) : (
-                        <span className="muted-action">Ses yok</span>
-                      )}
-
-                      {isLoggedIn && (
-                        <button
-                          type="button"
-                          className="delete-word-button"
-                          onClick={() => handleDeleteWord(word.id)}
-                        >
-                          Sil
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              ))}
+              <button type="button" onClick={closeEditModal}>
+                ×
+              </button>
             </div>
-          )}
-        </section>
-      </main>
+
+            <div className="word-edit-grid">
+              <label className="word-edit-field">
+                <span>İngilizce kelime</span>
+                <input
+                  name="eng_word"
+                  type="text"
+                  value={editFormData.eng_word}
+                  onChange={handleEditChange}
+                />
+                {editErrors.eng_word && <small>{editErrors.eng_word}</small>}
+              </label>
+
+              <label className="word-edit-field">
+                <span>Türkçe karşılığı</span>
+                <input
+                  name="tur_word"
+                  type="text"
+                  value={editFormData.tur_word}
+                  onChange={handleEditChange}
+                />
+                {editErrors.tur_word && <small>{editErrors.tur_word}</small>}
+              </label>
+
+              <label className="word-edit-field">
+                <span>Konu</span>
+                <input
+                  name="topic"
+                  type="text"
+                  value={editFormData.topic}
+                  onChange={handleEditChange}
+                />
+              </label>
+
+              <label className="word-edit-field">
+                <span>Zorluk seviyesi</span>
+                <select
+                  name="difficulty_level"
+                  value={editFormData.difficulty_level}
+                  onChange={handleEditChange}
+                >
+                  <option value="1">1 - Çok kolay</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5 - Orta</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10 - Zor</option>
+                </select>
+                {editErrors.difficulty_level && (
+                  <small>{editErrors.difficulty_level}</small>
+                )}
+              </label>
+            </div>
+
+            <label className="word-edit-field">
+              <span>Örnek cümleler</span>
+              <textarea
+                name="samplesText"
+                rows={5}
+                value={editFormData.samplesText}
+                onChange={handleEditChange}
+                placeholder="Her satıra bir örnek cümle yaz"
+              />
+            </label>
+
+            <div className="word-edit-grid">
+              <label className="word-edit-field">
+                <span>Görsel URL</span>
+                <input
+                  name="picture_url"
+                  type="text"
+                  value={editFormData.picture_url}
+                  onChange={handleEditChange}
+                />
+              </label>
+
+              <label className="word-edit-field">
+                <span>Ses URL</span>
+                <input
+                  name="audio_url"
+                  type="text"
+                  value={editFormData.audio_url}
+                  onChange={handleEditChange}
+                />
+              </label>
+            </div>
+
+            <label className="word-edit-field">
+              <span>Yeni görsel dosyası</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleEditFileChange}
+              />
+              {editErrors.pictureFile && <small>{editErrors.pictureFile}</small>}
+            </label>
+
+            <div className="word-edit-actions">
+              <button
+                type="button"
+                className="cancel-edit-button"
+                onClick={closeEditModal}
+                disabled={savingEdit}
+              >
+                Vazgeç
+              </button>
+
+              <button
+                type="submit"
+                className="save-edit-button"
+                disabled={savingEdit}
+              >
+                {savingEdit ? "Kaydediliyor..." : "Kaydet"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
