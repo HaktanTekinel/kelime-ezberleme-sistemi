@@ -1,0 +1,3 @@
+backend/.env
+verify.py
+verify_static.py
