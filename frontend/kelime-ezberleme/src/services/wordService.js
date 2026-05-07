@@ -3,6 +3,9 @@ import { API_BASE_URL, getAuthHeaders, handleResponse } from "./apiClient";
 export const listWordsAPI = async () => {
   const response = await fetch(`${API_BASE_URL}/words`, {
     method: "GET",
+    headers: {
+      ...getAuthHeaders(),
+    },
   });
 
   return handleResponse(response);
@@ -11,6 +14,9 @@ export const listWordsAPI = async () => {
 export const getWordByIdAPI = async (wordId) => {
   const response = await fetch(`${API_BASE_URL}/words/${wordId}`, {
     method: "GET",
+    headers: {
+      ...getAuthHeaders(),
+    },
   });
 
   return handleResponse(response);

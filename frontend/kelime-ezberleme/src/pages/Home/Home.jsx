@@ -1,327 +1,473 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useOutletContext } from "react-router-dom";
+import { getDashboardSummaryAPI } from "../../services/dashboardService";
 import "./Home.css";
 
-function Home() {
-  const navigate = useNavigate();
+const REVIEW_STAGES = [
+  { stage: 1, label: "1 gün" },
+  { stage: 2, label: "1 hafta" },
+  { stage: 3, label: "1 ay" },
+  { stage: 4, label: "3 ay" },
+  { stage: 5, label: "6 ay" },
+  { stage: 6, label: "1 yıl" },
+];
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
+const QUICK_ACTIONS = [
+  {
+    title: "Quiz'e Başla",
+    text: "Bugünkü tekrarlarını çöz",
+    path: "/quiz",
+    icon: "🧠",
+    primary: true,
+  },
+  {
+    title: "Kelime Ekle",
+    text: "Kelime havuzunu büyüt",
+    path: "/add-word",
+    icon: "➕",
+  },
+  {
+    title: "Analiz Raporu",
+    text: "Gelişimini takip et",
+    path: "/reports",
+    icon: "📊",
+  },
+];
 
-    if (!storedUser) {
-      return null;
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
+function pickValue(source, keys) {
+  if (!source) {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    if (hasValue(source[key])) {
+      return source[key];
     }
+  }
+
+  return undefined;
+}
+
+function formatNumber(value) {
+  if (!hasValue(value)) {
+    return "-";
+  }
+
+  return Number.isFinite(Number(value))
+    ? Number(value).toLocaleString("tr-TR")
+    : value;
+}
+
+function formatPercent(value) {
+  if (!hasValue(value)) {
+    return "-";
+  }
+
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return value;
+  }
+
+  return `%${Math.round(numericValue)}`;
+}
+
+function normalizeDashboard(data) {
+  const stats = data?.stats || data?.statistics || {};
+  const dailyGoal = data?.daily_goal || data?.dailyGoal || {};
+  const nextReview = data?.next_review || data?.nextReview || null;
+
+  const reviewPlan = Array.isArray(data?.review_plan)
+    ? data.review_plan
+    : Array.isArray(data?.reviewPlan)
+      ? data.reviewPlan
+      : [];
+
+  return {
+    dailyGoal: {
+      target: pickValue(dailyGoal, [
+        "target",
+        "daily_new_word_count",
+        "dailyNewWordCount",
+      ]),
+      completed: pickValue(dailyGoal, [
+        "completed",
+        "completed_today",
+        "completedToday",
+      ]),
+    },
+    stats: {
+      learnedWords: pickValue(stats, ["learned_words", "learnedWords"]),
+      pendingReviews: pickValue(stats, [
+        "pending_reviews",
+        "pendingReviews",
+      ]),
+      successRate: pickValue(stats, ["success_rate", "successRate"]),
+      masteredWords: pickValue(stats, ["mastered_words", "masteredWords"]),
+      weeklyNewWords: pickValue(stats, [
+        "weekly_new_words",
+        "weeklyNewWords",
+      ]),
+      successImprovement: pickValue(stats, [
+        "success_improvement",
+        "successImprovement",
+      ]),
+    },
+    reviewPlan,
+    nextReview,
+  };
+}
+
+function createStatCards(stats) {
+  const cards = [];
+
+  if (hasValue(stats.learnedWords)) {
+    cards.push({
+      title: "Öğrenilen Kelime",
+      value: formatNumber(stats.learnedWords),
+      detail: hasValue(stats.weeklyNewWords)
+        ? `+${formatNumber(stats.weeklyNewWords)} bu hafta`
+        : "",
+      icon: "📚",
+    });
+  }
+
+  if (hasValue(stats.pendingReviews)) {
+    cards.push({
+      title: "Tekrar Bekleyen",
+      value: formatNumber(stats.pendingReviews),
+      detail: "Bugün çözülmesi gereken tekrarlar",
+      icon: "⏰",
+    });
+  }
+
+  if (hasValue(stats.successRate)) {
+    cards.push({
+      title: "Başarı Oranı",
+      value: formatPercent(stats.successRate),
+      detail: hasValue(stats.successImprovement)
+        ? `+${formatNumber(stats.successImprovement)} gelişim`
+        : "",
+      icon: "📈",
+    });
+  }
+
+  if (hasValue(stats.masteredWords)) {
+    cards.push({
+      title: "6. Aşamaya Gelen",
+      value: formatNumber(stats.masteredWords),
+      detail: "Kalıcı hafıza aşamasına ulaşan kelimeler",
+      icon: "🏆",
+    });
+  }
+
+  return cards;
+}
+
+function getReviewTitle(item) {
+  return item.title || item.label || item.name || "Tekrar aralığı";
+}
+
+function getReviewCount(item) {
+  return pickValue(item, ["count", "word_count", "wordCount", "total"]);
+}
+
+function getReviewDescription(item) {
+  return item.description || item.text || item.detail || "Planlanan tekrar";
+}
+
+function Home() {
+  const outletData = useOutletContext();
+  const currentUser = outletData?.currentUser || "Öğrenci";
+
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadDashboard = useCallback(async () => {
+    setLoading(true);
+    setError("");
 
     try {
-      return JSON.parse(storedUser);
+      const data = await getDashboardSummaryAPI();
+      setDashboard(normalizeDashboard(data));
     } catch {
-      return null;
+      setDashboard(null);
+      setError("Veriler şu anda alınamadı. Lütfen daha sonra tekrar deneyin.");
+    } finally {
+      setLoading(false);
     }
-  });
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setCurrentUser(null);
-    navigate("/login");
-  };
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const statCards = useMemo(
+    () => createStatCards(dashboard?.stats || {}),
+    [dashboard]
+  );
+
+  const hasDailyGoal =
+    hasValue(dashboard?.dailyGoal?.target) ||
+    hasValue(dashboard?.dailyGoal?.completed);
+
+  const dailyTarget = Number(dashboard?.dailyGoal?.target || 0);
+  const dailyCompleted = Number(dashboard?.dailyGoal?.completed || 0);
+
+  const progressPercent =
+    dailyTarget > 0
+      ? Math.min(100, Math.round((dailyCompleted / dailyTarget) * 100))
+      : 0;
+
+  const currentStage = pickValue(dashboard?.nextReview, [
+    "current_stage",
+    "currentStage",
+  ]);
+
+  const totalStage = pickValue(dashboard?.nextReview, [
+    "total_stage",
+    "totalStage",
+  ]);
 
   return (
     <div className="home-page">
-      <header className="home-navbar">
-        <Link to="/" className="home-logo">
-          <span className="logo-icon">
-            <span>6</span>
-          </span>
+      <section className="home-hero">
+        <div className="hero-content">
+          <span className="hero-pill">6 Sefer Tekrar Prensibi</span>
 
-          <span className="logo-text">
-            <strong>Kelime Hafızam</strong>
-            <small>6 tekrar ile öğren</small>
-          </span>
-        </Link>
+          <h2>
+            Bugünkü kelime çalışmana
+            <span> devam et.</span>
+          </h2>
 
-        <nav className="home-nav-links">
-          <a href="#features">Özellikler</a>
-          <a href="#how-it-works">Nasıl Çalışır?</a>
-          <a href="#modules">Modüller</a>
-        </nav>
+          <p>
+            Merhaba {currentUser}, günlük hedeflerini takip et, tekrar zamanı
+            gelen kelimeleri çöz ve öğrendiğin kelimeleri kalıcı hafızaya taşı.
+          </p>
 
-        <div className="home-auth-buttons">
-          {currentUser ? (
-            <div className="home-user-menu">
-              <span className="home-user-greeting">
-                Merhaba, {currentUser.username}
-              </span>
-
-              <button
-                type="button"
-                className="nav-logout-button"
-                onClick={handleLogout}
-              >
-                Çıkış Yap
-              </button>
-            </div>
-          ) : (
-            <>
-              <Link to="/login" className="nav-login-button">
-                Giriş Yap
-              </Link>
-
-              <Link to="/register" className="nav-register-button">
-                Kayıt Ol
-              </Link>
-            </>
-          )}
-        </div>
-      </header>
-
-      <main>
-        <section className="hero-section">
-          <div className="hero-content">
-            <span className="hero-badge">6 Sefer Tekrar Prensibi</span>
-
-            <h1>
-              Kelimeleri sadece ezberleme,{" "}
-              <span>kalıcı olarak öğren.</span>
-            </h1>
-
-            <p>
-              Kelime Hafızam, İngilizce kelimeleri düzenli tekrar sistemiyle
-              öğrenmeni sağlayan bir kelime ezberleme uygulamasıdır. Sistem,
-              doğru bildiğin kelimeleri belirli aralıklarla tekrar sorarak uzun
-              süreli hafızaya yerleşmesini hedefler.
-            </p>
-
-            <div className="hero-buttons">
-              {currentUser ? (
-                <>
-                  <Link to="/words" className="primary-button">
-                    Kelime Ekle
-                  </Link>
-
-                  <Link to="/word-list" className="secondary-button">
-                    Kelime Listesi
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/register" className="primary-button">
-                    Hemen Başla
-                  </Link>
-
-                  <Link to="/login" className="secondary-button">
-                    Hesabım Var
-                  </Link>
-                </>
-              )}
-            </div>
-
-            <div className="hero-stats">
-              <div>
-                <strong>6</strong>
-                <span>Tekrar Aşaması</span>
-              </div>
-
-              <div>
-                <strong>10+</strong>
-                <span>Günlük Kelime</span>
-              </div>
-
-              <div>
-                <strong>%</strong>
-                <span>Başarı Analizi</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-card">
-            <div className="quiz-card-header">
-              <span>Bugünkü tekrar</span>
-              <strong>Quiz</strong>
-            </div>
-
-            <div className="word-card">
-              <span className="word-label">İngilizce Kelime</span>
-              <h2>Memory</h2>
-              <p>Türkçe karşılığını seç</p>
-            </div>
-
-            <div className="answer-options">
-              <button>Hafıza</button>
-              <button>Kitap</button>
-              <button>Kalem</button>
-              <button>Okul</button>
-            </div>
-
-            <div className="progress-box">
-              <div className="progress-info">
-                <span>Tekrar ilerlemesi</span>
-                <strong>3 / 6</strong>
-              </div>
-
-              <div className="progress-bar">
-                <div className="progress-fill"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="features-section">
-          <div className="section-title">
-            <span>Öne Çıkanlar</span>
-            <h2>Uygulama ne işe yarar?</h2>
-          </div>
-
-          <div className="features-grid">
-            <article className="feature-card">
-              <div className="feature-icon">📚</div>
-              <h3>Kelime Ekleme</h3>
-              <p>
-                İngilizce kelime, Türkçe karşılık, örnek cümle ve görsel
-                bilgisiyle kişisel kelime havuzu oluşturulur.
-              </p>
-            </article>
-
-            <article className="feature-card">
-              <div className="feature-icon">🧠</div>
-              <h3>6 Tekrar Sistemi</h3>
-              <p>
-                Kullanıcı kelimeyi 6 farklı zamanda doğru bildikçe kelime
-                öğrenilmiş kabul edilir.
-              </p>
-            </article>
-
-            <article className="feature-card">
-              <div className="feature-icon">📊</div>
-              <h3>Analiz Raporu</h3>
-              <p>
-                Kullanıcı doğru, yanlış ve öğrenilen kelimeler üzerinden başarı
-                durumunu takip edebilir.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <section id="how-it-works" className="steps-section">
-          <div className="section-title">
-            <span>Akış</span>
-            <h2>Nasıl çalışır?</h2>
-          </div>
-
-          <div className="steps-list">
-            <div className="step-item">
-              <span>01</span>
-
-              <div>
-                <h3>Hesabını oluştur</h3>
-                <p>Kayıt ol ve kişisel kelime öğrenme alanına giriş yap.</p>
-              </div>
-            </div>
-
-            <div className="step-item">
-              <span>02</span>
-
-              <div>
-                <h3>Kelimeleri ekle</h3>
-                <p>Öğrenmek istediğin kelimeleri örnek cümlelerle kaydet.</p>
-              </div>
-            </div>
-
-            <div className="step-item">
-              <span>03</span>
-
-              <div>
-                <h3>Quiz çöz</h3>
-                <p>Sistem sana tekrar zamanı gelen kelimeleri sorar.</p>
-              </div>
-            </div>
-
-            <div className="step-item">
-              <span>04</span>
-
-              <div>
-                <h3>Gelişimini izle</h3>
-                <p>Başarı yüzdelerini ve öğrendiğin kelimeleri raporda gör.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="modules" className="modules-section">
-          <div className="section-title">
-            <span>Proje Modülleri</span>
-            <h2>Sprintlerde geliştirilecek ekranlar</h2>
-          </div>
-
-          <div className="modules-grid">
-            <div className="module-card active">
-              <h3>Giriş / Kayıt</h3>
-              <p>Kullanıcı hesabı oluşturma, giriş yapma ve şifremi unuttum.</p>
-            </div>
-
-            <Link to="/word-list" className="module-card">
-              <h3>Kelime Yönetimi</h3>
-              <p>Kelime ekleme, listeleme ve örnek cümlelerle destekleme.</p>
+          <div className="hero-buttons">
+            <Link to="/quiz" className="primary-button">
+              Quiz'e Başla
             </Link>
 
-            <div className="module-card">
-              <h3>Sınav Modülü</h3>
-              <p>6 tekrar prensibine göre quiz sorularının hazırlanması.</p>
+            <Link to="/words" className="secondary-button">
+              Kelimelerimi Gör
+            </Link>
+          </div>
+        </div>
+
+        <div className="hero-card">
+          <div className="hero-card-top">
+            <div>
+              <span>Bugünkü hedef</span>
+              <h3>
+                {hasDailyGoal
+                  ? `${formatNumber(dailyTarget)} yeni kelime`
+                  : "Hedef bekleniyor"}
+              </h3>
             </div>
 
-            <div className="module-card">
-              <h3>Ayarlar</h3>
-              <p>Günlük yeni kelime sayısı gibi kullanıcı tercihleri.</p>
-            </div>
+            <div className="hero-card-icon">🎯</div>
+          </div>
 
-            <div className="module-card">
-              <h3>Analiz Raporu</h3>
-              <p>Başarı oranı, öğrenilen kelimeler ve çıktı alınabilir rapor.</p>
-            </div>
+          {loading && (
+            <div className="card-status">Veriler yükleniyor...</div>
+          )}
 
-            <div className="module-card">
-              <h3>Bulmaca / LLM</h3>
-              <p>Wordle, hikaye ve görsel üretimi gibi ek proje özellikleri.</p>
+          {!loading && !hasDailyGoal && !error && (
+            <div className="card-status muted">
+              Günlük hedef bilgisi henüz bulunmuyor.
             </div>
+          )}
+
+          {!loading && hasDailyGoal && (
+            <div className="progress-area">
+              <div className="progress-info">
+                <span>Günlük ilerleme</span>
+                <strong>
+                  {formatNumber(dailyCompleted)} / {formatNumber(dailyTarget)}
+                </strong>
+              </div>
+
+              <div className="progress-track">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {!loading && dashboard?.nextReview && (
+            <div className="repeat-box">
+              <div>
+                <span>Sonraki tekrar</span>
+                <strong>
+                  {dashboard.nextReview.label ||
+                    dashboard.nextReview.title ||
+                    "Tekrar zamanı"}
+                </strong>
+              </div>
+
+              {hasValue(currentStage) && hasValue(totalStage) && (
+                <span className="repeat-badge">
+                  {currentStage}/{totalStage}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {error && (
+        <section className="state-box error-state">
+          <div>
+            <h3>Veriler alınamadı</h3>
+            <p>{error}</p>
+          </div>
+
+          <button type="button" onClick={loadDashboard}>
+            Tekrar Dene
+          </button>
+        </section>
+      )}
+
+      {!loading && !error && statCards.length > 0 && (
+        <section className="stats-grid">
+          {statCards.map((item) => (
+            <article className="stat-card" key={item.title}>
+              <div className="stat-icon">{item.icon}</div>
+
+              <div>
+                <p>{item.title}</p>
+                <h3>{item.value}</h3>
+                {item.detail && <span>{item.detail}</span>}
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {!loading && !error && statCards.length === 0 && (
+        <section className="state-box empty-state">
+          <div>
+            <h3>Henüz gösterilecek istatistik yok</h3>
+            <p>
+              Kelime çalışmaya başladığında öğrenme durumun, tekrarların ve
+              başarı oranın burada görünecek.
+            </p>
           </div>
         </section>
+      )}
 
-        <section className="cta-section">
-          {currentUser ? (
-            <>
-              <h2>Hoş geldin, {currentUser.username}</h2>
+      <section className="dashboard-grid">
+        <div className="dashboard-column">
+          <div className="section-header">
+            <div>
+              <p>Çalışma Planı</p>
+              <h2>Tekrar bekleyenler</h2>
+            </div>
 
-              <p>
-                Kelime öğrenme sürecine devam et, kelimelerini yönet ve
-                tekrarlarını tamamla.
-              </p>
+            <Link to="/quiz">Quiz'e Git</Link>
+          </div>
 
-              <div className="hero-buttons">
-                <Link to="/words" className="primary-button">
-                  Kelime Ekle
-                </Link>
+          {loading && <div className="list-status">Tekrar planı yükleniyor...</div>}
 
-                <Link to="/word-list" className="secondary-button">
-                  Kelime Listesine Git
-                </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2>Kelime öğrenmeye bugün başla</h2>
+          {!loading && !error && dashboard?.reviewPlan?.length > 0 && (
+            <div className="review-list">
+              {dashboard.reviewPlan.map((item, index) => {
+                const count = getReviewCount(item);
 
-              <p>
-                Hesabını oluştur, kelimelerini ekle ve tekrar sistemiyle
-                gelişimini takip et.
-              </p>
+                return (
+                  <article
+                    className="review-card"
+                    key={`${getReviewTitle(item)}-${index}`}
+                  >
+                    <div className="review-count">{formatNumber(count)}</div>
 
-              <Link to="/register" className="primary-button">
-                Ücretsiz Kayıt Ol
-              </Link>
-            </>
+                    <div>
+                      <h3>{getReviewTitle(item)}</h3>
+                      <p>{getReviewDescription(item)}</p>
+                    </div>
+
+                    <Link to="/quiz">Başla</Link>
+                  </article>
+                );
+              })}
+            </div>
           )}
-        </section>
-      </main>
+
+          {!loading && !error && dashboard?.reviewPlan?.length === 0 && (
+            <div className="list-status muted">
+              Bugün için planlanan tekrar bulunmuyor.
+            </div>
+          )}
+        </div>
+
+        <div className="dashboard-column">
+          <div className="section-header">
+            <div>
+              <p>Hızlı Erişim</p>
+              <h2>Modüller</h2>
+            </div>
+          </div>
+
+          <div className="quick-actions">
+            {QUICK_ACTIONS.map((item) => (
+              <Link
+                to={item.path}
+                className={item.primary ? "quick-card primary" : "quick-card"}
+                key={item.title}
+              >
+                <span>{item.icon}</span>
+
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bottom-grid">
+        <article className="learning-path-card">
+          <div className="section-header">
+            <div>
+              <p>6 Aşamalı Sistem</p>
+              <h2>Tekrar aralıkları</h2>
+            </div>
+          </div>
+
+          <div className="path-steps">
+            {REVIEW_STAGES.map((item) => (
+              <div className="path-step" key={item.stage}>
+                <span>{item.stage}</span>
+                <p>{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="mini-report-card">
+          <div>
+            <p>Analiz Raporu</p>
+            <h2>Öğrenme gelişimini takip et.</h2>
+            <span>
+              Doğru cevapların, tekrar performansın ve başarı oranların rapor
+              ekranında görüntülenir.
+            </span>
+          </div>
+
+          <Link to="/reports">Raporu Aç</Link>
+        </article>
+      </section>
     </div>
   );
 }

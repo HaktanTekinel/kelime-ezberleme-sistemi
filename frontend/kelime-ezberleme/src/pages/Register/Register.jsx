@@ -1,16 +1,24 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout/AuthLayout";
 import { registerAPI } from "../../services/authService";
+import { isValidEmail } from "../../validations/authValidation";
 
 function Register() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState({
+    type: "",
+    text: "",
+  });
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
@@ -20,6 +28,11 @@ function Register() {
       ...prevData,
       [name]: value,
     }));
+
+    setMessage({
+      type: "",
+      text: "",
+    });
   };
 
   const validateForm = () => {
@@ -27,11 +40,19 @@ function Register() {
       return "Kullanıcı adı boş bırakılamaz.";
     }
 
-    if (!formData.email.trim()) {
-      return "E-posta boş bırakılamaz.";
+    if (formData.username.trim().length < 3) {
+      return "Kullanıcı adı en az 3 karakter olmalıdır.";
     }
 
-    if (!formData.password.trim()) {
+    if (!formData.email.trim()) {
+      return "E-posta adresi boş bırakılamaz.";
+    }
+
+    if (!isValidEmail(formData.email.trim())) {
+      return "Geçerli bir e-posta adresi giriniz.";
+    }
+
+    if (!formData.password) {
       return "Şifre boş bırakılamaz.";
     }
 
@@ -39,7 +60,15 @@ function Register() {
       return "Şifre en az 6 karakter olmalıdır.";
     }
 
-    return null;
+    if (!formData.confirmPassword) {
+      return "Şifre tekrar alanı boş bırakılamaz.";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      return "Şifreler eşleşmiyor.";
+    }
+
+    return "";
   };
 
   const handleSubmit = async (event) => {
@@ -48,30 +77,40 @@ function Register() {
     const validationError = validateForm();
 
     if (validationError) {
-      setMessage({ type: "error", text: validationError });
+      setMessage({
+        type: "error",
+        text: validationError,
+      });
       return;
     }
 
     setLoading(true);
-    setMessage({ type: "", text: "" });
+    setMessage({
+      type: "",
+      text: "",
+    });
 
     try {
-      await registerAPI(formData);
+      await registerAPI({
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      });
 
       setMessage({
         type: "success",
-        text: "Kayıt başarılı. Giriş yapabilirsiniz.",
+        text: "Kayıt başarılı. Giriş ekranına yönlendiriliyorsunuz.",
       });
 
-      setFormData({
-        username: "",
-        email: "",
-        password: "",
-      });
+      setTimeout(() => {
+        navigate("/login");
+      }, 900);
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Kayıt işlemi başarısız.",
+        text:
+          error.message ||
+          "Kayıt oluşturulamadı. Bilgileri kontrol edip tekrar deneyin.",
       });
     } finally {
       setLoading(false);
@@ -81,7 +120,7 @@ function Register() {
   return (
     <AuthLayout
       title="Kayıt Ol"
-      subtitle="Kelime öğrenme yolculuğuna başlamak için hesabınızı oluşturun."
+      subtitle="Kelime öğrenme sürecini takip etmek için yeni bir hesap oluştur."
       footer={
         <>
           <span>Zaten hesabın var mı?</span>
@@ -103,18 +142,20 @@ function Register() {
             placeholder="Kullanıcı adınızı girin"
             value={formData.username}
             onChange={handleChange}
+            autoComplete="username"
           />
         </div>
 
         <div className="auth-form-group">
-          <label htmlFor="email">E-posta</label>
+          <label htmlFor="email">E-posta Adresi</label>
           <input
             id="email"
             name="email"
             type="email"
-            placeholder="E-posta adresinizi girin"
+            placeholder="ornek@mail.com"
             value={formData.email}
             onChange={handleChange}
+            autoComplete="email"
           />
         </div>
 
@@ -124,14 +165,28 @@ function Register() {
             id="password"
             name="password"
             type="password"
-            placeholder="Şifrenizi girin"
+            placeholder="En az 6 karakter"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="new-password"
+          />
+        </div>
+
+        <div className="auth-form-group">
+          <label htmlFor="confirmPassword">Şifre Tekrar</label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="Şifrenizi tekrar girin"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            autoComplete="new-password"
           />
         </div>
 
         <button className="auth-button" type="submit" disabled={loading}>
-          {loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
+          {loading ? "Kayıt oluşturuluyor..." : "Kayıt Ol"}
         </button>
       </form>
     </AuthLayout>
