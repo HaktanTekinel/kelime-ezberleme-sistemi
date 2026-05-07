@@ -57,17 +57,17 @@ function Login() {
         "user",
         JSON.stringify({
           ...data,
-          username: formData.username_or_email,
+          username: data.username || formData.username_or_email,
         })
       );
 
       setMessage({
         type: "success",
-        text: "Giriş başarılı. Ana sayfaya yönlendiriliyorsunuz.",
+        text: "Giriş başarılı. Panele yönlendiriliyorsunuz.",
       });
 
       setTimeout(() => {
-        navigate("/");
+        navigate("/home", { replace: true });
       }, 700);
     } catch (error) {
       setMessage({
