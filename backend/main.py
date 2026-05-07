@@ -1,104 +1,69 @@
+import os
+import sys
+import shutil
+from pathlib import Path
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from pathlib import Path
-import shutil
-import sys
-import os
 
 sys.path.append(os.path.dirname(__file__))
 
 import models
 import schemas
-from database import get_db
+from database import get_db, engine
 from auth import router as auth_router, get_current_user_id
 from quiz import router as quiz_router
+from users import router as users_router
 
+load_dotenv()
 
-# ============================================================
-# DOSYA / RESİM YÜKLEME AYARI
-# ============================================================
+models.Base.metadata.create_all(bind=engine)
 
-# Proje klasörü içinde backend/words klasörü oluşturur.
-# C:/words yerine bunu kullanmak daha taşınabilir olur.
-BASE_DIR = Path(__file__).resolve().parent
-UPLOAD_DIR = BASE_DIR / "words"
+UPLOAD_DIR = Path("C:/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-
-# ============================================================
-# FASTAPI UYGULAMASI
-# ============================================================
 
 app = FastAPI(
     title="Kelime Ezberleme Sistemi API",
     description="6 tekrar prensibi içeren kelime ezberleme sistemi backend API",
-    version="1.0.0"
+    version="1.0.0",
 )
 
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-# ============================================================
-# STATIC FILES
-# Frontend buradan resimleri görüntüleyebilir.
-# Örnek URL:
-# http://127.0.0.1:8000/static/word_1.jpg
-# ============================================================
-
-app.mount("/static", StaticFiles(directory=str(UPLOAD_DIR)), name="static")
-
-
-# ============================================================
-# CORS AYARLARI
-# React frontend'in backend'e istek atabilmesi için gerekli.
-# Vite genelde 5173 portunda çalışır.
-# ============================================================
+cors_origins_str = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
+)
+origins = [origin.strip() for origin in cors_origins_str.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# ============================================================
-# ROUTER TANITIMLARI
-# auth.py ve quiz.py dosyalarındaki endpointleri main.py içine dahil eder.
-# ============================================================
-
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
 
-
-# ============================================================
-# ANA SAYFA / TEST ENDPOINT
-# ============================================================
 
 @app.get("/")
-def root():
-    return {
-        "message": "Kelime Ezberleme Sistemi API çalışıyor",
-        "docs": "/docs"
-    }
+def home():
+    return {"message": "Backend çalışıyor"}
 
 
-# ============================================================
-# NOTE: Auth endpoints (/register, /login, /forgot-password, /reset-password) 
-# are now in auth.py under /auth/* routes
-# ============================================================
-
-
-# ============================================================
 # STORY-2: KELİME EKLEME
-# ============================================================
-
-@app.post("/words", status_code=201)
-def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+@app.post("/words", status_code=201, tags=["Words"])
+def create_word(
+    word_data: schemas.WordCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     new_word = models.Word(
         eng_word=word_data.eng_word,
         tur_word=word_data.tur_word,
@@ -116,7 +81,7 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), us
         new_sample = models.WordSample(
             word_id=new_word.id,
             sample_text=sample,
-            sample_order=index
+            sample_order=index,
         )
         db.add(new_sample)
 
@@ -124,76 +89,113 @@ def create_word(word_data: schemas.WordCreate, db: Session = Depends(get_db), us
 
     return {
         "message": "Kelime ve örnek cümleler başarıyla eklendi",
-        "word_id": new_word.id
+        "word_id": new_word.id,
     }
 
 
-# ============================================================
-# STORY-2: KELİMELERİ LİSTELEME
-# ============================================================
-
-@app.get("/words", response_model=list[schemas.WordRead])
+# STORY-2: KELİME LİSTELEME
+@app.get("/words", response_model=list[schemas.WordRead], tags=["Words"])
 def list_words(db: Session = Depends(get_db)):
-    words = db.query(models.Word).filter(
-        models.Word.is_active == True
-    ).all()
-
+    words = db.query(models.Word).filter(models.Word.is_active == True).all()
     return words
 
 
-# ============================================================
-# STORY-2: KELİMEYE RESİM YÜKLEME
-# Frontend bu picture_url değerini kullanarak resmi gösterebilir.
-# Örnek dönen değer:
-# /static/word_1.jpg
-# Frontend tarafında:
-# http://127.0.0.1:8000/static/word_1.jpg
-# ============================================================
+@app.get("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
+def get_word(word_id: int, db: Session = Depends(get_db)):
+    word = (
+        db.query(models.Word)
+        .filter(models.Word.id == word_id, models.Word.is_active == True)
+        .first()
+    )
 
-@app.post("/words/{word_id}/image")
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    return word
+
+
+# KELİME GÜNCELLEME
+@app.put("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
+def update_word(
+    word_id: int,
+    payload: schemas.WordCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    word.eng_word = payload.eng_word
+    word.tur_word = payload.tur_word
+    word.topic = payload.topic
+    word.difficulty_level = payload.difficulty_level
+    word.picture_url = payload.picture_url
+    word.audio_url = payload.audio_url
+
+    db.query(models.WordSample).filter(models.WordSample.word_id == word.id).delete()
+
+    for index, sample in enumerate(payload.samples, start=1):
+        new_sample = models.WordSample(
+            word_id=word.id,
+            sample_text=sample,
+            sample_order=index,
+        )
+        db.add(new_sample)
+
+    db.commit()
+    db.refresh(word)
+
+    return word
+
+
+# KELİME SİLME
+@app.delete("/words/{word_id}", tags=["Words"])
+def delete_word(
+    word_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+
+    if not word:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+
+    word.is_active = False
+    db.commit()
+
+    return {"message": "Kelime devre dışı bırakıldı", "word_id": word.id}
+
+
+# RESİM YÜKLEME
+@app.post("/words/{word_id}/image", tags=["Words"])
 def upload_word_image(
     word_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id)
+    user_id: int = Depends(get_current_user_id),
 ):
-    word = db.query(models.Word).filter(
-        models.Word.id == word_id
-    ).first()
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
 
     if not word:
-        raise HTTPException(
-            status_code=404,
-            detail="Kelime bulunamadı"
-        )
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
-    if not file.filename:
-        raise HTTPException(
-            status_code=400,
-            detail="Dosya adı bulunamadı"
-        )
+    file_extension = (
+        file.filename.split(".")[-1]
+        if file.filename and "." in file.filename
+        else "bin"
+    )
 
-    allowed_extensions = ["jpg", "jpeg", "png", "webp"]
-    file_extension = file.filename.split(".")[-1].lower()
+    file_location = UPLOAD_DIR / f"word_{word_id}.{file_extension}"
 
-    if file_extension not in allowed_extensions:
-        raise HTTPException(
-            status_code=400,
-            detail="Sadece jpg, jpeg, png veya webp dosyası yüklenebilir"
-        )
-
-    file_name = f"word_{word_id}.{file_extension}"
-    file_location = UPLOAD_DIR / file_name
-
-    with open(file_location, "wb") as file_object:
+    with open(file_location, "wb+") as file_object:
         shutil.copyfileobj(file.file, file_object)
 
-    word.picture_url = f"/static/{file_name}"
+    word.picture_url = f"/uploads/{file_location.name}"
     db.commit()
-    db.refresh(word)
 
     return {
         "message": "Resim başarıyla yüklendi",
-        "word_id": word.id,
-        "picture_url": word.picture_url
+        "picture_url": word.picture_url,
     }

@@ -1,21 +1,18 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ORMBaseModel(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
 
 class MessageResponse(BaseModel):
     status: str = "success"
     message: str
 
-
-# -------------------------
-# AUTH / USER SCHEMAS
-# -------------------------
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
@@ -30,14 +27,11 @@ class ForgotPasswordResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-
-class LoginResponse(Token):
-    user_id: int
+    user_id: int  # FRONTEND İÇİN EKLENDİ
 
 
 class TokenData(BaseModel):
-    user_id: Optional[int] = None
+    username: Optional[str] = None
 
 
 class UserBase(BaseModel):
@@ -46,7 +40,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str = Field(min_length=6, max_length=128)
+    password: str
 
 
 class UserLogin(BaseModel):
@@ -54,30 +48,24 @@ class UserLogin(BaseModel):
     password: str
 
 
-class EmailRequest(BaseModel):
-    email: EmailStr
-
-
-class ResetPasswordRequest(BaseModel):
-    reset_token: Optional[str] = None
-    email: Optional[EmailStr] = None
-    new_password: str = Field(min_length=6, max_length=128)
-
-
 class UserRead(ORMBaseModel):
     id: int
     username: str
     email: str
 
+    class Config:
+        from_attributes = True
+
 
 class PasswordUpdate(BaseModel):
     username: str
-    new_password: str = Field(min_length=6, max_length=128)
+    new_password: str
 
 
-# -------------------------
-# USER SETTINGS SCHEMAS
-# -------------------------
+class ResetPasswordRequest(BaseModel):
+    reset_token: str
+    new_password: str
+
 
 class UserSettingsBase(BaseModel):
     daily_new_word_count: int = Field(default=10, ge=1, le=100)
@@ -100,9 +88,22 @@ class UserSettingsRead(ORMBaseModel):
     updated_at: Optional[datetime] = None
 
 
-# -------------------------
-# WORD SCHEMAS
-# -------------------------
+class UserSettingsUpdate(BaseModel):
+    daily_quiz_limit: int = Field(default=10, ge=1, le=100)
+
+
+class UserSettingsResponse(BaseModel):
+    user_id: int
+    daily_quiz_limit: int
+
+
+class UserStatsResponse(BaseModel):
+    user_id: int
+    total_learned_words: int
+    total_correct_answers: int
+    total_wrong_answers: int
+    success_rate: float
+
 
 class WordBase(BaseModel):
     eng_word: str = Field(min_length=1, max_length=150)
@@ -114,14 +115,53 @@ class WordBase(BaseModel):
 
 
 class WordCreate(WordBase):
-    samples: List[str] = []
+    samples: List[str]
 
 
 class WordRead(ORMBaseModel):
     id: int
     eng_word: str
     tur_word: str
+    difficulty_level: int         # EKLENDİ
+    topic: Optional[str] = None   # EKLENDİ
     picture_url: Optional[str] = None
+    audio_url: Optional[str] = None # EKLENDİ
+
+    class Config:
+        from_attributes = True
+
+
+class QuizQuestionRead(BaseModel):
+    word_id: int
+    eng_word: str
+    picture_url: Optional[str] = None
+    options: List[str]
+
+
+class QuizDailyResponse(BaseModel):
+    user_id: int
+    total_questions: int
+    due_count: int
+    new_count: int
+    questions: List[QuizQuestionRead]
+
+
+class QuizAnswerRequest(BaseModel):
+    # user_id BURADAN SİLİNDİ, ARTIK SADECE TOKEN'DAN GELECEK
+    word_id: int
+    selected_answer: str
+
+
+class QuizAnswerResponse(BaseModel):
+    user_id: int
+    word_id: int
+    is_correct: bool
+    correct_answer: str
+    current_stage: int
+    next_review_at: Optional[datetime] = None
+    is_learned: bool
+    consecutive_correct: int
+    reset_count: int
 
 
 class WordSampleBase(BaseModel):
@@ -141,41 +181,41 @@ class WordSampleRead(ORMBaseModel):
     created_at: Optional[datetime] = None
 
 
-# -------------------------
-# QUIZ SCHEMAS
-# -------------------------
-
-class QuizQuestionRead(BaseModel):
-    word_id: int
-    eng_word: str
-    picture_url: Optional[str] = None
-    options: List[str]
-
-
-class QuizDailyResponse(BaseModel):
-    user_id: int
-    total_questions: int
-    due_count: int
-    new_count: int
-    questions: List[QuizQuestionRead]
-
-
-class QuizAnswerRequest(BaseModel):
-    user_id: Optional[int] = None
-    word_id: int
-    selected_answer: str
-
-
-class QuizAnswerResponse(BaseModel):
+class UserWordProgressBase(BaseModel):
     user_id: int
     word_id: int
-    is_correct: bool
-    correct_answer: str
+    current_stage: int = Field(default=0, ge=0, le=6)
+    next_review_at: Optional[datetime] = None
+    is_learned: bool = False
+    consecutive_correct: int = Field(default=0, ge=0)
+    last_answer_correct: Optional[bool] = None
+    reset_count: int = Field(default=0, ge=0)
+
+
+class UserWordProgressCreate(UserWordProgressBase):
+    pass
+
+
+class UserWordProgressUpdate(BaseModel):
+    current_stage: Optional[int] = Field(default=None, ge=0, le=6)
+    next_review_at: Optional[datetime] = None
+    is_learned: Optional[bool] = None
+    consecutive_correct: Optional[int] = Field(default=None, ge=0)
+    last_answer_correct: Optional[bool] = None
+    reset_count: Optional[int] = Field(default=None, ge=0)
+
+
+class UserWordProgressRead(ORMBaseModel):
+    id: int
+    user_id: int
+    word_id: int
     current_stage: int
     next_review_at: Optional[datetime] = None
     is_learned: bool
     consecutive_correct: int
+    last_answer_correct: Optional[bool] = None
     reset_count: int
+    updated_at: Optional[datetime] = None
 
 
 class QuizSessionBase(BaseModel):
@@ -232,51 +272,6 @@ class QuizAnswerRead(ORMBaseModel):
     answered_at: Optional[datetime] = None
 
 
-# -------------------------
-# USER WORD PROGRESS SCHEMAS
-# -------------------------
-
-class UserWordProgressBase(BaseModel):
-    user_id: int
-    word_id: int
-    current_stage: int = Field(default=0, ge=0, le=6)
-    next_review_at: Optional[datetime] = None
-    is_learned: bool = False
-    consecutive_correct: int = Field(default=0, ge=0)
-    last_answer_correct: Optional[bool] = None
-    reset_count: int = Field(default=0, ge=0)
-
-
-class UserWordProgressCreate(UserWordProgressBase):
-    pass
-
-
-class UserWordProgressUpdate(BaseModel):
-    current_stage: Optional[int] = Field(default=None, ge=0, le=6)
-    next_review_at: Optional[datetime] = None
-    is_learned: Optional[bool] = None
-    consecutive_correct: Optional[int] = Field(default=None, ge=0)
-    last_answer_correct: Optional[bool] = None
-    reset_count: Optional[int] = Field(default=None, ge=0)
-
-
-class UserWordProgressRead(ORMBaseModel):
-    id: int
-    user_id: int
-    word_id: int
-    current_stage: int
-    next_review_at: Optional[datetime] = None
-    is_learned: bool
-    consecutive_correct: int
-    last_answer_correct: Optional[bool] = None
-    reset_count: int
-    updated_at: Optional[datetime] = None
-
-
-# -------------------------
-# REPORT SCHEMAS
-# -------------------------
-
 class ReportSnapshotRead(ORMBaseModel):
     id: int
     user_id: int
@@ -288,10 +283,6 @@ class ReportSnapshotRead(ORMBaseModel):
     created_at: Optional[datetime] = None
 
 
-# -------------------------
-# WORDLE / PUZZLE SCHEMAS
-# -------------------------
-
 class WordleGameRead(ORMBaseModel):
     id: int
     user_id: int
@@ -301,10 +292,6 @@ class WordleGameRead(ORMBaseModel):
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
 
-
-# -------------------------
-# WORD CHAIN / LLM SCHEMAS
-# -------------------------
 
 class WordChainStoryRead(ORMBaseModel):
     id: int
