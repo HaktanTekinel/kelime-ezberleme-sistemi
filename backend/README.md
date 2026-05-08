@@ -87,7 +87,7 @@ Yeni kullanıcı oluşturmak için kullanılır.
 ### Endpoint
 
 ```text
-POST http://127.0.0.1:8000/register
+POST http://127.0.0.1:8000/auth/register
 ```
 
 ### Request Body
@@ -132,7 +132,7 @@ Kayıtlı kullanıcının sisteme giriş yapması için kullanılır.
 ### Endpoint
 
 ```text
-POST http://127.0.0.1:8000/login
+POST http://127.0.0.1:8000/auth/login
 ```
 
 ### Request Body
@@ -310,7 +310,7 @@ Frontend geliştiricisi, hangi endpointin hangi veriyi istediğini Swagger üzer
 ## Örnek Frontend Register İsteği
 
 ```js
-fetch("http://127.0.0.1:8000/register", {
+fetch("http://127.0.0.1:8000/auth/register", {
   method: "POST",
   headers: {
     "Content-Type": "application/json"
@@ -326,7 +326,7 @@ fetch("http://127.0.0.1:8000/register", {
 ## Örnek Frontend Login İsteği
 
 ```js
-fetch("http://127.0.0.1:8000/login", {
+fetch("http://127.0.0.1:8000/auth/login", {
   method: "POST",
   headers: {
     "Content-Type": "application/json"

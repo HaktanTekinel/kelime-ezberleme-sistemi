@@ -13,6 +13,7 @@ __pycache__/
 .venv/
 venv/
 env/
-
+.env
+backend/.env
 *.db
 backend/*.db
