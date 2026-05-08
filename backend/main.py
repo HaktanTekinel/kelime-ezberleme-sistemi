@@ -14,6 +14,7 @@ sys.path.append(os.path.dirname(__file__))
 import models
 import schemas
 from auth import get_current_user_id, router as auth_router
+from dashboard import router as dashboard_router
 from database import engine, get_db
 from quiz import router as quiz_router
 from reports import router as reports_router
@@ -50,9 +51,10 @@ app.add_middleware(
 )
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
+app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 
 
 @app.get("/")
@@ -88,6 +90,7 @@ def create_word(
         .filter(models.Word.is_active == True)
         .first()
     )
+
     if same_word:
         raise HTTPException(status_code=400, detail="Bu İngilizce kelime zaten kayıtlı")
 
@@ -106,6 +109,7 @@ def create_word(
 
     for index, sample in enumerate(word_data.samples, start=1):
         clean_sample = sample.strip()
+
         if not clean_sample:
             continue
 
@@ -181,6 +185,7 @@ def update_word(
         .filter(models.Word.is_active == True)
         .first()
     )
+
     if duplicate_word:
         raise HTTPException(status_code=400, detail="Bu İngilizce kelime zaten kayıtlı")
 
@@ -196,6 +201,7 @@ def update_word(
 
     for index, sample in enumerate(payload.samples, start=1):
         clean_sample = sample.strip()
+
         if not clean_sample:
             continue
 
@@ -272,6 +278,7 @@ def upload_word_image(
 
     word.picture_url = f"/uploads/words/{file_location.name}"
     word.created_by_user_id = word.created_by_user_id or user_id
+
     db.commit()
 
     return {
