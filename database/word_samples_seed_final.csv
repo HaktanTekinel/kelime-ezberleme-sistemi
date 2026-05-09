@@ -1,0 +1,2881 @@
+﻿word_sample_id,word_id,sample_order,sample_sentence
+1,1,1,She read a short book about birds.
+2,1,2,My brother asked about the new game.
+3,2,1,The clock is above the door.
+4,2,2,A small plane flew above the city.
+5,3,1,The movie has a lot of action.
+6,3,2,We need quick action today.
+7,4,1,Swimming is my favorite activity.
+8,4,2,The teacher planned a fun activity.
+9,5,1,The actor arrived early for work.
+10,5,2,Everyone thanked the actor after lunch.
+11,6,1,Please add your name to the list.
+12,6,2,I add milk to my tea.
+13,7,1,Write your address on the form.
+14,7,2,The teacher will address the class after lunch.
+15,8,1,The child is afraid of the dark.
+16,8,2,I felt afraid during the storm.
+17,9,1,We ate dinner after the lesson.
+18,9,2,She called me after school.
+19,10,1,I study English in the afternoon.
+20,10,2,The afternoon was warm and quiet.
+21,11,1,The baby slept in a small bed.
+22,11,2,She held the baby carefully.
+23,12,1,Please come back before dinner.
+24,12,2,My back hurts after the long walk.
+25,13,1,The milk has a bad smell.
+26,13,2,He felt bad after the long trip.
+27,14,1,The bag was on the wooden table.
+28,14,2,My brother carried the bag to school.
+29,15,1,I cleaned the ball before dinner.
+30,15,2,The small ball fell from the shelf.
+31,16,1,She ate a banana after school.
+32,16,2,He bought a fresh banana at the market.
+33,17,1,The band played a song at school.
+34,17,2,She wears a blue band in her hair.
+35,18,1,She took money from the bank.
+36,18,2,They sat on the river bank.
+37,19,1,They met at a small bar after work.
+38,19,2,The worker lifted a metal bar.
+39,20,1,We played baseball in the park.
+40,20,2,The baseball rolled under the car.
+41,21,1,He plays basketball after school.
+42,21,2,The basketball bounced across the yard.
+43,22,1,She ate a cake after school.
+44,22,2,He bought a fresh cake at the market.
+45,23,1,Please call me after school.
+46,23,2,I missed your call this morning.
+47,24,1,I cleaned the camera before dinner.
+48,24,2,The small camera fell from the shelf.
+49,25,1,The summer camp starts in July.
+50,25,2,We slept at the camp for two nights.
+51,26,1,I can swim across the pool.
+52,26,2,She opened a can of beans.
+53,27,1,The child ate candy after lunch.
+54,27,2,She put candy in the small bowl.
+55,28,1,She put the cap beside her bag.
+56,28,2,He found a cap under the chair.
+57,29,1,The car stopped near the school.
+58,29,2,My father washed the car on Sunday.
+59,30,1,I cleaned the card before dinner.
+60,30,2,The small card fell from the shelf.
+61,31,1,I care about my little brother.
+62,31,2,Good care helped the plant grow.
+63,32,1,Be careful when you cross the road.
+64,32,2,She made a careful plan for the trip.
+65,33,1,A young dad waited outside the room.
+66,33,2,The dad spoke kindly to us.
+67,34,1,Daddy read a story before bed.
+68,34,2,The child ran to daddy after school.
+69,35,1,She began to dance when the music started.
+70,35,2,They will dance outside if the weather is good.
+71,36,1,Dancing helps her feel happy.
+72,36,2,We watched dancing at the festival.
+73,37,1,The room was dark at night.
+74,37,2,A dark cloud covered the sun.
+75,38,1,Write today’s date at the top.
+76,38,2,They went on a dinner date.
+77,39,1,My daughter studies English every day.
+78,39,2,Her daughter drew a picture of a cat.
+79,40,1,It was a sunny day.
+80,40,2,The day ended with a short walk.
+81,41,1,She wrote a letter to her dear friend.
+82,41,2,This old photo is dear to me.
+83,42,1,December is a cold month here.
+84,42,2,My birthday is in December.
+85,43,1,Each student brought one book.
+86,43,2,We put a sticker on each box.
+87,44,1,The baby touched his ear.
+88,44,2,I heard music in my left ear.
+89,45,1,She came early to class.
+90,45,2,We ate an early breakfast today.
+91,46,1,This question is easy for me.
+92,46,2,The teacher gave an easy example.
+93,47,1,I eat breakfast at seven.
+94,47,2,She likes to eat fruit after lunch.
+95,48,1,We shared the egg at lunch.
+96,48,2,The cook used egg in the meal.
+97,49,1,I have eight pencils in my bag.
+98,49,2,The train leaves at eight o’clock.
+99,50,1,My cousin is eighteen years old.
+100,50,2,There are eighteen students in the room.
+101,51,1,My grandfather is eighty years old.
+102,51,2,The ticket costs eighty lira.
+103,52,1,You can choose either tea or coffee.
+104,52,2,Either answer is fine for this question.
+105,53,1,He pointed to the face on the page.
+106,53,2,The face appeared near the end of the story.
+107,54,1,My uncle works in a factory.
+108,54,2,The factory makes small toys.
+109,55,1,The referee made a fair decision.
+110,55,2,We bought candy at the fair.
+111,56,1,The child drew a tiny fairy.
+112,56,2,A fairy helped the hero in the story.
+113,57,1,That answer is false.
+114,57,2,He gave a false name at first.
+115,58,1,My family eats dinner together.
+116,58,2,Her family lives near the sea.
+117,59,1,The famous singer visited our city.
+118,59,2,This street is famous for its cafes.
+119,60,1,He is a fan of that football team.
+120,60,2,The fan made the room cooler.
+121,61,1,They live on a small farm.
+122,61,2,The farm has cows and chickens.
+123,62,1,The farmer arrived early for work.
+124,62,2,Everyone thanked the farmer after lunch.
+125,63,1,The rabbit is very fast.
+126,63,2,She runs fast in the race.
+127,64,1,We played a game after dinner.
+128,64,2,The game starts at seven o’clock.
+129,65,1,Please put the garbage outside.
+130,65,2,The street had garbage near the wall.
+131,66,1,Flowers grow in the garden.
+132,66,2,We sat in the garden after lunch.
+133,67,1,I will get a ticket after school.
+134,67,2,She wants to get better at English.
+135,68,1,The story has a friendly ghost.
+136,68,2,He wore a ghost costume at the party.
+137,69,1,She gave me a small gift.
+138,69,2,The gift was inside a red box.
+139,70,1,The girl helped a child near the door.
+140,70,2,A friendly girl smiled during the meeting.
+141,71,1,The girlfriend arrived early for work.
+142,71,2,Everyone thanked the girlfriend after lunch.
+143,72,1,The team will give the issue tomorrow.
+144,72,2,I hope to give this skill with practice.
+145,73,1,I am glad to see you.
+146,73,2,She felt glad after the exam.
+147,74,1,Reading every night is a good habit.
+148,74,2,He has a habit of waking early.
+149,75,1,We saw the had near the window.
+150,75,2,My friend described the had very clearly.
+151,76,1,Her hair is long and black.
+152,76,2,I washed my hair this morning.
+153,77,1,The haircut was on the wooden table.
+154,77,2,My brother carried the haircut to school.
+155,78,1,She ate half of the sandwich.
+156,78,2,The game lasted half an hour.
+157,79,1,They waited near the hall after lunch.
+158,79,2,She took a photo of the hall in town.
+159,80,1,He ate a hamburger for lunch.
+160,80,2,The hamburger came with salad.
+161,81,1,I cleaned the hand before dinner.
+162,81,2,The small hand fell from the shelf.
+163,82,1,The actor looked handsome in the film.
+164,82,2,She bought a handsome jacket for her brother.
+165,83,1,She began to happen when the music started.
+166,83,2,They will happen outside if the weather is good.
+167,84,1,The children were happy at the zoo.
+168,84,2,I felt happy after the good news.
+169,85,1,The ice was part of the story.
+170,85,2,She noticed the ice during the lesson.
+171,86,1,That is a good idea.
+172,86,2,She wrote her idea in the notebook.
+173,87,1,This is an ideal place for a picnic.
+174,87,2,The ideal answer is short and clear.
+175,88,1,Call me if you need help.
+176,88,2,We can go outside if it stops raining.
+177,89,1,We can imagine the problem step by step.
+178,89,2,He began to imagine the answer during class.
+179,90,1,Sleep is important for health.
+180,90,2,This rule is important for everyone.
+181,91,1,The keys are in my bag.
+182,91,2,She lives in a small town.
+183,92,1,The website has useful information.
+184,92,2,Please write the information on this form.
+185,93,1,The cat is inside the box.
+186,93,2,It was warm inside the house.
+187,94,1,She is interested in music.
+188,94,2,He looked interested during the lesson.
+189,95,1,The jacket was on the wooden table.
+190,95,2,My brother carried the jacket to school.
+191,96,1,January is the first month.
+192,96,2,We start school again in January.
+193,97,1,He wore blue jeans to school.
+194,97,2,My jeans are in the washing machine.
+195,98,1,The jet was on the wooden table.
+196,98,2,My brother carried the jet to school.
+197,99,1,She found a new job in town.
+198,99,2,This job starts early in the morning.
+199,100,1,They plan to join the problem this week.
+200,100,2,She tried to join the task before dinner.
+201,101,1,The judge listened to both sides.
+202,101,2,Please do not judge people too quickly.
+203,102,1,We shared the juice at lunch.
+204,102,2,The cook used juice in the meal.
+205,103,1,July is usually hot here.
+206,103,2,We will travel in July.
+207,104,1,She began to jump when the music started.
+208,104,2,They will jump outside if the weather is good.
+209,105,1,Keep your phone in your bag.
+210,105,2,I keep old photos in this box.
+211,106,1,She put the key beside her bag.
+212,106,2,He found a key under the chair.
+213,107,1,We need to kick the plan carefully.
+214,107,2,He decided to kick it after the meeting.
+215,108,1,A young kid waited outside the room.
+216,108,2,The kid spoke kindly to us.
+217,109,1,They plan to kill the problem this week.
+218,109,2,She tried to kill the task before dinner.
+219,110,1,She is kind to new students.
+220,110,2,This kind of tea is very light.
+221,111,1,The king answer was easy to understand.
+222,111,2,We found a king place to rest.
+223,112,1,They plan to kiss the problem this week.
+224,112,2,She tried to kiss the task before dinner.
+225,113,1,The kitchen was quiet in the morning.
+226,113,2,We found the kitchen at the end of the street.
+227,114,1,I cleaned the kite before dinner.
+228,114,2,The small kite fell from the shelf.
+229,115,1,The lady helped a child near the door.
+230,115,2,A friendly lady smiled during the meeting.
+231,116,1,English is a useful language.
+232,116,2,She learns a new language at school.
+233,117,1,They live in a large house.
+234,117,2,A large dog slept by the door.
+235,118,1,The bus was late this morning.
+236,118,2,I had a late dinner yesterday.
+237,119,1,They walked later through the quiet hall.
+238,119,2,The student listened later to the story.
+239,120,1,Her laugh made everyone smile.
+240,120,2,I heard a loud laugh outside.
+241,121,1,The lazy cat slept all day.
+242,121,2,Do not be lazy with your homework.
+243,122,1,The leader arrived early for work.
+244,122,2,Everyone thanked the leader after lunch.
+245,123,1,We saw the leaf near the window.
+246,123,2,My friend described the leaf very clearly.
+247,124,1,Try to learn the main idea first.
+248,124,2,She wants to learn the reason clearly.
+249,125,1,The machine was on the wooden table.
+250,125,2,My brother carried the machine to school.
+251,126,1,I cleaned the magazine before dinner.
+252,126,2,The small magazine fell from the shelf.
+253,127,1,She put the mail beside her bag.
+254,127,2,He found a mail under the chair.
+255,128,1,We need to make the plan carefully.
+256,128,2,He decided to make it after the meeting.
+257,129,1,A young man waited outside the room.
+258,129,2,The man spoke kindly to us.
+259,130,1,Many students joined the club.
+260,130,2,There are many books on the shelf.
+261,131,1,The map was on the wooden table.
+262,131,2,My brother carried the map to school.
+263,132,1,March is a windy month here.
+264,132,2,The soldiers march through the square.
+265,133,1,We watched the football match on TV.
+266,133,2,The red socks match her dress.
+267,134,1,This matter needs a quick answer.
+268,134,2,Your opinion does matter to me.
+269,135,1,Please write your name here.
+270,135,2,Her name is on the list.
+271,136,1,My nationality is Turkish.
+272,136,2,The form asks for your nationality.
+273,137,1,The bus stop is near my house.
+274,137,2,He sat near the window.
+275,138,1,My neck hurts after sleeping badly.
+276,138,2,She wore a scarf around her neck.
+277,139,1,They plan to need the problem this week.
+278,139,2,She tried to need the task before dinner.
+279,140,1,The plan changed never after lunch.
+280,140,2,She smiled never at the good news.
+281,141,1,I bought a new notebook.
+282,141,2,Our new teacher is very kind.
+283,142,1,The news made everyone happy.
+284,142,2,I read the news every morning.
+285,143,1,My father reads the newspaper at breakfast.
+286,143,2,The newspaper is on the table.
+287,144,1,She has a nice smile.
+288,144,2,We had a nice day at the park.
+289,145,1,The class starts at nine o’clock.
+290,145,2,I went home at five o’clock.
+291,146,1,October is a cool month.
+292,146,2,The meeting is in October.
+293,147,1,The cover of the book is blue.
+294,147,2,She drank a glass of water.
+295,148,1,Please turn off the light.
+296,148,2,The cat jumped off the chair.
+297,149,1,My mother works in an office.
+298,149,2,The office closes at five.
+299,150,1,We saw the officer near the window.
+300,150,2,My friend described the officer very clearly.
+301,151,1,I often drink tea after dinner.
+302,151,2,She often walks to school.
+303,152,1,My old phone still works.
+304,152,2,The old man walked slowly.
+305,153,1,The Olympics are on TV tonight.
+306,153,2,Many athletes train for the Olympics.
+307,154,1,The phone is on the desk.
+308,154,2,We met on Monday morning.
+309,155,1,Open your book to page ten.
+310,155,2,She wrote notes on the page.
+311,156,1,She will paint the wall blue.
+312,156,2,The paint on the door is dry.
+313,157,1,The painting hangs above the sofa.
+314,157,2,She is painting a small flower.
+315,158,1,I bought a pair of shoes.
+316,158,2,This pair of socks is clean.
+317,159,1,People gathered outside the palace.
+318,159,2,The old palace looked clean and bright.
+319,160,1,His pants are black.
+320,160,2,She put her pants in the closet.
+321,161,1,The paper was on the wooden table.
+322,161,2,My brother carried the paper to school.
+323,162,1,Read the first paragraph slowly.
+324,162,2,The paragraph has five sentences.
+325,163,1,"Pardon me, where is the station?"
+326,163,2,I asked for pardon after my mistake.
+327,164,1,The parent arrived early for work.
+328,164,2,Everyone thanked the parent after lunch.
+329,165,1,The team will park the issue tomorrow.
+330,165,2,I hope to park this skill with practice.
+331,166,1,A quarter of the cake is left.
+332,166,2,The game starts after a quarter hour.
+333,167,1,The teacher asked a simple question.
+334,167,2,Please question the answer if it seems wrong.
+335,168,1,She quickly closed the door.
+336,168,2,He quickly answered the question.
+337,169,1,The library is quiet today.
+338,169,2,Please be quiet during the test.
+339,170,1,He pointed to the rabbit on the page.
+340,170,2,The rabbit appeared near the end of the story.
+341,171,1,I cleaned the radio before dinner.
+342,171,2,The small radio fell from the shelf.
+343,172,1,The children like to rain after school.
+344,172,2,We watched the birds rain near the trees.
+345,173,1,It is a rainy day.
+346,173,2,She wore boots in the rainy weather.
+347,174,1,We saw the rat near the window.
+348,174,2,My friend described the rat very clearly.
+349,175,1,They plan to read the problem this week.
+350,175,2,She tried to read the task before dinner.
+351,176,1,He pointed to the reader on the page.
+352,176,2,The reader appeared near the end of the story.
+353,177,1,The reading answer was easy to understand.
+354,177,2,We found a reading place to rest.
+355,178,1,Dinner is ready now.
+356,178,2,I am ready for the lesson.
+357,179,1,This is a real diamond.
+358,179,2,His story felt real to me.
+359,180,1,I was sad when I heard the news.
+360,180,2,They seemed sad at the end of the day.
+361,181,1,The sailor helped a child near the door.
+362,181,2,A friendly sailor smiled during the meeting.
+363,182,1,The salad tasted good with tea.
+364,182,2,My sister put the salad on a plate.
+365,183,1,The shop has a big sale today.
+366,183,2,The sale of tickets starts at noon.
+367,184,1,We have the same bag.
+368,184,2,The answer is the same as mine.
+369,185,1,He ate a sandwich for lunch.
+370,185,2,The sandwich had cheese and tomato.
+371,186,1,We visit grandma on Saturday.
+372,186,2,Saturday is my favorite day.
+373,187,1,Please save your work before closing the file.
+374,187,2,The firefighter tried to save the cat.
+375,188,1,I saw a red bird in the garden.
+376,188,2,He used a saw to cut the wood.
+377,189,1,He will say to his friend tonight.
+378,189,2,The manager chose to say the team clearly.
+379,190,1,The children go to school by bus.
+380,190,2,Our school has a small garden.
+381,191,1,Put the glass on the table.
+382,191,2,The table shows the test results.
+383,192,1,The team will take the issue tomorrow.
+384,192,2,I hope to take this skill with practice.
+385,193,1,Please talk clearly before you leave.
+386,193,2,The teacher will talk the class after lunch.
+387,194,1,The tall tree is near the house.
+388,194,2,My brother is tall for his age.
+389,195,1,I cleaned the taxi before dinner.
+390,195,2,The small taxi fell from the shelf.
+391,196,1,She ate a tea after school.
+392,196,2,He bought a fresh tea at the market.
+393,197,1,She tried to teach the news calmly.
+394,197,2,They asked him to teach the story again.
+395,198,1,A young teacher waited outside the room.
+396,198,2,The teacher spoke kindly to us.
+397,199,1,Our team won the game.
+398,199,2,She joined the school team.
+399,200,1,Technology changes our daily life.
+400,200,2,The class used technology for the project.
+401,201,1,I cleaned the telephone before dinner.
+402,201,2,The small telephone fell from the shelf.
+403,202,1,The old wall looked ugly.
+404,202,2,He drew an ugly monster.
+405,203,1,Take an umbrella because it may rain.
+406,203,2,Her umbrella is yellow.
+407,204,1,A young uncle waited outside the room.
+408,204,2,The uncle spoke kindly to us.
+409,205,1,The ball is under the bed.
+410,205,2,The cat hid under the chair.
+411,206,1,Please underline the correct answer.
+412,206,2,I underline new words in my book.
+413,207,1,I waited until six o’clock.
+414,207,2,Stay here until I return.
+415,208,1,She looked up at the sky.
+416,208,2,He picked up the pencil.
+417,209,1,The teacher gave us homework.
+418,209,2,My uncle drove us to the station.
+419,210,1,The team will use the issue tomorrow.
+420,210,2,I hope to use this skill with practice.
+421,211,1,I usually wake up at seven.
+422,211,2,She usually studies after dinner.
+423,212,1,We went to İzmir on vacation.
+424,212,2,My vacation starts next week.
+425,213,1,I cleaned the vase before dinner.
+426,213,2,The small vase fell from the shelf.
+427,214,1,Carrot is a healthy vegetable.
+428,214,2,She cut a vegetable for the soup.
+429,215,1,This tea is very hot.
+430,215,2,He is very good at math.
+431,216,1,I cleaned the video before dinner.
+432,216,2,The small video fell from the shelf.
+433,217,1,They plan to visit the problem this week.
+434,217,2,She tried to visit the task before dinner.
+435,218,1,The volleyball was on the wooden table.
+436,218,2,My brother carried the volleyball to school.
+437,219,1,The team will vote the issue tomorrow.
+438,219,2,I hope to vote this skill with practice.
+439,220,1,The children like to wait after school.
+440,220,2,We watched the birds wait near the trees.
+441,221,1,The waiter brought the menu.
+442,221,2,A waiter cleaned the table.
+443,222,1,The waitress smiled at the guests.
+444,222,2,A waitress gave us water.
+445,223,1,The children like to wake after school.
+446,223,2,We watched the birds wake near the trees.
+447,224,1,She began to walk when the music started.
+448,224,2,They will walk outside if the weather is good.
+449,225,1,I cleaned the wall before dinner.
+450,225,2,The small wall fell from the shelf.
+451,226,1,They plan to want the problem this week.
+452,226,2,She tried to want the task before dinner.
+453,227,1,The war changed many families.
+454,227,2,The film is about a long war.
+455,228,1,The soup is warm and ready to eat.
+456,228,2,A warm jacket helps in winter.
+457,229,1,The room was quiet at night.
+458,229,2,He was happy after the match.
+459,230,1,The yard was quiet in the morning.
+460,230,2,We found the yard at the end of the street.
+461,231,1,We saw the year near the window.
+462,231,2,My friend described the year very clearly.
+463,232,1,The yellow bus stopped outside.
+464,232,2,She wore a yellow dress.
+465,233,1,"Yes, I can help you."
+466,233,2,She said yes to the invitation.
+467,234,1,He answered yesterday when the teacher asked.
+468,234,2,The machine moved yesterday across the floor.
+469,235,1,I have not finished my homework yet.
+470,235,2,The soup is hot yet easy to eat.
+471,236,1,You can sit next to me.
+472,236,2,I will help you after class.
+473,237,1,The young answer was easy to understand.
+474,237,2,We found a young place to rest.
+475,238,1,Please bring your notebook tomorrow.
+476,238,2,Your bike is outside the house.
+477,239,1,This blue bag is yours.
+478,239,2,The last ticket is yours.
+479,240,1,We saw lions at the zoo.
+480,240,2,The zoo opens at ten.
+481,241,1,The report described the ability clearly.
+482,241,2,We noticed the ability during the project.
+483,242,1,She wants to study abroad next year.
+484,242,2,My uncle lives abroad now.
+485,243,1,The team will accept the issue tomorrow.
+486,243,2,I hope to accept this skill with practice.
+487,244,1,The acceptable room felt calm and safe.
+488,244,2,She chose an acceptable jacket for the trip.
+489,245,1,The accident happened near the school.
+490,245,2,No one was hurt in the accident.
+491,246,1,We saw the account near the window.
+492,246,2,My friend described the account very clearly.
+493,247,1,They plan to achieve the problem this week.
+494,247,2,She tried to achieve the task before dinner.
+495,248,1,We walked across the bridge.
+496,248,2,The shop is across the street.
+497,249,1,We saw the act near the window.
+498,249,2,My friend described the act very clearly.
+499,250,1,The system behaved actually during the test.
+500,250,2,The result changed actually in the study.
+501,251,1,The class discussed the addition after the video.
+502,251,2,This example shows the addition clearly.
+503,252,1,The mountains were in the background.
+504,252,2,Her background helped her get the job.
+505,253,1,She spoke badly during the meeting.
+506,253,2,The team worked badly on the final task.
+507,254,1,We played badminton in the garden.
+508,254,2,Badminton is fun with friends.
+509,255,1,Please bake this before you add more salt.
+510,255,2,They decided to bake at home tonight.
+511,256,1,The balcony was part of the story.
+512,256,2,She noticed the balcony during the lesson.
+513,257,1,He pointed to the balloon on the page.
+514,257,2,The balloon appeared near the end of the story.
+515,258,1,We saw the banking near the window.
+516,258,2,My friend described the banking very clearly.
+517,259,1,The barbecue was part of the story.
+518,259,2,She noticed the barbecue during the lesson.
+519,260,1,The barber arrived early for work.
+520,260,2,Everyone thanked the barber after lunch.
+521,261,1,This jacket was a real bargain.
+522,261,2,They bargain at the small market.
+523,262,1,The lamp has a heavy base.
+524,262,2,This idea is the base of the plan.
+525,263,1,He pointed to the cab on the page.
+526,263,2,The cab appeared near the end of the story.
+527,264,1,People gathered outside the cafeteria.
+528,264,2,The old cafeteria looked clean and bright.
+529,265,1,The calendar was part of the story.
+530,265,2,She noticed the calendar during the lesson.
+531,266,1,He pointed to the camping on the page.
+532,266,2,The camping appeared near the end of the story.
+533,267,1,People gathered outside the campus.
+534,267,2,The old campus looked clean and bright.
+535,268,1,Ankara is the capital of Türkiye.
+536,268,2,The company needs more capital to grow.
+537,269,1,The captain arrived early for work.
+538,269,2,Everyone thanked the captain after lunch.
+539,270,1,We shared the carrot at lunch.
+540,270,2,The cook used carrot in the meal.
+541,271,1,I paid for the ticket in cash.
+542,271,2,She keeps cash in her wallet.
+543,272,1,He pointed to the cassette on the page.
+544,272,2,The cassette appeared near the end of the story.
+545,273,1,People gathered outside the castle.
+546,273,2,The old castle looked clean and bright.
+547,274,1,I have a daily English lesson.
+548,274,2,She checks her email daily.
+549,275,1,He pointed to the dam on the page.
+550,275,2,The dam appeared near the end of the story.
+551,276,1,A young dancer waited outside the room.
+552,276,2,The dancer spoke kindly to us.
+553,277,1,The sign warned us about danger.
+554,277,2,Fire can be a serious danger.
+555,278,1,This dangerous example helped the students.
+556,278,2,The report used a dangerous idea clearly.
+557,279,1,We saw the daylight near the window.
+558,279,2,My friend described the daylight very clearly.
+559,280,1,The dead room felt calm and safe.
+560,280,2,She chose a dead jacket for the trip.
+561,281,1,They made a deal after the meeting.
+562,281,2,I can deal with this small problem.
+563,282,1,The death changed the final result.
+564,282,2,The story included a clear death.
+565,283,1,The debate was part of the story.
+566,283,2,She noticed the debate during the lesson.
+567,284,1,We need to decide the plan carefully.
+568,284,2,He decided to decide it after the meeting.
+569,285,1,The team will earn the issue tomorrow.
+570,285,2,I hope to earn this skill with practice.
+571,286,1,The earring room felt calm and safe.
+572,286,2,She chose an earring jacket for the trip.
+573,287,1,The class discussed the earth after the video.
+574,287,2,This example shows the earth clearly.
+575,288,1,We saw the earthquake near the window.
+576,288,2,My friend described the earthquake very clearly.
+577,289,1,She spoke easily during the meeting.
+578,289,2,The team worked easily on the final task.
+579,290,1,He pointed to the east on the page.
+580,290,2,The east appeared near the end of the story.
+581,291,1,A young editor waited outside the room.
+582,291,2,The editor spoke kindly to us.
+583,292,1,Education helps people find better jobs.
+584,292,2,The school gives free education to children.
+585,293,1,This educational example helped the students.
+586,293,2,The report used an educational idea clearly.
+587,294,1,The medicine had a quick effect.
+588,294,2,Rain has an effect on the match.
+589,295,1,Your effort made the project better.
+590,295,2,She put a lot of effort into the exam.
+591,296,1,This fact surprised the class.
+592,296,2,I wrote one fact in my notebook.
+593,297,1,I saw him fail near the park.
+594,297,2,The crowd waited for the show to fail.
+595,298,1,He answered fairly when the teacher asked.
+596,298,2,The machine moved fairly across the floor.
+597,299,1,Leaves fall from the trees in autumn.
+598,299,2,Fall is my favorite season.
+599,300,1,The familiar answer was easy to understand.
+600,300,2,We found a familiar place to rest.
+601,301,1,The report described the fancy clearly.
+602,301,2,We noticed the fancy during the project.
+603,302,1,This fantastic example helped the students.
+604,302,2,The report used a fantastic idea clearly.
+605,303,1,They walked far through the quiet hall.
+606,303,2,The student listened far to the story.
+607,304,1,The bus fare is two lira.
+608,304,2,She asked about the train fare.
+609,305,1,It was a fascinating day for a walk.
+610,305,2,He gave me a fascinating smile after class.
+611,306,1,She follows fashion magazines.
+612,306,2,That jacket is in fashion now.
+613,307,1,They waited near the gallery after lunch.
+614,307,2,She took a photo of the gallery in town.
+615,308,1,The garage was quiet in the morning.
+616,308,2,We found the garage at the end of the street.
+617,309,1,We saw a garlic pattern in the results.
+618,309,2,His garlic style made the story stronger.
+619,310,1,The car needs gas before the trip.
+620,310,2,The gas from the stove smelled strange.
+621,311,1,The gate was quiet in the morning.
+622,311,2,We found the gate at the end of the street.
+623,312,1,I saw him gather near the park.
+624,312,2,The crowd waited for the show to gather.
+625,313,1,The gender was part of the story.
+626,313,2,She noticed the gender during the lesson.
+627,314,1,My generation uses phones every day.
+628,314,2,Each generation has different music.
+629,315,1,The gentle answer was easy to understand.
+630,315,2,We found a gentle place to rest.
+631,316,1,The given room felt calm and safe.
+632,316,2,She chose a given jacket for the trip.
+633,317,1,He pointed to the globe on the page.
+634,317,2,The globe appeared near the end of the story.
+635,318,1,I bought a half-price ticket online.
+636,318,2,The shop sells half-price shoes today.
+637,319,1,She ate a ham after school.
+638,319,2,He bought a fresh ham at the market.
+639,320,1,He pointed to the handbag on the page.
+640,320,2,The handbag appeared near the end of the story.
+641,321,1,The handicapped answer was easy to understand.
+642,321,2,We found a handicapped place to rest.
+643,322,1,Hold the cup by its handle.
+644,322,2,She can handle the task alone.
+645,323,1,They walked happily through the quiet hall.
+646,323,2,The student listened happily to the story.
+647,324,1,The happiness changed the final result.
+648,324,2,The story included a clear happiness.
+649,325,1,She spoke hardly during the meeting.
+650,325,2,The team worked hardly on the final task.
+651,326,1,We need to harm the plan carefully.
+652,326,2,He decided to harm it after the meeting.
+653,327,1,The harmful answer was easy to understand.
+654,327,2,We found a harmful place to rest.
+655,328,1,The singers performed in harmony.
+656,328,2,The colors worked together in harmony.
+657,329,1,He pointed to the id on the page.
+658,329,2,The id appeared near the end of the story.
+659,330,1,The ill answer was easy to understand.
+660,330,2,We found an ill place to rest.
+661,331,1,The illegal detail changed the whole plan.
+662,331,2,She gave an illegal answer in class.
+663,332,1,The class discussed the image after the video.
+664,332,2,This example shows the image clearly.
+665,333,1,Children use imagination when they play.
+666,333,2,The story shows great imagination.
+667,334,1,The impact was part of the story.
+668,334,2,She noticed the impact during the lesson.
+669,335,1,The child was impatient in the dark room.
+670,335,2,My friend became impatient during the lesson.
+671,336,1,The teacher explained the importance of sleep.
+672,336,2,We understand the importance of clean water.
+673,337,1,She spoke importantly during the meeting.
+674,337,2,The team worked importantly on the final task.
+675,338,1,It was an impossible day for a walk.
+676,338,2,He gave me an impossible smile after class.
+677,339,1,The team will impress the issue tomorrow.
+678,339,2,I hope to impress this skill with practice.
+679,340,1,I put strawberry jam on my bread.
+680,340,2,We were late because of a traffic jam.
+681,341,1,The jelly tasted good with tea.
+682,341,2,My sister put the jelly on a plate.
+683,342,1,The team will joke the issue tomorrow.
+684,342,2,I hope to joke this skill with practice.
+685,343,1,The journey was part of the story.
+686,343,2,She noticed the journey during the lesson.
+687,344,1,He pointed to the joy on the page.
+688,344,2,The joy appeared near the end of the story.
+689,345,1,The junior answer was easy to understand.
+690,345,2,We found a junior place to rest.
+691,346,1,The junk was part of the story.
+692,346,2,She noticed the junk during the lesson.
+693,347,1,He pointed to the killer on the page.
+694,347,2,The killer appeared near the end of the story.
+695,348,1,We saw the kilo near the window.
+696,348,2,My friend described the kilo very clearly.
+697,349,1,She spoke kindly during the meeting.
+698,349,2,The team worked kindly on the final task.
+699,350,1,The kingdom was quiet in the morning.
+700,350,2,We found the kingdom at the end of the street.
+701,351,1,We saw the kit near the window.
+702,351,2,My friend described the kit very clearly.
+703,352,1,They plan to knock the problem this week.
+704,352,2,She tried to knock the task before dinner.
+705,353,1,Reading gives you more knowledge.
+706,353,2,Her knowledge of history is strong.
+707,354,1,A lack of sleep can make you tired.
+708,354,2,The team noticed a lack of clear rules.
+709,355,1,They waited near the lake after lunch.
+710,355,2,She took a photo of the lake in town.
+711,356,1,He pointed to the lamp on the page.
+712,356,2,The lamp appeared near the end of the story.
+713,357,1,The plane will land at noon.
+714,357,2,They bought land near the village.
+715,358,1,The landscape was part of the story.
+716,358,2,She noticed the landscape during the lesson.
+717,359,1,He pointed to the lane on the page.
+718,359,2,The lane appeared near the end of the story.
+719,360,1,We saw the last near the window.
+720,360,2,My friend described the last very clearly.
+721,361,1,The latest room felt calm and safe.
+722,361,2,She chose a latest jacket for the trip.
+723,362,1,It was a latter day for a walk.
+724,362,2,He gave me a latter smile after class.
+725,363,1,The law protects workers.
+726,363,2,He studies law at university.
+727,364,1,The lawyer helped a child near the door.
+728,364,2,A friendly lawyer smiled during the meeting.
+729,365,1,It was a mad day for a walk.
+730,365,2,He gave me a mad smile after class.
+731,366,1,We saw a magic pattern in the results.
+732,366,2,His magic style made the story stronger.
+733,367,1,They walked mainly through the quiet hall.
+734,367,2,The student listened mainly to the story.
+735,368,1,It was a major day for a walk.
+736,368,2,He gave me a major smile after class.
+737,369,1,I cleaned the make-up before dinner.
+738,369,2,The small make-up fell from the shelf.
+739,370,1,The maker was part of the story.
+740,370,2,She noticed the maker during the lesson.
+741,371,1,The male bird has bright colors.
+742,371,2,A male student answered first.
+743,372,1,People gathered outside the mall.
+744,372,2,The old mall looked clean and bright.
+745,373,1,They plan to manage the problem this week.
+746,373,2,She tried to manage the task before dinner.
+747,374,1,The manager arrived early for work.
+748,374,2,Everyone thanked the manager after lunch.
+749,375,1,We saw the manner near the window.
+750,375,2,My friend described the manner very clearly.
+751,376,1,She put the napkin beside her bag.
+752,376,2,He found a napkin under the chair.
+753,377,1,The class discussed the nation after the video.
+754,377,2,This example shows the nation clearly.
+755,378,1,We saw a national pattern in the results.
+756,378,2,His national style made the story stronger.
+757,379,1,The native detail changed the whole plan.
+758,379,2,She gave a native answer in class.
+759,380,1,This natural example helped the students.
+760,380,2,The report used a natural idea clearly.
+761,381,1,We walked in nature on Sunday.
+762,381,2,Nature is beautiful after rain.
+763,382,1,He answered nearly when the teacher asked.
+764,382,2,The machine moved nearly across the floor.
+765,383,1,This necessary example helped the students.
+766,383,2,The report used a necessary idea clearly.
+767,384,1,We saw a negative pattern in the results.
+768,384,2,His negative style made the story stronger.
+769,385,1,She felt nervous before the test.
+770,385,2,He looked nervous after the phone call.
+771,386,1,He pointed to the oak on the page.
+772,386,2,The oak appeared near the end of the story.
+773,387,1,The occupation changed the final result.
+774,387,2,The story included a clear occupation.
+775,388,1,They plan to offer the problem this week.
+776,388,2,She tried to offer the task before dinner.
+777,389,1,The official result came this morning.
+778,389,2,A city official answered our question.
+779,390,1,She cooked the eggs in oil.
+780,390,2,The ship carried oil across the sea.
+781,391,1,The olympic detail changed the whole plan.
+782,391,2,She gave an olympic answer in class.
+783,392,1,The onion tasted good with tea.
+784,392,2,My sister put the onion on a plate.
+785,393,1,The online answer was easy to understand.
+786,393,2,We found an online place to rest.
+787,394,1,They plan to operate the problem this week.
+788,394,2,She tried to operate the task before dinner.
+789,395,1,What is your opinion about this film?
+790,395,2,She gave her opinion politely.
+791,396,1,We saw a pacific pattern in the results.
+792,396,2,His pacific style made the story stronger.
+793,397,1,Please pack your bag tonight.
+794,397,2,He bought a pack of cards.
+795,398,1,The painter arrived early for work.
+796,398,2,Everyone thanked the painter after lunch.
+797,399,1,We saw a pal pattern in the results.
+798,399,2,His pal style made the story stronger.
+799,400,1,She fried eggs in a small pan.
+800,400,2,The hot pan was on the stove.
+801,401,1,She began to panic when the music started.
+802,401,2,They will panic outside if the weather is good.
+803,402,1,We saw the part near the window.
+804,402,2,My friend described the part very clearly.
+805,403,1,They walked partly through the quiet hall.
+806,403,2,The student listened partly to the story.
+807,404,1,We need to pass the plan carefully.
+808,404,2,He decided to pass it after the meeting.
+809,405,1,Read the short passage carefully.
+810,405,2,The narrow passage leads to the garden.
+811,406,1,The passenger helped a child near the door.
+812,406,2,A friendly passenger smiled during the meeting.
+813,407,1,The quality of the phone is good.
+814,407,2,This shop sells high-quality tea.
+815,408,1,We saw the queen near the window.
+816,408,2,My friend described the queen very clearly.
+817,409,1,The quick room felt calm and safe.
+818,409,2,She chose a quick jacket for the trip.
+819,410,1,He answered quietly when the teacher asked.
+820,410,2,The machine moved quietly across the floor.
+821,411,1,I saw him quit near the park.
+822,411,2,The crowd waited for the show to quit.
+823,412,1,The room is quite warm today.
+824,412,2,She was quite happy with her score.
+825,413,1,He pointed to the quiz on the page.
+826,413,2,The quiz appeared near the end of the story.
+827,414,1,He bought a new tennis racket.
+828,414,2,The children made a loud racket outside.
+829,415,1,She put the raincoat beside her bag.
+830,415,2,He found a raincoat under the chair.
+831,416,1,They will raise money for the school.
+832,416,2,Please raise your hand before speaking.
+833,417,1,The price range is very wide.
+834,417,2,Mountains cover the range in the north.
+835,418,1,The rap was part of the story.
+836,418,2,She noticed the rap during the lesson.
+837,419,1,The hotel has a high rate this week.
+838,419,2,Please rate the meal after dinner.
+839,420,1,The test was rather easy.
+840,420,2,I would rather stay at home tonight.
+841,421,1,The rating room felt calm and safe.
+842,421,2,She chose a rating jacket for the trip.
+843,422,1,Do not eat raw chicken.
+844,422,2,The report used raw data from the survey.
+845,423,1,We saw the ray near the window.
+846,423,2,My friend described the ray very clearly.
+847,424,1,They plan to reach the problem this week.
+848,424,2,She tried to reach the task before dinner.
+849,425,1,She spoke sadly during the meeting.
+850,425,2,The team worked sadly on the final task.
+851,426,1,The safe answer was easy to understand.
+852,426,2,We found a safe place to rest.
+853,427,1,The sailing was part of the story.
+854,427,2,She noticed the sailing during the lesson.
+855,428,1,He pointed to the sake on the page.
+856,428,2,The sake appeared near the end of the story.
+857,429,1,We shared the salt at lunch.
+858,429,2,The cook used salt in the meal.
+859,430,1,The sample was part of the story.
+860,430,2,She noticed the sample during the lesson.
+861,431,1,It was a sandy day for a walk.
+862,431,2,He gave me a sandy smile after class.
+863,432,1,The team will satisfy the issue tomorrow.
+864,432,2,I hope to satisfy this skill with practice.
+865,433,1,She ate a sauce after school.
+866,433,2,He bought a fresh sauce at the market.
+867,434,1,The sausage tasted good with tea.
+868,434,2,My sister put the sausage on a plate.
+869,435,1,The map uses a small scale.
+870,435,2,She stood on the scale at the clinic.
+871,436,1,The tablespoon was part of the story.
+872,436,2,She noticed the tablespoon during the lesson.
+873,437,1,He pointed to the talent on the page.
+874,437,2,The talent appeared near the end of the story.
+875,438,1,Turn off the tap after washing your hands.
+876,438,2,Tap the screen to start the game.
+877,439,1,She used tape to fix the box.
+878,439,2,My father found an old music tape.
+879,440,1,He pointed to the target on the page.
+880,440,2,The target appeared near the end of the story.
+881,441,1,This task is not difficult.
+882,441,2,Finish the task before lunch.
+883,442,1,A tear ran down her cheek.
+884,442,2,Do not tear the paper.
+885,443,1,The class discussed the teenage after the video.
+886,443,2,This example shows the teenage clearly.
+887,444,1,A young teenager waited outside the room.
+888,444,2,The teenager spoke kindly to us.
+889,445,1,The temperature is high today.
+890,445,2,Check the temperature before you go out.
+891,446,1,We need to terrify the plan carefully.
+892,446,2,He decided to terrify it after the meeting.
+893,447,1,The uncertain answer was easy to understand.
+894,447,2,We found an uncertain place to rest.
+895,448,1,She felt uncomfortable before the test.
+896,448,2,He looked uncomfortable after the phone call.
+897,449,1,We can understand the problem step by step.
+898,449,2,He began to understand the answer during class.
+899,450,1,The underwater answer was easy to understand.
+900,450,2,We found an underwater place to rest.
+901,451,1,She felt uneasy before the test.
+902,451,2,He looked uneasy after the phone call.
+903,452,1,It was an unfair day for a walk.
+904,452,2,He gave me an unfair smile after class.
+905,453,1,The unforgettable answer was easy to understand.
+906,453,2,We found an unforgettable place to rest.
+907,454,1,He answered unfortunately when the teacher asked.
+908,454,2,The machine moved unfortunately across the floor.
+909,455,1,The child was unhappy in the dark room.
+910,455,2,My friend became unhappy during the lesson.
+911,456,1,The unhealthy answer was easy to understand.
+912,456,2,We found an unhealthy place to rest.
+913,457,1,They waited near the valley after lunch.
+914,457,2,She took a photo of the valley in town.
+915,458,1,This ring has great value.
+916,458,2,The value of honesty is clear.
+917,459,1,We saw the verb near the window.
+918,459,2,My friend described the verb very clearly.
+919,460,1,The hotel room has a sea view.
+920,460,2,I respect your view on this topic.
+921,461,1,The village was quiet in the morning.
+922,461,2,We found the village at the end of the street.
+923,462,1,The violent answer was easy to understand.
+924,462,2,We found a violent place to rest.
+925,463,1,The violin was part of the story.
+926,463,2,She noticed the violin during the lesson.
+927,464,1,The visitor arrived early for work.
+928,464,2,Everyone thanked the visitor after lunch.
+929,465,1,We saw a vocabulary pattern in the results.
+930,465,2,His vocabulary style made the story stronger.
+931,466,1,Her voice is soft and calm.
+932,466,2,I heard a voice in the hallway.
+933,467,1,He pointed to the walking on the page.
+934,467,2,The walking appeared near the end of the story.
+935,468,1,I cleaned the wallet before dinner.
+936,468,2,The small wallet fell from the shelf.
+937,469,1,We like to wander through the old streets.
+938,469,2,The child may wander away from the group.
+939,470,1,The washing-up was on the wooden table.
+940,470,2,My brother carried the washing-up to school.
+941,471,1,A large wave hit the beach.
+942,471,2,Please wave when you see the bus.
+943,472,1,The weak room felt calm and safe.
+944,472,2,She chose a weak jacket for the trip.
+945,473,1,The class discussed the wealth after the video.
+946,473,2,This example shows the wealth clearly.
+947,474,1,We saw the web near the window.
+948,474,2,My friend described the web very clearly.
+949,475,1,She put the website beside her bag.
+950,475,2,He found a website under the chair.
+951,476,1,It was a wedding day for a walk.
+952,476,2,He gave me a wedding smile after class.
+953,477,1,We saw the weekday near the window.
+954,477,2,My friend described the weekday very clearly.
+955,478,1,"Yeah, I can come with you."
+956,478,2,She said yeah with a big smile.
+957,479,1,Youth can bring energy to a team.
+958,479,2,He spent his youth in a small village.
+959,480,1,People gathered outside the zone.
+960,480,2,The old zone looked clean and bright.
+961,481,1,They plan to abandon the problem this week.
+962,481,2,She tried to abandon the task before dinner.
+963,482,1,It was an able day for a walk.
+964,482,2,He gave me an able smile after class.
+965,483,1,We saw an abnormal pattern in the results.
+966,483,2,His abnormal style made the story stronger.
+967,484,1,The passengers went aboard the ship.
+968,484,2,She was already aboard the plane.
+969,485,1,He pointed to the aborigine on the page.
+970,485,2,The aborigine appeared near the end of the story.
+971,486,1,The absence changed the final result.
+972,486,2,The story included a clear absence.
+973,487,1,The absent room felt calm and safe.
+974,487,2,She chose an absent jacket for the trip.
+975,488,1,It was an absolute day for a walk.
+976,488,2,He gave me an absolute smile after class.
+977,489,1,She spoke absolutely during the meeting.
+978,489,2,The team worked absolutely on the final task.
+979,490,1,The absorb was part of the story.
+980,490,2,She noticed the absorb during the lesson.
+981,491,1,It was an abstract day for a walk.
+982,491,2,He gave me an abstract smile after class.
+983,492,1,The team will babysit the issue tomorrow.
+984,492,2,I hope to babysit this skill with practice.
+985,493,1,The babysitter helped a child near the door.
+986,493,2,A friendly babysitter smiled during the meeting.
+987,494,1,He pointed to the backache on the page.
+988,494,2,The backache appeared near the end of the story.
+989,495,1,I cleaned the backpack before dinner.
+990,495,2,The small backpack fell from the shelf.
+991,496,1,The backpacker helped a child near the door.
+992,496,2,A friendly backpacker smiled during the meeting.
+993,497,1,He pointed to the backpacking on the page.
+994,497,2,The backpacking appeared near the end of the story.
+995,498,1,We shared the bacon at lunch.
+996,498,2,The cook used bacon in the meal.
+997,499,1,She put the baggage beside her bag.
+998,499,2,He found a baggage under the chair.
+999,500,1,The baker arrived early for work.
+1000,500,2,Everyone thanked the baker after lunch.
+1001,501,1,We saw the bakery near the window.
+1002,501,2,My friend described the bakery very clearly.
+1003,502,1,The report described the balance clearly.
+1004,502,2,We noticed the balance during the project.
+1005,503,1,The cabbage tasted good with tea.
+1006,503,2,My sister put the cabbage on a plate.
+1007,504,1,People gathered outside the cabin.
+1008,504,2,The old cabin looked clean and bright.
+1009,505,1,She put the cage beside her bag.
+1010,505,2,He found a cage under the chair.
+1011,506,1,We need to calculate the plan carefully.
+1012,506,2,He decided to calculate it after the meeting.
+1013,507,1,The calculation changed the final result.
+1014,507,2,The story included a clear calculation.
+1015,508,1,She put the calculator beside her bag.
+1016,508,2,He found a calculator under the chair.
+1017,509,1,He pointed to the calf on the page.
+1018,509,2,The calf appeared near the end of the story.
+1019,510,1,A young caller waited outside the room.
+1020,510,2,The caller spoke kindly to us.
+1021,511,1,The calm room felt calm and safe.
+1022,511,2,She chose a calm jacket for the trip.
+1023,512,1,The class discussed the calmness after the video.
+1024,512,2,This example shows the calmness clearly.
+1025,513,1,We saw the camel near the window.
+1026,513,2,My friend described the camel very clearly.
+1027,514,1,The daisy was part of the story.
+1028,514,2,She noticed the daisy during the lesson.
+1029,515,1,The class discussed the damage after the video.
+1030,515,2,This example shows the damage clearly.
+1031,516,1,The damaged answer was easy to understand.
+1032,516,2,We found a damaged place to rest.
+1033,517,1,The damp room felt calm and safe.
+1034,517,2,She chose a damp jacket for the trip.
+1035,518,1,He answered dangerously when the teacher asked.
+1036,518,2,The machine moved dangerously across the floor.
+1037,519,1,The team will dare the issue tomorrow.
+1038,519,2,I hope to dare this skill with practice.
+1039,520,1,The report described the darkness clearly.
+1040,520,2,We noticed the darkness during the project.
+1041,521,1,It was a dating day for a walk.
+1042,521,2,He gave me a dating smile after class.
+1043,522,1,The team will daze the issue tomorrow.
+1044,522,2,I hope to daze this skill with practice.
+1045,523,1,They plan to dazzle the problem this week.
+1046,523,2,She tried to dazzle the task before dinner.
+1047,524,1,He pointed to the deadline on the page.
+1048,524,2,The deadline appeared near the end of the story.
+1049,525,1,I was eager when I heard the news.
+1050,525,2,They seemed eager at the end of the day.
+1051,526,1,The report described the eagerness clearly.
+1052,526,2,We noticed the eagerness during the project.
+1053,527,1,He pointed to the earache on the page.
+1054,527,2,The earache appeared near the end of the story.
+1055,528,1,The earnest answer was easy to understand.
+1056,528,2,We found an earnest place to rest.
+1057,529,1,The eastern room felt calm and safe.
+1058,529,2,She chose an eastern jacket for the trip.
+1059,530,1,He pointed to the eco on the page.
+1060,530,2,The eco appeared near the end of the story.
+1061,531,1,We saw an ecological pattern in the results.
+1062,531,2,His ecological style made the story stronger.
+1063,532,1,The class studied ecology in the forest.
+1064,532,2,Ecology helps us understand plants and animals.
+1065,533,1,This economic example helped the students.
+1066,533,2,The report used an economic idea clearly.
+1067,534,1,The economics changed the final result.
+1068,534,2,The story included a clear economics.
+1069,535,1,The report described the economy clearly.
+1070,535,2,We noticed the economy during the project.
+1071,536,1,It was a face-to-face day for a walk.
+1072,536,2,He gave me a face-to-face smile after class.
+1073,537,1,The sports facility opens at eight.
+1074,537,2,This facility has a large swimming pool.
+1075,538,1,The children like to fade after school.
+1076,538,2,We watched the birds fade near the trees.
+1077,539,1,The class discussed the failure after the video.
+1078,539,2,This example shows the failure clearly.
+1079,540,1,I saw him faint near the park.
+1080,540,2,The crowd waited for the show to faint.
+1081,541,1,The faithful room felt calm and safe.
+1082,541,2,She chose a faithful jacket for the trip.
+1083,542,1,It was a fake day for a walk.
+1084,542,2,He gave me a fake smile after class.
+1085,543,1,The fallen answer was easy to understand.
+1086,543,2,We found a fallen place to rest.
+1087,544,1,The fantasy was part of the story.
+1088,544,2,She noticed the fantasy during the lesson.
+1089,545,1,It was a faraway day for a walk.
+1090,545,2,He gave me a faraway smile after class.
+1091,546,1,We saw the farewell near the window.
+1092,546,2,My friend described the farewell very clearly.
+1093,547,1,They plan to gain the problem this week.
+1094,547,2,She tried to gain the task before dinner.
+1095,548,1,He pointed to the gall on the page.
+1096,548,2,The gall appeared near the end of the story.
+1097,549,1,I cleaned the gallon before dinner.
+1098,549,2,The small gallon fell from the shelf.
+1099,550,1,The gap was part of the story.
+1100,550,2,She noticed the gap during the lesson.
+1101,551,1,He pointed to the gardening on the page.
+1102,551,2,The gardening appeared near the end of the story.
+1103,552,1,I cleaned the garment before dinner.
+1104,552,2,The small garment fell from the shelf.
+1105,553,1,The gay was part of the story.
+1106,553,2,She noticed the gay during the lesson.
+1107,554,1,He pointed to the gee on the page.
+1108,554,2,The gee appeared near the end of the story.
+1109,555,1,We saw the gene near the window.
+1110,555,2,My friend described the gene very clearly.
+1111,556,1,The general detail changed the whole plan.
+1112,556,2,She gave a general answer in class.
+1113,557,1,This rule is generally true.
+1114,557,2,Students generally arrive before the bell.
+1115,558,1,We saw the habitat near the window.
+1116,558,2,My friend described the habitat very clearly.
+1117,559,1,The hairdresser helped a child near the door.
+1118,559,2,A friendly hairdresser smiled during the meeting.
+1119,560,1,The hairdryer was on the wooden table.
+1120,560,2,My brother carried the hairdryer to school.
+1121,561,1,I cleaned the hammer before dinner.
+1122,561,2,The small hammer fell from the shelf.
+1123,562,1,She put the hand-held beside her bag.
+1124,562,2,He found a hand-held under the chair.
+1125,563,1,The handball was on the wooden table.
+1126,563,2,My brother carried the handball to school.
+1127,564,1,I cleaned the handkerchief before dinner.
+1128,564,2,The small handkerchief fell from the shelf.
+1129,565,1,The handshake was part of the story.
+1130,565,2,She noticed the handshake during the lesson.
+1131,566,1,It was a handwriting day for a walk.
+1132,566,2,He gave me a handwriting smile after class.
+1133,567,1,The handy answer was easy to understand.
+1134,567,2,We found a handy place to rest.
+1135,568,1,They plan to hang the problem this week.
+1136,568,2,She tried to hang the task before dinner.
+1137,569,1,The class discussed the identity after the video.
+1138,569,2,This example shows the identity clearly.
+1139,570,1,We saw the idiom near the window.
+1140,570,2,My friend described the idiom very clearly.
+1141,571,1,The idol was part of the story.
+1142,571,2,She noticed the idol during the lesson.
+1143,572,1,We can ignore the problem step by step.
+1144,572,2,He began to ignore the answer during class.
+1145,573,1,The report explained the change illegally.
+1146,573,2,The room was designed illegally for better sound.
+1147,574,1,His illness kept him at home.
+1148,574,2,The doctor treated the illness quickly.
+1149,575,1,We need to illuminate the plan carefully.
+1150,575,2,He decided to illuminate it after the meeting.
+1151,576,1,We saw an imaginary pattern in the results.
+1152,576,2,His imaginary style made the story stronger.
+1153,577,1,They plan to imitate the problem this week.
+1154,577,2,She tried to imitate the task before dinner.
+1155,578,1,It was an immediate day for a walk.
+1156,578,2,He gave me an immediate smile after class.
+1157,579,1,They walked immediately through the quiet hall.
+1158,579,2,The student listened immediately to the story.
+1159,580,1,The jade was part of the story.
+1160,580,2,She noticed the jade during the lesson.
+1161,581,1,He pointed to the jar on the page.
+1162,581,2,The jar appeared near the end of the story.
+1163,582,1,We saw the jazz near the window.
+1164,582,2,My friend described the jazz very clearly.
+1165,583,1,She felt jealous before the test.
+1166,583,2,He looked jealous after the phone call.
+1167,584,1,He pointed to the jewel on the page.
+1168,584,2,The jewel appeared near the end of the story.
+1169,585,1,I saw him jog near the park.
+1170,585,2,The crowd waited for the show to jog.
+1171,586,1,The jogging was part of the story.
+1172,586,2,She noticed the jogging during the lesson.
+1173,587,1,They made a joint decision after lunch.
+1174,587,2,My knee joint feels stiff today.
+1175,588,1,We saw a journal pattern in the results.
+1176,588,2,His journal style made the story stronger.
+1177,589,1,The journalist helped a child near the door.
+1178,589,2,A friendly journalist smiled during the meeting.
+1179,590,1,The kettle was on the wooden table.
+1180,590,2,My brother carried the kettle to school.
+1181,591,1,I typed the message on a keyboard.
+1182,591,2,The keyboard has a broken key.
+1183,592,1,The killing was part of the story.
+1184,592,2,She noticed the killing during the lesson.
+1185,593,1,The class discussed the kindness after the video.
+1186,593,2,This example shows the kindness clearly.
+1187,594,1,We saw the kitten near the window.
+1188,594,2,My friend described the kitten very clearly.
+1189,595,1,They plan to knit the problem this week.
+1190,595,2,She tried to knit the task before dinner.
+1191,596,1,He pointed to the lab on the page.
+1192,596,2,The lab appeared near the end of the story.
+1193,597,1,We saw a laboratory pattern in the results.
+1194,597,2,His laboratory style made the story stronger.
+1195,598,1,He climbed the ladder to fix the roof.
+1196,598,2,The ladder stood against the wall.
+1197,599,1,He pointed to the lamb on the page.
+1198,599,2,The lamb appeared near the end of the story.
+1199,600,1,A young landlord waited outside the room.
+1200,600,2,The landlord spoke kindly to us.
+1201,601,1,She spoke largely during the meeting.
+1202,601,2,The team worked largely on the final task.
+1203,602,1,It was a lasting day for a walk.
+1204,602,2,He gave me a lasting smile after class.
+1205,603,1,We saw the latecomer near the window.
+1206,603,2,My friend described the latecomer very clearly.
+1207,604,1,The plan changed lately after lunch.
+1208,604,2,She smiled lately at the good news.
+1209,605,1,He pointed to the laughter on the page.
+1210,605,2,The laughter appeared near the end of the story.
+1211,606,1,They will launch the app next week.
+1212,606,2,The rocket launch was shown on TV.
+1213,607,1,The magical detail changed the whole plan.
+1214,607,2,She gave a magical answer in class.
+1215,608,1,He pointed to the magician on the page.
+1216,608,2,The magician appeared near the end of the story.
+1217,609,1,The magnificent answer was easy to understand.
+1218,609,2,We found a magnificent place to rest.
+1219,610,1,She put the mailbox beside her bag.
+1220,610,2,He found a mailbox under the chair.
+1221,611,1,It was a main day for a walk.
+1222,611,2,He gave me a main smile after class.
+1223,612,1,The team will maintain the issue tomorrow.
+1224,612,2,I hope to maintain this skill with practice.
+1225,613,1,The report described the maintenance clearly.
+1226,613,2,We noticed the maintenance during the project.
+1227,614,1,The class discussed the majority after the video.
+1228,614,2,This example shows the majority clearly.
+1229,615,1,Good management helped the team finish early.
+1230,615,2,The hotel management answered our complaint.
+1231,616,1,The mankind was part of the story.
+1232,616,2,She noticed the mankind during the lesson.
+1233,617,1,He pointed to the maple on the page.
+1234,617,2,The maple appeared near the end of the story.
+1235,618,1,He hit the nail with a hammer.
+1236,618,2,She painted each nail red.
+1237,619,1,The naked room felt calm and safe.
+1238,619,2,She chose a naked jacket for the trip.
+1239,620,1,The baby took a short nap.
+1240,620,2,I need to nap after the long trip.
+1241,621,1,He will narrate to his friend tonight.
+1242,621,2,The manager chose to narrate the team clearly.
+1243,622,1,The narrative detail changed the whole plan.
+1244,622,2,She gave a narrative answer in class.
+1245,623,1,It was a narrow day for a walk.
+1246,623,2,He gave me a narrow smile after class.
+1247,624,1,The nasty answer was easy to understand.
+1248,624,2,We found a nasty place to rest.
+1249,625,1,The nationalist room felt calm and safe.
+1250,625,2,She chose a nationalist jacket for the trip.
+1251,626,1,The team compared the samples naturally.
+1252,626,2,The model reacted naturally to the new data.
+1253,627,1,The nearby answer was easy to understand.
+1254,627,2,We found a nearby place to rest.
+1255,628,1,Place the small object on the desk.
+1256,628,2,Some students object to the new rule.
+1257,629,1,The class discussed the objection after the video.
+1258,629,2,This example shows the objection clearly.
+1259,630,1,We saw an objective pattern in the results.
+1260,630,2,His objective style made the story stronger.
+1261,631,1,The report described the observation clearly.
+1262,631,2,We noticed the observation during the project.
+1263,632,1,We can observe the problem step by step.
+1264,632,2,He began to observe the answer during class.
+1265,633,1,We saw the obstacle near the window.
+1266,633,2,My friend described the obstacle very clearly.
+1267,634,1,They plan to obtain the problem this week.
+1268,634,2,She tried to obtain the task before dinner.
+1269,635,1,This obvious example helped the students.
+1270,635,2,The report used an obvious idea clearly.
+1271,636,1,The plan changed obviously after lunch.
+1272,636,2,She smiled obviously at the good news.
+1273,637,1,The report described the occasion clearly.
+1274,637,2,We noticed the occasion during the project.
+1275,638,1,This occasional example helped the students.
+1276,638,2,The report used an occasional idea clearly.
+1277,639,1,We saw the pace near the window.
+1278,639,2,My friend described the pace very clearly.
+1279,640,1,She put the package beside her bag.
+1280,640,2,He found a package under the chair.
+1281,641,1,He pointed to the packing on the page.
+1282,641,2,The packing appeared near the end of the story.
+1283,642,1,He used a paddle in the canoe.
+1284,642,2,They paddle across the quiet lake.
+1285,643,1,The paid room felt calm and safe.
+1286,643,2,She chose a paid jacket for the trip.
+1287,644,1,He pointed to the pain on the page.
+1288,644,2,The pain appeared near the end of the story.
+1289,645,1,The painful answer was easy to understand.
+1290,645,2,We found a painful place to rest.
+1291,646,1,The pale room felt calm and safe.
+1292,646,2,She chose a pale jacket for the trip.
+1293,647,1,She held the coin in her palm.
+1294,647,2,A tall palm grew near the beach.
+1295,648,1,I cleaned the parachute before dinner.
+1296,648,2,The small parachute fell from the shelf.
+1297,649,1,The paradise was part of the story.
+1298,649,2,She noticed the paradise during the lesson.
+1299,650,1,He pointed to the quake on the page.
+1300,650,2,The quake appeared near the end of the story.
+1301,651,1,The qualified answer was easy to understand.
+1302,651,2,We found a qualified place to rest.
+1303,652,1,They plan to qualify the problem this week.
+1304,652,2,She tried to qualify the task before dinner.
+1305,653,1,The class discussed the quantity after the video.
+1306,653,2,This example shows the quantity clearly.
+1307,654,1,I cleaned the questionnaire before dinner.
+1308,654,2,The small questionnaire fell from the shelf.
+1309,655,1,We stood in a long queue at the station.
+1310,655,2,Please queue quietly before the door opens.
+1311,656,1,The race started at nine o’clock.
+1312,656,2,They race bikes every Sunday.
+1313,657,1,We saw a racial pattern in the results.
+1314,657,2,His racial style made the story stronger.
+1315,658,1,The report described the radiation clearly.
+1316,658,2,We noticed the radiation during the project.
+1317,659,1,The class discussed the rage after the video.
+1318,659,2,This example shows the rage clearly.
+1319,660,1,I cleaned the rail before dinner.
+1320,660,2,The small rail fell from the shelf.
+1321,661,1,The railroad was part of the story.
+1322,661,2,She noticed the railroad during the lesson.
+1323,662,1,The railway was quiet in the morning.
+1324,662,2,We found the railway at the end of the street.
+1325,663,1,We saw the rainfall near the window.
+1326,663,2,My friend described the rainfall very clearly.
+1327,664,1,They waited near the rainforest after lunch.
+1328,664,2,She took a photo of the rainforest in town.
+1329,665,1,Her rank in the class improved.
+1330,665,2,The coach will rank the players today.
+1331,666,1,The rapid answer was easy to understand.
+1332,666,2,We found a rapid place to rest.
+1333,667,1,The sacred room felt calm and safe.
+1334,667,2,She chose a sacred jacket for the trip.
+1335,668,1,The class discussed the sadness after the video.
+1336,668,2,This example shows the sadness clearly.
+1337,669,1,We saw the safari near the window.
+1338,669,2,My friend described the safari very clearly.
+1339,670,1,They plan to safeguard the problem this week.
+1340,670,2,She tried to safeguard the task before dinner.
+1341,671,1,They walked safely through the quiet hall.
+1342,671,2,The student listened safely to the story.
+1343,672,1,We saw the safety near the window.
+1344,672,2,My friend described the safety very clearly.
+1345,673,1,The salesman helped a child near the door.
+1346,673,2,A friendly salesman smiled during the meeting.
+1347,674,1,The salmon tasted good with tea.
+1348,674,2,My sister put the salmon on a plate.
+1349,675,1,We saw the sand near the window.
+1350,675,2,My friend described the sand very clearly.
+1351,676,1,The sandal detail changed the whole plan.
+1352,676,2,She gave a sandal answer in class.
+1353,677,1,He pointed to the satellite on the page.
+1354,677,2,The satellite appeared near the end of the story.
+1355,678,1,I cleaned the tablet before dinner.
+1356,678,2,The small tablet fell from the shelf.
+1357,679,1,They waited near the takeaway after lunch.
+1358,679,2,She took a photo of the takeaway in town.
+1359,680,1,He pointed to the tale on the page.
+1360,680,2,The tale appeared near the end of the story.
+1361,681,1,The talented answer was easy to understand.
+1362,681,2,We found a talented place to rest.
+1363,682,1,The talkative detail changed the whole plan.
+1364,682,2,She gave a talkative answer in class.
+1365,683,1,The fish tank is beside the window.
+1366,683,2,The army tank crossed the road slowly.
+1367,684,1,This soup has a salty taste.
+1368,684,2,Please taste the sauce before dinner.
+1369,685,1,The tasteless room felt calm and safe.
+1370,685,2,She chose a tasteless jacket for the trip.
+1371,686,1,It was a tasty day for a walk.
+1372,686,2,He gave me a tasty smile after class.
+1373,687,1,The team will tax the issue tomorrow.
+1374,687,2,I hope to tax this skill with practice.
+1375,688,1,The teaching was part of the story.
+1376,688,2,She noticed the teaching during the lesson.
+1377,689,1,It was an unable day for a walk.
+1378,689,2,He gave me an unable smile after class.
+1379,690,1,I was unafraid when I heard the news.
+1380,690,2,They seemed unafraid at the end of the day.
+1381,691,1,The unbelievable room felt calm and safe.
+1382,691,2,She chose an unbelievable jacket for the trip.
+1383,692,1,Uncertainty made the students nervous.
+1384,692,2,There is still uncertainty about the final date.
+1385,693,1,The unclear answer was easy to understand.
+1386,693,2,We found an unclear place to rest.
+1387,694,1,The uncontrollable room felt calm and safe.
+1388,694,2,She chose an uncontrollable jacket for the trip.
+1389,695,1,We need to uncover the plan carefully.
+1390,695,2,He decided to uncover it after the meeting.
+1391,696,1,The underage changed the final result.
+1392,696,2,The story included a clear underage.
+1393,697,1,They plan to undergo the problem this week.
+1394,697,2,She tried to undergo the task before dinner.
+1395,698,1,The class discussed the underneath after the video.
+1396,698,2,This example shows the underneath clearly.
+1397,699,1,The vacancy changed the final result.
+1398,699,2,The story included a clear vacancy.
+1399,700,1,The vague room felt calm and safe.
+1400,700,2,She chose a vague jacket for the trip.
+1401,701,1,It was a vain day for a walk.
+1402,701,2,He gave me a vain smile after class.
+1403,702,1,The valuable answer was easy to understand.
+1404,702,2,We found a valuable place to rest.
+1405,703,1,The van was part of the story.
+1406,703,2,She noticed the van during the lesson.
+1407,704,1,He pointed to the variety on the page.
+1408,704,2,The variety appeared near the end of the story.
+1409,705,1,We saw a various pattern in the results.
+1410,705,2,His various style made the story stronger.
+1411,706,1,They plan to vary the problem this week.
+1412,706,2,She tried to vary the task before dinner.
+1413,707,1,It was a vast day for a walk.
+1414,707,2,He gave me a vast smile after class.
+1415,708,1,The vegetarian answer was easy to understand.
+1416,708,2,We found a vegetarian place to rest.
+1417,709,1,The wagon was part of the story.
+1418,709,2,She noticed the wagon during the lesson.
+1419,710,1,He pointed to the ward on the page.
+1420,710,2,The ward appeared near the end of the story.
+1421,711,1,We saw the wardrobe near the window.
+1422,711,2,My friend described the wardrobe very clearly.
+1423,712,1,The plan changed warmly after lunch.
+1424,712,2,She smiled warmly at the good news.
+1425,713,1,The class discussed the warmth after the video.
+1426,713,2,This example shows the warmth clearly.
+1427,714,1,He will warn to his friend tonight.
+1428,714,2,The manager chose to warn the team clearly.
+1429,715,1,The warning room felt calm and safe.
+1430,715,2,She chose a warning jacket for the trip.
+1431,716,1,He pointed to the warranty on the page.
+1432,716,2,The warranty appeared near the end of the story.
+1433,717,1,A young warrior waited outside the room.
+1434,717,2,The warrior spoke kindly to us.
+1435,718,1,The washbowl was part of the story.
+1436,718,2,She noticed the washbowl during the lesson.
+1437,719,1,She tried to yell the news calmly.
+1438,719,2,They asked him to yell the story again.
+1439,720,1,We saw the yoga near the window.
+1440,720,2,My friend described the yoga very clearly.
+1441,721,1,The abandoned room felt calm and safe.
+1442,721,2,She chose an abandoned jacket for the trip.
+1443,722,1,The team compared the samples abnormally.
+1444,722,2,The model reacted abnormally to the new data.
+1445,723,1,The team will abolish the issue tomorrow.
+1446,723,2,I hope to abolish this skill with practice.
+1447,724,1,The aboriginal detail changed the whole plan.
+1448,724,2,She gave an aboriginal answer in class.
+1449,725,1,She spoke abruptly during the meeting.
+1450,725,2,The team worked abruptly on the final task.
+1451,726,1,We saw the absentee near the window.
+1452,726,2,My friend described the absentee very clearly.
+1453,727,1,The absurd room felt calm and safe.
+1454,727,2,She chose an absurd jacket for the trip.
+1455,728,1,We need to abuse the plan carefully.
+1456,728,2,He decided to abuse it after the meeting.
+1457,729,1,The accessibility changed the final result.
+1458,729,2,The story included a clear accessibility.
+1459,730,1,The report described the accommodation clearly.
+1460,730,2,We noticed the accommodation during the project.
+1461,731,1,He pointed to the backup on the page.
+1462,731,2,The backup appeared near the end of the story.
+1463,732,1,People gathered outside the backyard.
+1464,732,2,The old backyard looked clean and bright.
+1465,733,1,The bad-tempered room felt calm and safe.
+1466,733,2,She chose a bad-tempered jacket for the trip.
+1467,734,1,The badge was on the wooden table.
+1468,734,2,My brother carried the badge to school.
+1469,735,1,The balanced answer was easy to understand.
+1470,735,2,We found a balanced place to rest.
+1471,736,1,The balky room felt calm and safe.
+1472,736,2,She chose a balky jacket for the trip.
+1473,737,1,He pointed to the ballad on the page.
+1474,737,2,The ballad appeared near the end of the story.
+1475,738,1,We saw the ballet near the window.
+1476,738,2,My friend described the ballet very clearly.
+1477,739,1,She put the ballot beside her bag.
+1478,739,2,He found a ballot under the chair.
+1479,740,1,We need to ban the plan carefully.
+1480,740,2,He decided to ban it after the meeting.
+1481,741,1,I cleaned the cabinet before dinner.
+1482,741,2,The small cabinet fell from the shelf.
+1483,742,1,The cable room felt calm and safe.
+1484,742,2,She chose a cable jacket for the trip.
+1485,743,1,They walked calmly through the quiet hall.
+1486,743,2,The student listened calmly to the story.
+1487,744,1,We saw the campaign near the window.
+1488,744,2,My friend described the campaign very clearly.
+1489,745,1,The candidate helped a child near the door.
+1490,745,2,A friendly candidate smiled during the meeting.
+1491,746,1,The cane was on the wooden table.
+1492,746,2,My brother carried the cane to school.
+1493,747,1,I cleaned the cannonball before dinner.
+1494,747,2,The small cannonball fell from the shelf.
+1495,748,1,The canon was part of the story.
+1496,748,2,She noticed the canon during the lesson.
+1497,749,1,The class discussed the capability after the video.
+1498,749,2,This example shows the capability clearly.
+1499,750,1,I cleaned the caption before dinner.
+1500,750,2,The small caption fell from the shelf.
+1501,751,1,The captive detail changed the whole plan.
+1502,751,2,She gave a captive answer in class.
+1503,752,1,It was a daft day for a walk.
+1504,752,2,He gave me a daft smile after class.
+1505,753,1,We saw the damn near the window.
+1506,753,2,My friend described the damn very clearly.
+1507,754,1,The dandelion was part of the story.
+1508,754,2,She noticed the dandelion during the lesson.
+1509,755,1,It was a darling day for a walk.
+1510,755,2,He gave me a darling smile after class.
+1511,756,1,We saw the dash near the window.
+1512,756,2,My friend described the dash very clearly.
+1513,757,1,The data was part of the story.
+1514,757,2,She noticed the data during the lesson.
+1515,758,1,He pointed to the database on the page.
+1516,758,2,The database appeared near the end of the story.
+1517,759,1,The dated answer was easy to understand.
+1518,759,2,We found a dated place to rest.
+1519,760,1,She put the daughter-in-law beside her bag.
+1520,760,2,He found a daughter-in-law under the chair.
+1521,761,1,He pointed to the dawn on the page.
+1522,761,2,The dawn appeared near the end of the story.
+1523,762,1,He answered eagerly when the teacher asked.
+1524,762,2,The machine moved eagerly across the floor.
+1525,763,1,An eagle flew over the mountain.
+1526,763,2,The eagle watched the valley from a rock.
+1527,764,1,He pointed to the earnings on the page.
+1528,764,2,The earnings appeared near the end of the story.
+1529,765,1,We saw the ease near the window.
+1530,765,2,My friend described the ease very clearly.
+1531,766,1,He answered eastward when the teacher asked.
+1532,766,2,The machine moved eastward across the floor.
+1533,767,1,The team compared the samples ecologically.
+1534,767,2,The model reacted ecologically to the new data.
+1535,768,1,A young ecologist waited outside the room.
+1536,768,2,The ecologist spoke kindly to us.
+1537,769,1,The economical detail changed the whole plan.
+1538,769,2,She gave an economical answer in class.
+1539,770,1,The economist arrived early for work.
+1540,770,2,Everyone thanked the economist after lunch.
+1541,771,1,We saw an ecstatic pattern in the results.
+1542,771,2,His ecstatic style made the story stronger.
+1543,772,1,The fabric detail changed the whole plan.
+1544,772,2,She gave a fabric answer in class.
+1545,773,1,This fabulous example helped the students.
+1546,773,2,The report used a fabulous idea clearly.
+1547,774,1,The team will facilitate the issue tomorrow.
+1548,774,2,I hope to facilitate this skill with practice.
+1549,775,1,The facilities was part of the story.
+1550,775,2,She noticed the facilities during the lesson.
+1551,776,1,He pointed to the factor on the page.
+1552,776,2,The factor appeared near the end of the story.
+1553,777,1,We saw the faculty near the window.
+1554,777,2,My friend described the faculty very clearly.
+1555,778,1,The report described the faith clearly.
+1556,778,2,We noticed the faith during the project.
+1557,779,1,We need to falter the plan carefully.
+1558,779,2,He decided to falter it after the meeting.
+1559,780,1,We saw the fame near the window.
+1560,780,2,My friend described the fame very clearly.
+1561,781,1,The system behaved fantastically during the test.
+1562,781,2,The result changed fantastically in the study.
+1563,782,1,He pointed to the gaiety on the page.
+1564,782,2,The gaiety appeared near the end of the story.
+1565,783,1,We saw the gambling near the window.
+1566,783,2,My friend described the gambling very clearly.
+1567,784,1,The gang was part of the story.
+1568,784,2,She noticed the gang during the lesson.
+1569,785,1,The gangster arrived early for work.
+1570,785,2,Everyone thanked the gangster after lunch.
+1571,786,1,A young gardener waited outside the room.
+1572,786,2,The gardener spoke kindly to us.
+1573,787,1,The children like to gasp after school.
+1574,787,2,We watched the birds gasp near the trees.
+1575,788,1,The gateway was quiet in the morning.
+1576,788,2,We found the gateway at the end of the street.
+1577,789,1,The gaudy answer was easy to understand.
+1578,789,2,We found a gaudy place to rest.
+1579,790,1,She gave the painting a long gaze.
+1580,790,2,They gaze at the stars every night.
+1581,791,1,The gear was on the wooden table.
+1582,791,2,My brother carried the gear to school.
+1583,792,1,We saw the habitant near the window.
+1584,792,2,My friend described the habitant very clearly.
+1585,793,1,Hail damaged the old roof.
+1586,793,2,The guards hail the king at the gate.
+1587,794,1,It was a hairy day for a walk.
+1588,794,2,He gave me a hairy smile after class.
+1589,795,1,A broken lift was a serious handicap.
+1590,795,2,The rule gave each player a handicap.
+1591,796,1,The handicraft was part of the story.
+1592,796,2,She noticed the handicraft during the lesson.
+1593,797,1,The handout was on the wooden table.
+1594,797,2,My brother carried the handout to school.
+1595,798,1,I cleaned the handrail before dinner.
+1596,798,2,The small handrail fell from the shelf.
+1597,799,1,She put the hardware beside her bag.
+1598,799,2,He found a hardware under the chair.
+1599,800,1,It was a harmless day for a walk.
+1600,800,2,He gave me a harmless smile after class.
+1601,801,1,We saw the harrow near the window.
+1602,801,2,My friend described the harrow very clearly.
+1603,802,1,The iceman helped a child near the door.
+1604,802,2,A friendly iceman smiled during the meeting.
+1605,803,1,He pointed to the icon on the page.
+1606,803,2,The icon appeared near the end of the story.
+1607,804,1,The icy changed the final result.
+1608,804,2,The story included a clear icy.
+1609,805,1,The system behaved ideally during the test.
+1610,805,2,The result changed ideally in the study.
+1611,806,1,This identical example helped the students.
+1612,806,2,The report used an identical idea clearly.
+1613,807,1,The identification changed the final result.
+1614,807,2,The story included a clear identification.
+1615,808,1,Try to identify the main idea first.
+1616,808,2,She wants to identify the reason clearly.
+1617,809,1,The class discussed the ideology after the video.
+1618,809,2,This example shows the ideology clearly.
+1619,810,1,We saw the idiot near the window.
+1620,810,2,My friend described the idiot very clearly.
+1621,811,1,The idle room felt calm and safe.
+1622,811,2,She chose an idle jacket for the trip.
+1623,812,1,His jaw hurt after the fall.
+1624,812,2,The dog held the toy in its jaw.
+1625,813,1,She spoke jealously during the meeting.
+1626,813,2,The team worked jealously on the final task.
+1627,814,1,The report described the journalism clearly.
+1628,814,2,We noticed the journalism during the project.
+1629,815,1,He pointed to the judo on the page.
+1630,815,2,The judo appeared near the end of the story.
+1631,816,1,A young juror waited outside the room.
+1632,816,2,The juror spoke kindly to us.
+1633,817,1,The jury was part of the story.
+1634,817,2,She noticed the jury during the lesson.
+1635,818,1,We can justify the problem step by step.
+1636,818,2,He began to justify the answer during class.
+1637,819,1,We saw the kangaroo near the window.
+1638,819,2,My friend described the kangaroo very clearly.
+1639,820,1,The karaoke was part of the story.
+1640,820,2,She noticed the karaoke during the lesson.
+1641,821,1,It was a keen day for a walk.
+1642,821,2,He gave me a keen smile after class.
+1643,822,1,A young keeper waited outside the room.
+1644,822,2,The keeper spoke kindly to us.
+1645,823,1,The lamp uses kerosene at night.
+1646,823,2,They stored kerosene in a metal can.
+1647,824,1,He pointed to the keystroke on the page.
+1648,824,2,The keystroke appeared near the end of the story.
+1649,825,1,I saw him kneel near the park.
+1650,825,2,The crowd waited for the show to kneel.
+1651,826,1,The knot was part of the story.
+1652,826,2,She noticed the knot during the lesson.
+1653,827,1,They walked knowingly through the quiet hall.
+1654,827,2,The student listened knowingly to the story.
+1655,828,1,The known answer was easy to understand.
+1656,828,2,We found a known place to rest.
+1657,829,1,They plan to label the problem this week.
+1658,829,2,She tried to label the task before dinner.
+1659,830,1,It was a lame day for a walk.
+1660,830,2,He gave me a lame smile after class.
+1661,831,1,The lance changed the final result.
+1662,831,2,The story included a clear lance.
+1663,832,1,The landing room felt calm and safe.
+1664,832,2,She chose a landing jacket for the trip.
+1665,833,1,The landlady arrived early for work.
+1666,833,2,Everyone thanked the landlady after lunch.
+1667,834,1,We saw the landslide near the window.
+1668,834,2,My friend described the landslide very clearly.
+1669,835,1,The cat slept on her lap.
+1670,835,2,He ran one lap around the track.
+1671,836,1,The laptop was on the wooden table.
+1672,836,2,My brother carried the laptop to school.
+1673,837,1,We saw the lark near the window.
+1674,837,2,My friend described the lark very clearly.
+1675,838,1,She put the laser beside her bag.
+1676,838,2,He found a laser under the chair.
+1677,839,1,The madam arrived early for work.
+1678,839,2,Everyone thanked the madam after lunch.
+1679,840,1,A young madame waited outside the room.
+1680,840,2,The madame spoke kindly to us.
+1681,841,1,The report described the madness clearly.
+1682,841,2,We noticed the madness during the project.
+1683,842,1,He pointed to the maestro on the page.
+1684,842,2,The maestro appeared near the end of the story.
+1685,843,1,The team will magnify the issue tomorrow.
+1686,843,2,I hope to magnify this skill with practice.
+1687,844,1,The malady was part of the story.
+1688,844,2,She noticed the malady during the lesson.
+1689,845,1,He pointed to the malaria on the page.
+1690,845,2,The malaria appeared near the end of the story.
+1691,846,1,We shared the mango at lunch.
+1692,846,2,The cook used mango in the meal.
+1693,847,1,They plan to manipulate the problem this week.
+1694,847,2,She tried to manipulate the task before dinner.
+1695,848,1,The mansion was quiet in the morning.
+1696,848,2,We found the mansion at the end of the street.
+1697,849,1,We saw the nano near the window.
+1698,849,2,My friend described the nano very clearly.
+1699,850,1,The narcissistic detail changed the whole plan.
+1700,850,2,She gave a narcissistic answer in class.
+1701,851,1,The narrator arrived early for work.
+1702,851,2,Everyone thanked the narrator after lunch.
+1703,852,1,The plan changed narrowly after lunch.
+1704,852,2,She smiled narrowly at the good news.
+1705,853,1,She spoke nationwide during the meeting.
+1706,853,2,The team worked nationwide on the final task.
+1707,854,1,It was a naughty day for a walk.
+1708,854,2,He gave me a naughty smile after class.
+1709,855,1,We saw a naval pattern in the results.
+1710,855,2,His naval style made the story stronger.
+1711,856,1,They plan to navigate the problem this week.
+1712,856,2,She tried to navigate the task before dinner.
+1713,857,1,The class discussed the navigation after the video.
+1714,857,2,This example shows the navigation clearly.
+1715,858,1,People gathered outside the navy.
+1716,858,2,The old navy looked clean and bright.
+1717,859,1,The report described the oath clearly.
+1718,859,2,We noticed the oath during the project.
+1719,860,1,The class discussed the obedience after the video.
+1720,860,2,This example shows the obedience clearly.
+1721,861,1,The obedient answer was easy to understand.
+1722,861,2,We found an obedient place to rest.
+1723,862,1,They plan to obey the problem this week.
+1724,862,2,She tried to obey the task before dinner.
+1725,863,1,This obituary example helped the students.
+1726,863,2,The report used an obituary idea clearly.
+1727,864,1,The obligation changed the final result.
+1728,864,2,The story included a clear obligation.
+1729,865,1,The observer helped a child near the door.
+1730,865,2,A friendly observer smiled during the meeting.
+1731,866,1,We need to obsess the plan carefully.
+1732,866,2,He decided to obsess it after the meeting.
+1733,867,1,The obsession changed the final result.
+1734,867,2,The story included a clear obsession.
+1735,868,1,The obsessive detail changed the whole plan.
+1736,868,2,She gave an obsessive answer in class.
+1737,869,1,He pointed to the pa on the page.
+1738,869,2,The pa appeared near the end of the story.
+1739,870,1,The packed answer was easy to understand.
+1740,870,2,We found a packed place to rest.
+1741,871,1,She put the packet beside her bag.
+1742,871,2,He found a packet under the chair.
+1743,872,1,The pad was on the wooden table.
+1744,872,2,My brother carried the pad to school.
+1745,873,1,I cleaned the paintbrush before dinner.
+1746,873,2,The small paintbrush fell from the shelf.
+1747,874,1,She put the pallet beside her bag.
+1748,874,2,He found a pallet under the chair.
+1749,875,1,The pancake tasted good with tea.
+1750,875,2,My sister put the pancake on a plate.
+1751,876,1,We saw a pandemic pattern in the results.
+1752,876,2,His pandemic style made the story stronger.
+1753,877,1,She put the panel beside her bag.
+1754,877,2,He found a panel under the chair.
+1755,878,1,The papaya tasted good with tea.
+1756,878,2,My sister put the papaya on a plate.
+1757,879,1,The paperless answer was easy to understand.
+1758,879,2,We found a paperless place to rest.
+1759,880,1,The report described the qualification clearly.
+1760,880,2,We noticed the qualification during the project.
+1761,881,1,We need to quantify the plan carefully.
+1762,881,2,He decided to quantify it after the meeting.
+1763,882,1,The team will quarantine the issue tomorrow.
+1764,882,2,I hope to quarantine this skill with practice.
+1765,883,1,The children like to quarrel after school.
+1766,883,2,We watched the birds quarrel near the trees.
+1767,884,1,It was a quarrelsome day for a walk.
+1768,884,2,He gave me a quarrelsome smile after class.
+1769,885,1,The queer answer was easy to understand.
+1770,885,2,We found a queer place to rest.
+1771,886,1,The query was part of the story.
+1772,886,2,She noticed the query during the lesson.
+1773,887,1,It was a quotable day for a walk.
+1774,887,2,He gave me a quotable smile after class.
+1775,888,1,The quotation changed the final result.
+1776,888,2,The story included a clear quotation.
+1777,889,1,Please quote clearly before you leave.
+1778,889,2,The teacher will quote the class after lunch.
+1779,890,1,The class discussed the racism after the video.
+1780,890,2,This example shows the racism clearly.
+1781,891,1,The racist answer was easy to understand.
+1782,891,2,We found a racist place to rest.
+1783,892,1,She put the rack beside her bag.
+1784,892,2,He found a rack under the chair.
+1785,893,1,The radar was on the wooden table.
+1786,893,2,My brother carried the radar to school.
+1787,894,1,The team will radiate the issue tomorrow.
+1788,894,2,I hope to radiate this skill with practice.
+1789,895,1,The radical detail changed the whole plan.
+1790,895,2,She gave a radical answer in class.
+1791,896,1,The team compared the samples radically.
+1792,896,2,The model reacted radically to the new data.
+1793,897,1,We saw the radium near the window.
+1794,897,2,My friend described the radium very clearly.
+1795,898,1,She put the rafter beside her bag.
+1796,898,2,He found a rafter under the chair.
+1797,899,1,The rag was on the wooden table.
+1798,899,2,My brother carried the rag to school.
+1799,900,1,The potatoes are in a brown sack.
+1800,900,2,The company may sack lazy workers.
+1801,901,1,They plan to sag the problem this week.
+1802,901,2,She tried to sag the task before dinner.
+1803,902,1,A wise sage gave calm advice.
+1804,902,2,She added sage to the soup.
+1805,903,1,I saw him sail near the park.
+1806,903,2,The crowd waited for the show to sail.
+1807,904,1,The salary detail changed the whole plan.
+1808,904,2,She gave a salary answer in class.
+1809,905,1,The salesmanship was on the wooden table.
+1810,905,2,My brother carried the salesmanship to school.
+1811,906,1,A young salesperson waited outside the room.
+1812,906,2,The salesperson spoke kindly to us.
+1813,907,1,The saleswoman helped a child near the door.
+1814,907,2,A friendly saleswoman smiled during the meeting.
+1815,908,1,The salon was quiet in the morning.
+1816,908,2,We found the salon at the end of the street.
+1817,909,1,We saw the salsa near the window.
+1818,909,2,My friend described the salsa very clearly.
+1819,910,1,The salty room felt calm and safe.
+1820,910,2,She chose a salty jacket for the trip.
+1821,911,1,The tablecloth was on the wooden table.
+1822,911,2,My brother carried the tablecloth to school.
+1823,912,1,I cleaned the tabloid before dinner.
+1824,912,2,The small tabloid fell from the shelf.
+1825,913,1,Put a tack on the notice board.
+1826,913,2,The team changed its tack after lunch.
+1827,914,1,We need to tackle the plan carefully.
+1828,914,2,He decided to tackle it after the meeting.
+1829,915,1,The tactile answer was easy to understand.
+1830,915,2,We found a tactile place to rest.
+1831,916,1,The tag was part of the story.
+1832,916,2,She noticed the tag during the lesson.
+1833,917,1,The tail was on the wooden table.
+1834,917,2,My brother carried the tail to school.
+1835,918,1,The team will tame the issue tomorrow.
+1836,918,2,I hope to tame this skill with practice.
+1837,919,1,She got a light tan at the beach.
+1838,919,2,His tan jacket is on the chair.
+1839,920,1,It was a tanned day for a walk.
+1840,920,2,He gave me a tanned smile after class.
+1841,921,1,The ultimate goal is to learn well.
+1842,921,2,This is the ultimate test of patience.
+1843,922,1,He answered ultimately when the teacher asked.
+1844,922,2,The machine moved ultimately across the floor.
+1845,923,1,It was an unacceptable day for a walk.
+1846,923,2,He gave me an unacceptable smile after class.
+1847,924,1,The plan changed unashamedly after lunch.
+1848,924,2,She smiled unashamedly at the good news.
+1849,925,1,The unattractive detail changed the whole plan.
+1850,925,2,She gave an unattractive answer in class.
+1851,926,1,It was an unavailable day for a walk.
+1852,926,2,He gave me an unavailable smile after class.
+1853,927,1,The unaware answer was easy to understand.
+1854,927,2,We found an unaware place to rest.
+1855,928,1,The unbearable room felt calm and safe.
+1856,928,2,She chose an unbearable jacket for the trip.
+1857,929,1,It was an unbeatable day for a walk.
+1858,929,2,He gave me an unbeatable smile after class.
+1859,930,1,The unchanged answer was easy to understand.
+1860,930,2,We found an unchanged place to rest.
+1861,931,1,The vacant room felt calm and safe.
+1862,931,2,She chose a vacant jacket for the trip.
+1863,932,1,He pointed to the vaccine on the page.
+1864,932,2,The vaccine appeared near the end of the story.
+1865,933,1,We saw the valentine near the window.
+1866,933,2,My friend described the valentine very clearly.
+1867,934,1,The valid room felt calm and safe.
+1868,934,2,She chose a valid jacket for the trip.
+1869,935,1,She began to vanish when the music started.
+1870,935,2,They will vanish outside if the weather is good.
+1871,936,1,The vanity changed the final result.
+1872,936,2,The story included a clear vanity.
+1873,937,1,The report described the variation clearly.
+1874,937,2,We noticed the variation during the project.
+1875,938,1,It was a varied day for a walk.
+1876,938,2,He gave me a varied smile after class.
+1877,939,1,I saw him venture near the park.
+1878,939,2,The crowd waited for the show to venture.
+1879,940,1,The venue was part of the story.
+1880,940,2,She noticed the venue during the lesson.
+1881,941,1,The class discussed the wage after the video.
+1882,941,2,This example shows the wage clearly.
+1883,942,1,We saw the waist near the window.
+1884,942,2,My friend described the waist very clearly.
+1885,943,1,She put the waistcoat beside her bag.
+1886,943,2,He found a waistcoat under the chair.
+1887,944,1,He pointed to the walkabout on the page.
+1888,944,2,The walkabout appeared near the end of the story.
+1889,945,1,We saw the walker near the window.
+1890,945,2,My friend described the walker very clearly.
+1891,946,1,She put the wallboard beside her bag.
+1892,946,2,He found a wallboard under the chair.
+1893,947,1,The walnut tasted good with tea.
+1894,947,2,My sister put the walnut on a plate.
+1895,948,1,The warship sailed near the coast.
+1896,948,2,A warship appeared in the old photo.
+1897,949,1,The wartime was part of the story.
+1898,949,2,She noticed the wartime during the lesson.
+1899,950,1,He pointed to the wasp on the page.
+1900,950,2,The wasp appeared near the end of the story.
+1901,951,1,I cleaned the x-ray before dinner.
+1902,951,2,The small x-ray fell from the shelf.
+1903,952,1,She put the yacht beside her bag.
+1904,952,2,He found a yacht under the chair.
+1905,953,1,She began to yawn when the music started.
+1906,953,2,They will yawn outside if the weather is good.
+1907,954,1,I saw him yearn near the park.
+1908,954,2,The crowd waited for the show to yearn.
+1909,955,1,They plan to yield the problem this week.
+1910,955,2,She tried to yield the task before dinner.
+1911,956,1,It was a youthful day for a walk.
+1912,956,2,He gave me a youthful smile after class.
+1913,957,1,The yummy answer was easy to understand.
+1914,957,2,We found a yummy place to rest.
+1915,958,1,The zebra was part of the story.
+1916,958,2,She noticed the zebra during the lesson.
+1917,959,1,The zip on my bag is broken.
+1918,959,2,Please zip the file before sending it.
+1919,960,1,We saw the zoom near the window.
+1920,960,2,My friend described the zoom very clearly.
+1921,961,1,The children like to abound after school.
+1922,961,2,We watched the birds abound near the trees.
+1923,962,1,The class discussed the abstraction after the video.
+1924,962,2,This example shows the abstraction clearly.
+1925,963,1,I was accustomed when I heard the news.
+1926,963,2,They seemed accustomed at the end of the day.
+1927,964,1,The acidic detail changed the whole plan.
+1928,964,2,She gave an acidic answer in class.
+1929,965,1,This acoustic example helped the students.
+1930,965,2,The report used an acoustic idea clearly.
+1931,966,1,The report explained the change acoustically.
+1932,966,2,The room was designed acoustically for better sound.
+1933,967,1,The report described the acoustics clearly.
+1934,967,2,We noticed the acoustics during the project.
+1935,968,1,The farmer owns one acre of land.
+1936,968,2,They planted corn on the acre.
+1937,969,1,She spoke acutely during the meeting.
+1938,969,2,The team worked acutely on the final task.
+1939,970,1,The garden will adjoin the school yard.
+1940,970,2,Two small rooms adjoin the kitchen.
+1941,971,1,This adjoining example helped the students.
+1942,971,2,The report used an adjoining idea clearly.
+1943,972,1,We saw an adjustable pattern in the results.
+1944,972,2,His adjustable style made the story stronger.
+1945,973,1,She spoke baldly during the meeting.
+1946,973,2,The team worked baldly on the final task.
+1947,974,1,We need to batter the plan carefully.
+1948,974,2,He decided to batter it after the meeting.
+1949,975,1,We saw a battered pattern in the results.
+1950,975,2,His battered style made the story stronger.
+1951,976,1,The bearded detail changed the whole plan.
+1952,976,2,She gave a bearded answer in class.
+1953,977,1,She spoke beforehand during the meeting.
+1954,977,2,The team worked beforehand on the final task.
+1955,978,1,We saw a beguiling pattern in the results.
+1956,978,2,His beguiling style made the story stronger.
+1957,979,1,They walked beguilingly through the quiet hall.
+1958,979,2,The student listened beguilingly to the story.
+1959,980,1,The plan changed believably after lunch.
+1960,980,2,She smiled believably at the good news.
+1961,981,1,We saw a benign pattern in the results.
+1962,981,2,His benign style made the story stronger.
+1963,982,1,He answered benignly when the teacher asked.
+1964,982,2,The machine moved benignly across the floor.
+1965,983,1,We need to bequeath the plan carefully.
+1966,983,2,He decided to bequeath it after the meeting.
+1967,984,1,We shared the calorie at lunch.
+1968,984,2,The cook used calorie in the meal.
+1969,985,1,The candid detail changed the whole plan.
+1970,985,2,She gave a candid answer in class.
+1971,986,1,He answered candidly when the teacher asked.
+1972,986,2,The machine moved candidly across the floor.
+1973,987,1,I cleaned the canoe before dinner.
+1974,987,2,The small canoe fell from the shelf.
+1975,988,1,The carpenter helped a child near the door.
+1976,988,2,A friendly carpenter smiled during the meeting.
+1977,989,1,The class discussed the carpentry after the video.
+1978,989,2,This example shows the carpentry clearly.
+1979,990,1,The carrier changed the final result.
+1980,990,2,The story included a clear carrier.
+1981,991,1,The report described the cavity clearly.
+1982,991,2,We noticed the cavity during the project.
+1983,992,1,This ceaseless example helped the students.
+1984,992,2,The report used a ceaseless idea clearly.
+1985,993,1,She spoke ceaselessly during the meeting.
+1986,993,2,The team worked ceaselessly on the final task.
+1987,994,1,The report described the cessation clearly.
+1988,994,2,We noticed the cessation during the project.
+1989,995,1,The team compared the samples chaotically.
+1990,995,2,The model reacted chaotically to the new data.
+1991,996,1,The plan changed damply after lunch.
+1992,996,2,She smiled damply at the good news.
+1993,997,1,They waited near the darkroom after lunch.
+1994,997,2,She took a photo of the darkroom in town.
+1995,998,1,We need to daunt the plan carefully.
+1996,998,2,He decided to daunt it after the meeting.
+1997,999,1,We saw a daunting pattern in the results.
+1998,999,2,His daunting style made the story stronger.
+1999,1000,1,The children like to daydream after school.
+2000,1000,2,We watched the birds daydream near the trees.
+2001,1001,1,She began to debut when the music started.
+2002,1001,2,They will debut outside if the weather is good.
+2003,1002,1,The deceit changed the final result.
+2004,1002,2,The story included a clear deceit.
+2005,1003,1,The report described the degradation clearly.
+2006,1003,2,We noticed the degradation during the project.
+2007,1004,1,We need to degrade the plan carefully.
+2008,1004,2,He decided to degrade it after the meeting.
+2009,1005,1,We saw a degrading pattern in the results.
+2010,1005,2,His degrading style made the story stronger.
+2011,1006,1,The report described the demise clearly.
+2012,1006,2,We noticed the demise during the project.
+2013,1007,1,The class discussed the demo after the video.
+2014,1007,2,This example shows the demo clearly.
+2015,1008,1,We saw an eccentric pattern in the results.
+2016,1008,2,His eccentric style made the story stronger.
+2017,1009,1,The system behaved eccentrically during the test.
+2018,1009,2,The result changed eccentrically in the study.
+2019,1010,1,This eclectic example helped the students.
+2020,1010,2,The report used an eclectic idea clearly.
+2021,1011,1,The report explained the change eclectically.
+2022,1011,2,The room was designed eclectically for better sound.
+2023,1012,1,The system behaved ecstatically during the test.
+2024,1012,2,The result changed ecstatically in the study.
+2025,1013,1,This effortless example helped the students.
+2026,1013,2,The report used an effortless idea clearly.
+2027,1014,1,The ego changed the final result.
+2028,1014,2,The story included a clear ego.
+2029,1015,1,The elaborate detail changed the whole plan.
+2030,1015,2,She gave an elaborate answer in class.
+2031,1016,1,The class discussed the elaboration after the video.
+2032,1016,2,This example shows the elaboration clearly.
+2033,1017,1,We saw an elastic pattern in the results.
+2034,1017,2,His elastic style made the story stronger.
+2035,1018,1,They plan to elevate the problem this week.
+2036,1018,2,She tried to elevate the task before dinner.
+2037,1019,1,The class discussed the elevation after the video.
+2038,1019,2,This example shows the elevation clearly.
+2039,1020,1,The plan changed fabulously after lunch.
+2040,1020,2,She smiled fabulously at the good news.
+2041,1021,1,The facial detail changed the whole plan.
+2042,1021,2,She gave a facial answer in class.
+2043,1022,1,The class discussed the facilitation after the video.
+2044,1022,2,This example shows the facilitation clearly.
+2045,1023,1,The faction changed the final result.
+2046,1023,2,The story included a clear faction.
+2047,1024,1,The fanatic detail changed the whole plan.
+2048,1024,2,She gave a fanatic answer in class.
+2049,1025,1,The team compared the samples fanatically.
+2050,1025,2,The model reacted fanatically to the new data.
+2051,1026,1,We saw a fanciful pattern in the results.
+2052,1026,2,His fanciful style made the story stronger.
+2053,1027,1,The report described the farce clearly.
+2054,1027,2,We noticed the farce during the project.
+2055,1028,1,The class discussed the fatality after the video.
+2056,1028,2,This example shows the fatality clearly.
+2057,1029,1,The fatigue changed the final result.
+2058,1029,2,The story included a clear fatigue.
+2059,1030,1,The ferocious detail changed the whole plan.
+2060,1030,2,She gave a ferocious answer in class.
+2061,1031,1,They walked ferociously through the quiet hall.
+2062,1031,2,The student listened ferociously to the story.
+2063,1032,1,I cleaned the gadget before dinner.
+2064,1032,2,The small gadget fell from the shelf.
+2065,1033,1,She spoke gamely during the meeting.
+2066,1033,2,The team worked gamely on the final task.
+2067,1034,1,She began to gape when the music started.
+2068,1034,2,They will gape outside if the weather is good.
+2069,1035,1,I cleaned the gem before dinner.
+2070,1035,2,The small gem fell from the shelf.
+2071,1036,1,The report described the genome clearly.
+2072,1036,2,We noticed the genome during the project.
+2073,1037,1,This geological example helped the students.
+2074,1037,2,The report used a geological idea clearly.
+2075,1038,1,The report explained the change geologically.
+2076,1038,2,The room was designed geologically for better sound.
+2077,1039,1,They walked ghostly through the quiet hall.
+2078,1039,2,The student listened ghostly to the story.
+2079,1040,1,The class discussed the gig after the video.
+2080,1040,2,This example shows the gig clearly.
+2081,1041,1,The team will glean the issue tomorrow.
+2082,1041,2,I hope to glean this skill with practice.
+2083,1042,1,She felt glum before the test.
+2084,1042,2,He looked glum after the phone call.
+2085,1043,1,We need to hack the plan carefully.
+2086,1043,2,He decided to hack it after the meeting.
+2087,1044,1,I saw him haggle near the park.
+2088,1044,2,The crowd waited for the show to haggle.
+2089,1045,1,They plan to harass the problem this week.
+2090,1045,2,She tried to harass the task before dinner.
+2091,1046,1,The class discussed the harassment after the video.
+2092,1046,2,This example shows the harassment clearly.
+2093,1047,1,We saw a headstrong pattern in the results.
+2094,1047,2,His headstrong style made the story stronger.
+2095,1048,1,She put the hedgehog beside her bag.
+2096,1048,2,He found a hedgehog under the chair.
+2097,1049,1,The class discussed the heifer after the video.
+2098,1049,2,This example shows the heifer clearly.
+2099,1050,1,The team will heighten the issue tomorrow.
+2100,1050,2,I hope to heighten this skill with practice.
+2101,1051,1,"The road was closed, hence the delay."
+2102,1051,2,"He forgot his ticket, hence the problem."
+2103,1052,1,The heroine arrived early for work.
+2104,1052,2,Everyone thanked the heroine after lunch.
+2105,1053,1,I saw him hibernate near the park.
+2106,1053,2,The crowd waited for the show to hibernate.
+2107,1054,1,The immense detail changed the whole plan.
+2108,1054,2,She gave an immense answer in class.
+2109,1055,1,They walked immensely through the quiet hall.
+2110,1055,2,The student listened immensely to the story.
+2111,1056,1,The team will immortalize the issue tomorrow.
+2112,1056,2,I hope to immortalize this skill with practice.
+2113,1057,1,The report described the imp clearly.
+2114,1057,2,We noticed the imp during the project.
+2115,1058,1,We need to impede the plan carefully.
+2116,1058,2,He decided to impede it after the meeting.
+2117,1059,1,The impediment changed the final result.
+2118,1059,2,The story included a clear impediment.
+2119,1060,1,The impersonal detail changed the whole plan.
+2120,1060,2,She gave an impersonal answer in class.
+2121,1061,1,The team compared the samples impersonally.
+2122,1061,2,The model reacted impersonally to the new data.
+2123,1062,1,The team will impersonate the issue tomorrow.
+2124,1062,2,I hope to impersonate this skill with practice.
+2125,1063,1,The report described the impersonation clearly.
+2126,1063,2,We noticed the impersonation during the project.
+2127,1064,1,The impersonator arrived early for work.
+2128,1064,2,Everyone thanked the impersonator after lunch.
+2129,1065,1,We saw an impervious pattern in the results.
+2130,1065,2,His impervious style made the story stronger.
+2131,1066,1,He wore a red jersey at the match.
+2132,1066,2,The jersey had his name on the back.
+2133,1067,1,The class discussed the jurisdiction after the video.
+2134,1067,2,This example shows the jurisdiction clearly.
+2135,1068,1,The plan changed justly after lunch.
+2136,1068,2,She smiled justly at the good news.
+2137,1069,1,The juvenile detail changed the whole plan.
+2138,1069,2,She gave a juvenile answer in class.
+2139,1070,1,This knowledgeable example helped the students.
+2140,1070,2,The report used a knowledgeable idea clearly.
+2141,1071,1,I saw him lapse near the park.
+2142,1071,2,The crowd waited for the show to lapse.
+2143,1072,1,The latent detail changed the whole plan.
+2144,1072,2,She gave a latent answer in class.
+2145,1073,1,This lavatory example helped the students.
+2146,1073,2,The report used a lavatory idea clearly.
+2147,1074,1,The legacy changed the final result.
+2148,1074,2,The story included a clear legacy.
+2149,1075,1,The lethargic detail changed the whole plan.
+2150,1075,2,She gave a lethargic answer in class.
+2151,1076,1,The team compared the samples lethargically.
+2152,1076,2,The model reacted lethargically to the new data.
+2153,1077,1,The lethargy changed the final result.
+2154,1077,2,The story included a clear lethargy.
+2155,1078,1,The report described the liaison clearly.
+2156,1078,2,We noticed the liaison during the project.
+2157,1079,1,The class discussed the likelihood after the video.
+2158,1079,2,This example shows the likelihood clearly.
+2159,1080,1,We saw a limitless pattern in the results.
+2160,1080,2,His limitless style made the story stronger.
+2161,1081,1,The graph shows a linear increase.
+2162,1081,2,We used a linear model in class.
+2163,1082,1,This macabre example helped the students.
+2164,1082,2,The report used a macabre idea clearly.
+2165,1083,1,We saw a magnetic pattern in the results.
+2166,1083,2,His magnetic style made the story stronger.
+2167,1084,1,The system behaved magnetically during the test.
+2168,1084,2,The result changed magnetically in the study.
+2169,1085,1,The class discussed the magnetism after the video.
+2170,1085,2,This example shows the magnetism clearly.
+2171,1086,1,The malfunction changed the final result.
+2172,1086,2,The story included a clear malfunction.
+2173,1087,1,She put the manicure beside her bag.
+2174,1087,2,He found a manicure under the chair.
+2175,1088,1,The class discussed the manipulation after the video.
+2176,1088,2,This example shows the manipulation clearly.
+2177,1089,1,We saw a marginal pattern in the results.
+2178,1089,2,His marginal style made the story stronger.
+2179,1090,1,The system behaved marginally during the test.
+2180,1090,2,The result changed marginally in the study.
+2181,1091,1,The mark-up was on the wooden table.
+2182,1091,2,My brother carried the mark-up to school.
+2183,1092,1,The marvel changed the final result.
+2184,1092,2,The story included a clear marvel.
+2185,1093,1,The naive detail changed the whole plan.
+2186,1093,2,She gave a naive answer in class.
+2187,1094,1,He answered naively when the teacher asked.
+2188,1094,2,The machine moved naively across the floor.
+2189,1095,1,His naivety caused a small mistake.
+2190,1095,2,The story shows her naivety clearly.
+2191,1096,1,The report described the naturalness clearly.
+2192,1096,2,We noticed the naturalness during the project.
+2193,1097,1,This neglectful example helped the students.
+2194,1097,2,The report used a neglectful idea clearly.
+2195,1098,1,We saw a negligent pattern in the results.
+2196,1098,2,His negligent style made the story stronger.
+2197,1099,1,They walked negligently through the quiet hall.
+2198,1099,2,The student listened negligently to the story.
+2199,1100,1,This negligible example helped the students.
+2200,1100,2,The report used a negligible idea clearly.
+2201,1101,1,The niche changed the final result.
+2202,1101,2,The story included a clear niche.
+2203,1102,1,The nocturnal detail changed the whole plan.
+2204,1102,2,She gave a nocturnal answer in class.
+2205,1103,1,This nondescript example helped the students.
+2206,1103,2,The report used a nondescript idea clearly.
+2207,1104,1,The team will oblige the issue tomorrow.
+2208,1104,2,I hope to oblige this skill with practice.
+2209,1105,1,They plan to obscure the problem this week.
+2210,1105,2,She tried to obscure the task before dinner.
+2211,1106,1,He answered obscurely when the teacher asked.
+2212,1106,2,The machine moved obscurely across the floor.
+2213,1107,1,A young occupant waited outside the room.
+2214,1107,2,The occupant spoke kindly to us.
+2215,1108,1,The occupational detail changed the whole plan.
+2216,1108,2,She gave an occupational answer in class.
+2217,1109,1,The class discussed the oddity after the video.
+2218,1109,2,This example shows the oddity clearly.
+2219,1110,1,We saw an offspring pattern in the results.
+2220,1110,2,His offspring style made the story stronger.
+2221,1111,1,The report described the orchard clearly.
+2222,1111,2,We noticed the orchard during the project.
+2223,1112,1,The plan changed ordinarily after lunch.
+2224,1112,2,She smiled ordinarily at the good news.
+2225,1113,1,We saw an organizational pattern in the results.
+2226,1113,2,His organizational style made the story stronger.
+2227,1114,1,The ornamental detail changed the whole plan.
+2228,1114,2,She gave an ornamental answer in class.
+2229,1115,1,The class discussed the panorama after the video.
+2230,1115,2,This example shows the panorama clearly.
+2231,1116,1,We saw a panoramic pattern in the results.
+2232,1116,2,His panoramic style made the story stronger.
+2233,1117,1,The report described the parasite clearly.
+2234,1117,2,We noticed the parasite during the project.
+2235,1118,1,This paternal example helped the students.
+2236,1118,2,The report used a paternal idea clearly.
+2237,1119,1,We saw a paternalistic pattern in the results.
+2238,1119,2,His paternalistic style made the story stronger.
+2239,1120,1,The report described the pathos clearly.
+2240,1120,2,We noticed the pathos during the project.
+2241,1121,1,The paywall was on the wooden table.
+2242,1121,2,My brother carried the paywall to school.
+2243,1122,1,A peacock walked across the garden.
+2244,1122,2,The peacock opened its bright feathers.
+2245,1123,1,The peasant helped a child near the door.
+2246,1123,2,A friendly peasant smiled during the meeting.
+2247,1124,1,The class discussed the pedicure after the video.
+2248,1124,2,This example shows the pedicure clearly.
+2249,1125,1,We saw a pendulous pattern in the results.
+2250,1125,2,His pendulous style made the story stronger.
+2251,1126,1,The pendulum swung from side to side.
+2252,1126,2,A clock may use a pendulum inside.
+2253,1127,1,The class discussed the quarry after the video.
+2254,1127,2,This example shows the quarry clearly.
+2255,1128,1,The quest changed the final result.
+2256,1128,2,The story included a clear quest.
+2257,1129,1,The report described the quip clearly.
+2258,1129,2,We noticed the quip during the project.
+2259,1130,1,The class discussed the quirk after the video.
+2260,1130,2,This example shows the quirk clearly.
+2261,1131,1,We saw a quirky pattern in the results.
+2262,1131,2,His quirky style made the story stronger.
+2263,1132,1,She put the radiator beside her bag.
+2264,1132,2,He found a radiator under the chair.
+2265,1133,1,The class discussed the rapport after the video.
+2266,1133,2,This example shows the rapport clearly.
+2267,1134,1,The rarity changed the final result.
+2268,1134,2,The story included a clear rarity.
+2269,1135,1,They walked raunchily through the quiet hall.
+2270,1135,2,The student listened raunchily to the story.
+2271,1136,1,This raunchy example helped the students.
+2272,1136,2,The report used a raunchy idea clearly.
+2273,1137,1,We saw a readable pattern in the results.
+2274,1137,2,His readable style made the story stronger.
+2275,1138,1,The report described the realism clearly.
+2276,1138,2,We noticed the realism during the project.
+2277,1139,1,The class discussed the realist after the video.
+2278,1139,2,This example shows the realist clearly.
+2279,1140,1,The team will reap the issue tomorrow.
+2280,1140,2,I hope to reap this skill with practice.
+2281,1141,1,The report described the reassurance clearly.
+2282,1141,2,We noticed the reassurance during the project.
+2283,1142,1,She tried to reassure the news calmly.
+2284,1142,2,They asked him to reassure the story again.
+2285,1143,1,The recess changed the final result.
+2286,1143,2,The story included a clear recess.
+2287,1144,1,They plan to sacrifice the problem this week.
+2288,1144,2,She tried to sacrifice the task before dinner.
+2289,1145,1,She began to salivate when the music started.
+2290,1145,2,They will salivate outside if the weather is good.
+2291,1146,1,The saloon changed the final result.
+2292,1146,2,The story included a clear saloon.
+2293,1147,1,They plan to salvage the problem this week.
+2294,1147,2,She tried to salvage the task before dinner.
+2295,1148,1,The class discussed the salvation after the video.
+2296,1148,2,This example shows the salvation clearly.
+2297,1149,1,I cleaned the salve before dinner.
+2298,1149,2,The small salve fell from the shelf.
+2299,1150,1,The report described the sanctity clearly.
+2300,1150,2,We noticed the sanctity during the project.
+2301,1151,1,The class discussed the sap after the video.
+2302,1151,2,This example shows the sap clearly.
+2303,1152,1,The sarcasm changed the final result.
+2304,1152,2,The story included a clear sarcasm.
+2305,1153,1,The sarcastic detail changed the whole plan.
+2306,1153,2,She gave a sarcastic answer in class.
+2307,1154,1,The team compared the samples sarcastically.
+2308,1154,2,The model reacted sarcastically to the new data.
+2309,1155,1,People gathered outside the sauna.
+2310,1155,2,The old sauna looked clean and bright.
+2311,1156,1,The report described the tact clearly.
+2312,1156,2,We noticed the tact during the project.
+2313,1157,1,This tactful example helped the students.
+2314,1157,2,The report used a tactful idea clearly.
+2315,1158,1,He answered tactfully when the teacher asked.
+2316,1158,2,The machine moved tactfully across the floor.
+2317,1159,1,They plan to tailor the problem this week.
+2318,1159,2,She tried to tailor the task before dinner.
+2319,1160,1,We need to tangle the plan carefully.
+2320,1160,2,He decided to tangle it after the meeting.
+2321,1161,1,We saw a tangled pattern in the results.
+2322,1161,2,His tangled style made the story stronger.
+2323,1162,1,The tantamount detail changed the whole plan.
+2324,1162,2,She gave a tantamount answer in class.
+2325,1163,1,The class discussed the tantrum after the video.
+2326,1163,2,This example shows the tantrum clearly.
+2327,1164,1,I cleaned the tastebud before dinner.
+2328,1164,2,The small tastebud fell from the shelf.
+2329,1165,1,The taut detail changed the whole plan.
+2330,1165,2,She gave a taut answer in class.
+2331,1166,1,He answered tautly when the teacher asked.
+2332,1166,2,The machine moved tautly across the floor.
+2333,1167,1,We saw an unassisted pattern in the results.
+2334,1167,2,His unassisted style made the story stronger.
+2335,1168,1,The unconventional detail changed the whole plan.
+2336,1168,2,She gave an unconventional answer in class.
+2337,1169,1,This unconvincing example helped the students.
+2338,1169,2,The report used an unconvincing idea clearly.
+2339,1170,1,He answered unconvincingly when the teacher asked.
+2340,1170,2,The machine moved unconvincingly across the floor.
+2341,1171,1,The undaunted detail changed the whole plan.
+2342,1171,2,She gave an undaunted answer in class.
+2343,1172,1,This unenviable example helped the students.
+2344,1172,2,The report used an unenviable idea clearly.
+2345,1173,1,She spoke unenviably during the meeting.
+2346,1173,2,The team worked unenviably on the final task.
+2347,1174,1,The uneventful detail changed the whole plan.
+2348,1174,2,She gave an uneventful answer in class.
+2349,1175,1,The class discussed the uniformity after the video.
+2350,1175,2,This example shows the uniformity clearly.
+2351,1176,1,We saw an uninspiring pattern in the results.
+2352,1176,2,His uninspiring style made the story stronger.
+2353,1177,1,The report described the unison clearly.
+2354,1177,2,We noticed the unison during the project.
+2355,1178,1,The class discussed the vegetation after the video.
+2356,1178,2,This example shows the vegetation clearly.
+2357,1179,1,They need to venerate the message correctly.
+2358,1179,2,I tried to venerate what happened yesterday.
+2359,1180,1,The report described the veneration clearly.
+2360,1180,2,We noticed the veneration during the project.
+2361,1181,1,We need to ventilate the plan carefully.
+2362,1181,2,He decided to ventilate it after the meeting.
+2363,1182,1,The ventilation changed the final result.
+2364,1182,2,The story included a clear ventilation.
+2365,1183,1,They waited near the verandah after lunch.
+2366,1183,2,She took a photo of the verandah in town.
+2367,1184,1,The class discussed the verdict after the video.
+2368,1184,2,This example shows the verdict clearly.
+2369,1185,1,We saw a versatile pattern in the results.
+2370,1185,2,His versatile style made the story stronger.
+2371,1186,1,The report described the versatility clearly.
+2372,1186,2,We noticed the versatility during the project.
+2373,1187,1,This vertical example helped the students.
+2374,1187,2,The report used a vertical idea clearly.
+2375,1188,1,The verve changed the final result.
+2376,1188,2,The story included a clear verve.
+2377,1189,1,The report described the wares clearly.
+2378,1189,2,We noticed the wares during the project.
+2379,1190,1,The child was wary in the dark room.
+2380,1190,2,My friend became wary during the lesson.
+2381,1191,1,I cleaned the washtub before dinner.
+2382,1191,2,The small washtub fell from the shelf.
+2383,1192,1,They waited near the waterfront after lunch.
+2384,1192,2,She took a photo of the waterfront in town.
+2385,1193,1,The wayside was quiet in the morning.
+2386,1193,2,We found the wayside at the end of the street.
+2387,1194,1,She listened to music whilst cooking dinner.
+2388,1194,2,He took notes whilst the teacher spoke.
+2389,1195,1,The wicked detail changed the whole plan.
+2390,1195,2,She gave a wicked answer in class.
+2391,1196,1,The plan changed wickedly after lunch.
+2392,1196,2,She smiled wickedly at the good news.
+2393,1197,1,I was withdrawn when I heard the news.
+2394,1197,2,They seemed withdrawn at the end of the day.
+2395,1198,1,The wizened detail changed the whole plan.
+2396,1198,2,She gave a wizened answer in class.
+2397,1199,1,We need to woo the plan carefully.
+2398,1199,2,He decided to woo it after the meeting.
+2399,1200,1,We saw a zany pattern in the results.
+2400,1200,2,His zany style made the story stronger.
+2401,1201,1,The report described the aberration clearly.
+2402,1201,2,We noticed the aberration during the project.
+2403,1202,1,We can abhor the problem step by step.
+2404,1202,2,He began to abhor the answer during class.
+2405,1203,1,We saw an abhorrent pattern in the results.
+2406,1203,2,His abhorrent style made the story stronger.
+2407,1204,1,The plan changed abhorrently after lunch.
+2408,1204,2,She smiled abhorrently at the good news.
+2409,1205,1,This abject example helped the students.
+2410,1205,2,The report used an abject idea clearly.
+2411,1206,1,He answered abundantly when the teacher asked.
+2412,1206,2,The machine moved abundantly across the floor.
+2413,1207,1,The report described the accountability clearly.
+2414,1207,2,We noticed the accountability during the project.
+2415,1208,1,We need to accrue the plan carefully.
+2416,1208,2,He decided to accrue it after the meeting.
+2417,1209,1,The acreage changed the final result.
+2418,1209,2,The story included a clear acreage.
+2419,1210,1,The acrobatic detail changed the whole plan.
+2420,1210,2,She gave an acrobatic answer in class.
+2421,1211,1,The team compared the samples acrobatically.
+2422,1211,2,The model reacted acrobatically to the new data.
+2423,1212,1,The acrobatics changed the final result.
+2424,1212,2,The story included a clear acrobatics.
+2425,1213,1,The children like to babble after school.
+2426,1213,2,We watched the birds babble near the trees.
+2427,1214,1,We need to banish the plan carefully.
+2428,1214,2,He decided to banish it after the meeting.
+2429,1215,1,The banishment changed the final result.
+2430,1215,2,The story included a clear banishment.
+2431,1216,1,The baroque detail changed the whole plan.
+2432,1216,2,She gave a baroque answer in class.
+2433,1217,1,The bauble was on the wooden table.
+2434,1217,2,My brother carried the bauble to school.
+2435,1218,1,The behest changed the final result.
+2436,1218,2,The story included a clear behest.
+2437,1219,1,The report described the belligerence clearly.
+2438,1219,2,We noticed the belligerence during the project.
+2439,1220,1,This belligerent example helped the students.
+2440,1220,2,The report used a belligerent idea clearly.
+2441,1221,1,We saw a beneficiary pattern in the results.
+2442,1221,2,His beneficiary style made the story stronger.
+2443,1222,1,She felt bereft before the test.
+2444,1222,2,He looked bereft after the phone call.
+2445,1223,1,They walked bereftly through the quiet hall.
+2446,1223,2,The student listened bereftly to the story.
+2447,1224,1,The team will besiege the issue tomorrow.
+2448,1224,2,I hope to besiege this skill with practice.
+2449,1225,1,We need to caffeinate the meal before noon.
+2450,1225,2,She likes to caffeinate with her family.
+2451,1226,1,This calamitous example helped the students.
+2452,1226,2,The report used a calamitous idea clearly.
+2453,1227,1,The plan failed calamitously after the mistake.
+2454,1227,2,The bridge collapsed calamitously during the storm.
+2455,1228,1,The report described the calamity clearly.
+2456,1228,2,We noticed the calamity during the project.
+2457,1229,1,This callous example helped the students.
+2458,1229,2,The report used a callous idea clearly.
+2459,1230,1,He answered callously when the teacher asked.
+2460,1230,2,The machine moved callously across the floor.
+2461,1231,1,The calorific detail changed the whole plan.
+2462,1231,2,She gave a calorific answer in class.
+2463,1232,1,This capacious example helped the students.
+2464,1232,2,The report used a capacious idea clearly.
+2465,1233,1,The report explained the change catastrophically.
+2466,1233,2,The room was designed catastrophically for better sound.
+2467,1234,1,The report described the cay clearly.
+2468,1234,2,We noticed the cay during the project.
+2469,1235,1,This choreographical example helped the students.
+2470,1235,2,The report used a choreographical idea clearly.
+2471,1236,1,The choreography changed the final result.
+2472,1236,2,The story included a clear choreography.
+2473,1237,1,They plan to dampen the problem this week.
+2474,1237,2,She tried to dampen the task before dinner.
+2475,1238,1,We need to deaden the plan carefully.
+2476,1238,2,He decided to deaden it after the meeting.
+2477,1239,1,The declination changed the final result.
+2478,1239,2,The story included a clear declination.
+2479,1240,1,The deficient detail changed the whole plan.
+2480,1240,2,She gave a deficient answer in class.
+2481,1241,1,The machine worked deficiently after the repair.
+2482,1241,2,The report answered the question deficiently.
+2483,1242,1,People gathered outside the delicatessen.
+2484,1242,2,The old delicatessen looked clean and bright.
+2485,1243,1,The report described the demystification clearly.
+2486,1243,2,We noticed the demystification during the project.
+2487,1244,1,We can demystify the problem step by step.
+2488,1244,2,He began to demystify the answer during class.
+2489,1245,1,The denotation changed the final result.
+2490,1245,2,The story included a clear denotation.
+2491,1246,1,They plan to denote the problem this week.
+2492,1246,2,She tried to denote the task before dinner.
+2493,1247,1,She tried to denounce the news calmly.
+2494,1247,2,They asked him to denounce the story again.
+2495,1248,1,The denunciation changed the final result.
+2496,1248,2,The story included a clear denunciation.
+2497,1249,1,The report described the ebb clearly.
+2498,1249,2,We noticed the ebb during the project.
+2499,1250,1,The class discussed the eccentricity after the video.
+2500,1250,2,This example shows the eccentricity clearly.
+2501,1251,1,I saw him echo near the park.
+2502,1251,2,The crowd waited for the show to echo.
+2503,1252,1,The children like to echolocate after school.
+2504,1252,2,We watched the birds echolocate near the trees.
+2505,1253,1,The class discussed the echolocation after the video.
+2506,1253,2,This example shows the echolocation clearly.
+2507,1254,1,The ecotourism changed the final result.
+2508,1254,2,The story included a clear ecotourism.
+2509,1255,1,The report described the edification clearly.
+2510,1255,2,We noticed the edification during the project.
+2511,1256,1,The edifice was quiet in the morning.
+2512,1256,2,We found the edifice at the end of the street.
+2513,1257,1,They need to edify the message correctly.
+2514,1257,2,I tried to edify what happened yesterday.
+2515,1258,1,The egalitarian detail changed the whole plan.
+2516,1258,2,She gave an egalitarian answer in class.
+2517,1259,1,The class discussed the elasticity after the video.
+2518,1259,2,This example shows the elasticity clearly.
+2519,1260,1,I was elated when I heard the news.
+2520,1260,2,They seemed elated at the end of the day.
+2521,1261,1,The fabled detail changed the whole plan.
+2522,1261,2,She gave a fabled answer in class.
+2523,1262,1,We need to fabricate the plan carefully.
+2524,1262,2,He decided to fabricate it after the meeting.
+2525,1263,1,The fabrication changed the final result.
+2526,1263,2,The story included a clear fabrication.
+2527,1264,1,They plan to fabulate the problem this week.
+2528,1264,2,She tried to fabulate the task before dinner.
+2529,1265,1,The class discussed the fabulation after the video.
+2530,1265,2,This example shows the fabulation clearly.
+2531,1266,1,The facsimile changed the final result.
+2532,1266,2,The story included a clear facsimile.
+2533,1267,1,The report described the fallacy clearly.
+2534,1267,2,We noticed the fallacy during the project.
+2535,1268,1,This farcical example helped the students.
+2536,1268,2,The report used a farcical idea clearly.
+2537,1269,1,They need to feign the message correctly.
+2538,1269,2,I tried to feign what happened yesterday.
+2539,1270,1,The report described the ferocity clearly.
+2540,1270,2,We noticed the ferocity during the project.
+2541,1271,1,We need to fete the plan carefully.
+2542,1271,2,He decided to fete it after the meeting.
+2543,1272,1,The gale changed the final result.
+2544,1272,2,The story included a clear gale.
+2545,1273,1,The report described the gambit clearly.
+2546,1273,2,We noticed the gambit during the project.
+2547,1274,1,This gauche example helped the students.
+2548,1274,2,The report used a gauche idea clearly.
+2549,1275,1,We saw a genomic pattern in the results.
+2550,1275,2,His genomic style made the story stronger.
+2551,1276,1,The system behaved genomically during the test.
+2552,1276,2,The result changed genomically in the study.
+2553,1277,1,The class discussed the glitz after the video.
+2554,1277,2,This example shows the glitz clearly.
+2555,1278,1,We saw a glitzy pattern in the results.
+2556,1278,2,His glitzy style made the story stronger.
+2557,1279,1,The report described the gout clearly.
+2558,1279,2,We noticed the gout during the project.
+2559,1280,1,She began to gravitate when the music started.
+2560,1280,2,They will gravitate outside if the weather is good.
+2561,1281,1,We saw a gravitational pattern in the results.
+2562,1281,2,His gravitational style made the story stronger.
+2563,1282,1,The system behaved gravitationally during the test.
+2564,1282,2,The result changed gravitationally in the study.
+2565,1283,1,The habitation was quiet in the morning.
+2566,1283,2,We found the habitation at the end of the street.
+2567,1284,1,The team will hamper the issue tomorrow.
+2568,1284,2,I hope to hamper this skill with practice.
+2569,1285,1,The haphazard detail changed the whole plan.
+2570,1285,2,She gave a haphazard answer in class.
+2571,1286,1,He answered haphazardly when the teacher asked.
+2572,1286,2,The machine moved haphazardly across the floor.
+2573,1287,1,We saw a hapless pattern in the results.
+2574,1287,2,His hapless style made the story stronger.
+2575,1288,1,The report described the happenstance clearly.
+2576,1288,2,We noticed the happenstance during the project.
+2577,1289,1,She spoke haughtily during the meeting.
+2578,1289,2,The team worked haughtily on the final task.
+2579,1290,1,We saw a haughty pattern in the results.
+2580,1290,2,His haughty style made the story stronger.
+2581,1291,1,They walked hauntingly through the quiet hall.
+2582,1291,2,The student listened hauntingly to the story.
+2583,1292,1,The headmistress arrived early for work.
+2584,1292,2,Everyone thanked the headmistress after lunch.
+2585,1293,1,I cleaned the helm before dinner.
+2586,1293,2,The small helm fell from the shelf.
+2587,1294,1,Please herald clearly before you leave.
+2588,1294,2,The teacher will herald the class after lunch.
+2589,1295,1,This idiomatic example helped the students.
+2590,1295,2,The report used an idiomatic idea clearly.
+2591,1296,1,The report explained the change idiomatically.
+2592,1296,2,The room was designed idiomatically for better sound.
+2593,1297,1,The report described the idiosyncrasy clearly.
+2594,1297,2,We noticed the idiosyncrasy during the project.
+2595,1298,1,This idiosyncratic example helped the students.
+2596,1298,2,The report used an idiosyncratic idea clearly.
+2597,1299,1,We saw an ignominious pattern in the results.
+2598,1299,2,His ignominious style made the story stronger.
+2599,1300,1,The plan changed ignominiously after lunch.
+2600,1300,2,She smiled ignominiously at the good news.
+2601,1301,1,This impeccable example helped the students.
+2602,1301,2,The report used an impeccable idea clearly.
+2603,1302,1,He answered impeccably when the teacher asked.
+2604,1302,2,The machine moved impeccably across the floor.
+2605,1303,1,The imperceptible detail changed the whole plan.
+2606,1303,2,She gave an imperceptible answer in class.
+2607,1304,1,The plan changed imperceptibly after lunch.
+2608,1304,2,She smiled imperceptibly at the good news.
+2609,1305,1,The imposition changed the final result.
+2610,1305,2,The story included a clear imposition.
+2611,1306,1,The impresario helped a child near the door.
+2612,1306,2,A friendly impresario smiled during the meeting.
+2613,1307,1,The class discussed the jargon after the video.
+2614,1307,2,This example shows the jargon clearly.
+2615,1308,1,We saw a jarring pattern in the results.
+2616,1308,2,His jarring style made the story stronger.
+2617,1309,1,The kinetic detail changed the whole plan.
+2618,1309,2,She gave a kinetic answer in class.
+2619,1310,1,The team compared the samples kinetically.
+2620,1310,2,The model reacted kinetically to the new data.
+2621,1311,1,The knack changed the final result.
+2622,1311,2,The story included a clear knack.
+2623,1312,1,Please lament clearly before you leave.
+2624,1312,2,The teacher will lament the class after lunch.
+2625,1313,1,The class discussed the lamentation after the video.
+2626,1313,2,This example shows the lamentation clearly.
+2627,1314,1,The laryngitis changed the final result.
+2628,1314,2,The story included a clear laryngitis.
+2629,1315,1,The report described the lassitude clearly.
+2630,1315,2,We noticed the lassitude during the project.
+2631,1316,1,She tried to laud the news calmly.
+2632,1316,2,They asked him to laud the story again.
+2633,1317,1,We saw a laudatory pattern in the results.
+2634,1317,2,His laudatory style made the story stronger.
+2635,1318,1,We need to leaven the meal before noon.
+2636,1318,2,She likes to leaven with her family.
+2637,1319,1,The class discussed the leavening after the video.
+2638,1319,2,This example shows the leavening clearly.
+2639,1320,1,The legion changed the final result.
+2640,1320,2,The story included a clear legion.
+2641,1321,1,Please liaise clearly before you leave.
+2642,1321,2,The teacher will liaise the class after lunch.
+2643,1322,1,The class discussed the locomotion after the video.
+2644,1322,2,This example shows the locomotion clearly.
+2645,1323,1,The maelstrom changed the final result.
+2646,1323,2,The story included a clear maelstrom.
+2647,1324,1,The report described the maggot clearly.
+2648,1324,2,We noticed the maggot during the project.
+2649,1325,1,The class discussed the magnanimity after the video.
+2650,1325,2,This example shows the magnanimity clearly.
+2651,1326,1,We saw a magnanimous pattern in the results.
+2652,1326,2,His magnanimous style made the story stronger.
+2653,1327,1,They walked magnanimously through the quiet hall.
+2654,1327,2,The student listened magnanimously to the story.
+2655,1328,1,The magnate arrived early for work.
+2656,1328,2,Everyone thanked the magnate after lunch.
+2657,1329,1,The magpie changed the final result.
+2658,1329,2,The story included a clear magpie.
+2659,1330,1,The report described the malice clearly.
+2660,1330,2,We noticed the malice during the project.
+2661,1331,1,This malicious example helped the students.
+2662,1331,2,The report used a malicious idea clearly.
+2663,1332,1,The plan changed maliciously after lunch.
+2664,1332,2,She smiled maliciously at the good news.
+2665,1333,1,The report described the malleability clearly.
+2666,1333,2,We noticed the malleability during the project.
+2667,1334,1,This malleable example helped the students.
+2668,1334,2,The report used a malleable idea clearly.
+2669,1335,1,We saw a nascent pattern in the results.
+2670,1335,2,His nascent style made the story stronger.
+2671,1336,1,The neophyte helped a child near the door.
+2672,1336,2,A friendly neophyte smiled during the meeting.
+2673,1337,1,The end of the long trip is nigh.
+2674,1337,2,"Winter is nigh, so the nights feel colder."
+2675,1338,1,We saw a nonchalant pattern in the results.
+2676,1338,2,His nonchalant style made the story stronger.
+2677,1339,1,They walked nonchalantly through the quiet hall.
+2678,1339,2,The student listened nonchalantly to the story.
+2679,1340,1,The class discussed the nostalgia after the video.
+2680,1340,2,This example shows the nostalgia clearly.
+2681,1341,1,We saw a nostalgic pattern in the results.
+2682,1341,2,His nostalgic style made the story stronger.
+2683,1342,1,The system behaved nostalgically during the test.
+2684,1342,2,The result changed nostalgically in the study.
+2685,1343,1,The class discussed the notoriety after the video.
+2686,1343,2,This example shows the notoriety clearly.
+2687,1344,1,The plan changed notoriously after lunch.
+2688,1344,2,She smiled notoriously at the good news.
+2689,1345,1,The oblique detail changed the whole plan.
+2690,1345,2,She gave an oblique answer in class.
+2691,1346,1,The octogenarian arrived early for work.
+2692,1346,2,Everyone thanked the octogenarian after lunch.
+2693,1347,1,The opacity changed the final result.
+2694,1347,2,The story included a clear opacity.
+2695,1348,1,The opaque detail changed the whole plan.
+2696,1348,2,She gave an opaque answer in class.
+2697,1349,1,The class discussed the opulence after the video.
+2698,1349,2,This example shows the opulence clearly.
+2699,1350,1,We saw an opulent pattern in the results.
+2700,1350,2,His opulent style made the story stronger.
+2701,1351,1,They walked opulently through the quiet hall.
+2702,1351,2,The student listened opulently to the story.
+2703,1352,1,We need to ordain the plan carefully.
+2704,1352,2,He decided to ordain it after the meeting.
+2705,1353,1,I cleaned the ore before dinner.
+2706,1353,2,The small ore fell from the shelf.
+2707,1354,1,The ornate detail changed the whole plan.
+2708,1354,2,She gave an ornate answer in class.
+2709,1355,1,This ostensible example helped the students.
+2710,1355,2,The report used an ostensible idea clearly.
+2711,1356,1,We saw a painstaking pattern in the results.
+2712,1356,2,His painstaking style made the story stronger.
+2713,1357,1,She spoke painstakingly during the meeting.
+2714,1357,2,The team worked painstakingly on the final task.
+2715,1358,1,This palatable example helped the students.
+2716,1358,2,The report used a palatable idea clearly.
+2717,1359,1,We shared the palate at lunch.
+2718,1359,2,The cook used palate in the meal.
+2719,1360,1,The parable detail changed the whole plan.
+2720,1360,2,She gave a parable answer in class.
+2721,1361,1,This paradoxical example helped the students.
+2722,1361,2,The report used a paradoxical idea clearly.
+2723,1362,1,The report explained the change paradoxically.
+2724,1362,2,The room was designed paradoxically for better sound.
+2725,1363,1,The report described the parameter clearly.
+2726,1363,2,We noticed the parameter during the project.
+2727,1364,1,The class discussed the paramount after the video.
+2728,1364,2,This example shows the paramount clearly.
+2729,1365,1,We saw a parasitic pattern in the results.
+2730,1365,2,His parasitic style made the story stronger.
+2731,1366,1,The parochial detail changed the whole plan.
+2732,1366,2,She gave a parochial answer in class.
+2733,1367,1,They walked patchily through the quiet hall.
+2734,1367,2,The student listened patchily to the story.
+2735,1368,1,We saw a qualitative pattern in the results.
+2736,1368,2,His qualitative style made the story stronger.
+2737,1369,1,The report described the qualm clearly.
+2738,1369,2,We noticed the qualm during the project.
+2739,1370,1,She began to quiver when the music started.
+2740,1370,2,They will quiver outside if the weather is good.
+2741,1371,1,The rapture changed the final result.
+2742,1371,2,The story included a clear rapture.
+2743,1372,1,The rapturous detail changed the whole plan.
+2744,1372,2,She gave a rapturous answer in class.
+2745,1373,1,She spoke rapturously during the meeting.
+2746,1373,2,The team worked rapturously on the final task.
+2747,1374,1,The team will ravish the issue tomorrow.
+2748,1374,2,I hope to ravish this skill with practice.
+2749,1375,1,The children like to rebound after school.
+2750,1375,2,We watched the birds rebound near the trees.
+2751,1376,1,The coach may rebuke players for rude behavior.
+2752,1376,2,She gave a quiet rebuke after the mistake.
+2753,1377,1,The recitation changed the final result.
+2754,1377,2,The story included a clear recitation.
+2755,1378,1,The recluse helped a child near the door.
+2756,1378,2,A friendly recluse smiled during the meeting.
+2757,1379,1,This reclusive example helped the students.
+2758,1379,2,The report used a reclusive idea clearly.
+2759,1380,1,The team will reconcile the issue tomorrow.
+2760,1380,2,I hope to reconcile this skill with practice.
+2761,1381,1,The report described the reconciliation clearly.
+2762,1381,2,We noticed the reconciliation during the project.
+2763,1382,1,The class discussed the recourse after the video.
+2764,1382,2,This example shows the recourse clearly.
+2765,1383,1,We saw a salivary pattern in the results.
+2766,1383,2,His salivary style made the story stronger.
+2767,1384,1,The sandwiched detail changed the whole plan.
+2768,1384,2,She gave a sandwiched answer in class.
+2769,1385,1,The scavenger arrived early for work.
+2770,1385,2,Everyone thanked the scavenger after lunch.
+2771,1386,1,He answered scholarly when the teacher asked.
+2772,1386,2,The machine moved scholarly across the floor.
+2773,1387,1,They plan to scroll the problem this week.
+2774,1387,2,She tried to scroll the task before dinner.
+2775,1388,1,This secular example helped the students.
+2776,1388,2,The report used a secular idea clearly.
+2777,1389,1,She spoke secularly during the meeting.
+2778,1389,2,The team worked secularly on the final task.
+2779,1390,1,The seedy detail changed the whole plan.
+2780,1390,2,She gave a seedy answer in class.
+2781,1391,1,This seismic example helped the students.
+2782,1391,2,The report used a seismic idea clearly.
+2783,1392,1,The selectivity changed the final result.
+2784,1392,2,The story included a clear selectivity.
+2785,1393,1,The children like to shamble after school.
+2786,1393,2,We watched the birds shamble near the trees.
+2787,1394,1,The sheaf was on the wooden table.
+2788,1394,2,My brother carried the sheaf to school.
+2789,1395,1,We saw a tacit pattern in the results.
+2790,1395,2,His tacit style made the story stronger.
+2791,1396,1,The plan changed tacitly after lunch.
+2792,1396,2,She smiled tacitly at the good news.
+2793,1397,1,This taciturn example helped the students.
+2794,1397,2,The report used a taciturn idea clearly.
+2795,1398,1,The taciturnity changed the final result.
+2796,1398,2,The story included a clear taciturnity.
+2797,1399,1,The tactic detail changed the whole plan.
+2798,1399,2,She gave a tactic answer in class.
+2799,1400,1,This tactical example helped the students.
+2800,1400,2,The report used a tactical idea clearly.
+2801,1401,1,The report explained the change tactically.
+2802,1401,2,The room was designed tactically for better sound.
+2803,1402,1,She put the taste-maker beside her bag.
+2804,1402,2,He found a taste-maker under the chair.
+2805,1403,1,She began to teem when the music started.
+2806,1403,2,They will teem outside if the weather is good.
+2807,1404,1,We saw a telescopic pattern in the results.
+2808,1404,2,His telescopic style made the story stronger.
+2809,1405,1,The system behaved telescopically during the test.
+2810,1405,2,The result changed telescopically in the study.
+2811,1406,1,This unadulterated example helped the students.
+2812,1406,2,The report used an unadulterated idea clearly.
+2813,1407,1,We saw an uncanny pattern in the results.
+2814,1407,2,His uncanny style made the story stronger.
+2815,1408,1,The undemonstrative detail changed the whole plan.
+2816,1408,2,She gave an undemonstrative answer in class.
+2817,1409,1,She spoke undemonstratively during the meeting.
+2818,1409,2,The team worked undemonstratively on the final task.
+2819,1410,1,We saw an undiminishing pattern in the results.
+2820,1410,2,His undiminishing style made the story stronger.
+2821,1411,1,The unencumbered detail changed the whole plan.
+2822,1411,2,She gave an unencumbered answer in class.
+2823,1412,1,This unequivocal example helped the students.
+2824,1412,2,The report used an unequivocal idea clearly.
+2825,1413,1,The report explained the change unequivocally.
+2826,1413,2,The room was designed unequivocally for better sound.
+2827,1414,1,The unexceptional detail changed the whole plan.
+2828,1414,2,She gave an unexceptional answer in class.
+2829,1415,1,The day passed unexceptionally at school.
+2830,1415,2,The machine worked unexceptionally during the test.
+2831,1416,1,We saw an unexcused pattern in the results.
+2832,1416,2,His unexcused style made the story stronger.
+2833,1417,1,The vandal detail changed the whole plan.
+2834,1417,2,She gave a vandal answer in class.
+2835,1418,1,We need to vandalize the plan carefully.
+2836,1418,2,He decided to vandalize it after the meeting.
+2837,1419,1,We saw a venomous pattern in the results.
+2838,1419,2,His venomous style made the story stronger.
+2839,1420,1,The plan changed venomously after lunch.
+2840,1420,2,She smiled venomously at the good news.
+2841,1421,1,She spoke verbatim during the meeting.
+2842,1421,2,The team worked verbatim on the final task.
+2843,1422,1,"Verily, the old tale still makes people smile."
+2844,1422,2,The judge spoke verily in the quiet court.
+2845,1423,1,The report described the verisimilitude clearly.
+2846,1423,2,We noticed the verisimilitude during the project.
+2847,1424,1,This veritable example helped the students.
+2848,1424,2,The report used a veritable idea clearly.
+2849,1425,1,The vermin changed the final result.
+2850,1425,2,The story included a clear vermin.
+2851,1426,1,The vestigial detail changed the whole plan.
+2852,1426,2,She gave a vestigial answer in class.
+2853,1427,1,The team compared the samples vestigially.
+2854,1427,2,The model reacted vestigially to the new data.
+2855,1428,1,I saw him wallow near the park.
+2856,1428,2,The crowd waited for the show to wallow.
+2857,1429,1,The children like to wane after school.
+2858,1429,2,We watched the birds wane near the trees.
+2859,1430,1,This wayward example helped the students.
+2860,1430,2,The report used a wayward idea clearly.
+2861,1431,1,I saw him wheeze near the park.
+2862,1431,2,The crowd waited for the show to wheeze.
+2863,1432,1,The children like to whir after school.
+2864,1432,2,We watched the birds whir near the trees.
+2865,1433,1,The class discussed the whirlwind after the video.
+2866,1433,2,This example shows the whirlwind clearly.
+2867,1434,1,He answered wholly when the teacher asked.
+2868,1434,2,The machine moved wholly across the floor.
+2869,1435,1,The wistful detail changed the whole plan.
+2870,1435,2,She gave a wistful answer in class.
+2871,1436,1,The plan changed wistfully after lunch.
+2872,1436,2,She smiled wistfully at the good news.
+2873,1437,1,The wordage changed the final result.
+2874,1437,2,The story included a clear wordage.
+2875,1438,1,The wordsmith helped a child near the door.
+2876,1438,2,A friendly wordsmith smiled during the meeting.
+2877,1439,1,The zoologist arrived early for work.
+2878,1439,2,Everyone thanked the zoologist after lunch.
+2879,1440,1,The zoology changed the final result.
+2880,1440,2,The story included a clear zoology.
