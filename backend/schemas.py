@@ -275,17 +275,11 @@ class WordleStartRequest(BaseModel):
     word_length: Optional[int] = Field(default=5, ge=3, le=15)
 
 
-class WordleGameResponse(BaseModel):
-    id: int
-    status: str
-    attempt_count: int
-    max_attempts: int
-    word_length: int
-    message: str
-    finished_at: Optional[datetime] = None
-
-
 class WordleGuessRequest(BaseModel):
+    game_id: Optional[int] = Field(
+        default=None,
+        validation_alias=AliasChoices("game_id", "gameId"),
+    )
     guess: str = Field(min_length=1, max_length=150)
 
 
@@ -294,14 +288,20 @@ class WordleLetterResult(BaseModel):
     status: str
 
 
-class WordleGuessResponse(BaseModel):
-    game_id: int
+class WordleGuessItem(BaseModel):
     guess: str
-    result: List[WordleLetterResult]
-    attempt_count: int
-    max_attempts: int
-    is_correct: bool
-    status: str
-    target_word: Optional[str] = None
-    message: str
+    feedback: List[WordleLetterResult]
 
+
+class WordleGameData(BaseModel):
+    id: int
+    status: str
+    word_length: int
+    max_attempts: int
+    attempts_used: int
+    guesses: List[WordleGuessItem] = Field(default_factory=list)
+
+
+class WordleGameEnvelopeResponse(BaseModel):
+    game: WordleGameData
+    message: Optional[str] = None

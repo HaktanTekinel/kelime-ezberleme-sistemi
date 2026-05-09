@@ -244,7 +244,6 @@ class ReportSnapshot(Base):
     strong_topics_json = Column(JSON, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 
-
 class WordleGame(Base):
     __tablename__ = "wordle_games"
 
@@ -263,6 +262,25 @@ class WordleGame(Base):
     attempt_count = Column(Integer, default=0, nullable=False)
     started_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     finished_at = Column(TIMESTAMP, nullable=True)
+
+
+class WordleGuess(Base):
+    __tablename__ = "wordle_guesses"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    game_id = Column(
+        BigInteger,
+        ForeignKey("wordle_games.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(
+        BigInteger,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    guess = Column(String(150), nullable=False)
+    feedback_json = Column(JSON, nullable=False)
+    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 
 
 class WordChainStory(Base):
