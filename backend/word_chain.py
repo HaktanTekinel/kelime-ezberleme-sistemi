@@ -1,8 +1,10 @@
-import html
+import base64
+import json
 import os
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from openai import OpenAI
 from sqlalchemy.orm import Session
 
 import models
@@ -16,17 +18,24 @@ UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads")).resolve()
 STORY_IMAGE_DIR = UPLOAD_DIR / "stories"
 STORY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
+TEXT_MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4.1-mini")
+IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL", "gpt-4.1-mini")
+
+
+def get_openai_client() -> OpenAI:
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="OPENAI_API_KEY .env içinde tanımlı değil.",
+        )
+
+    return OpenAI(api_key=api_key)
+
 
 def clean_words(words: list[str]) -> list[str]:
-    cleaned_words = []
-
-    for word in words:
-        clean_word = word.strip()
-
-        if clean_word:
-            cleaned_words.append(clean_word)
-
-    return cleaned_words
+    return [word.strip() for word in words if word and word.strip()]
 
 
 def validate_words(words: list[str]) -> None:
@@ -43,69 +52,88 @@ def validate_words(words: list[str]) -> None:
         )
 
 
-def generate_demo_story(words: list[str]) -> str:
-    first_word = words[0]
-    last_word = words[-1]
-    middle_words = words[1:-1]
+def generate_story_with_llm(client: OpenAI, words: list[str]) -> tuple[str, str]:
+    prompt = f"""
+Aşağıdaki İngilizce kelimeleri sırasıyla kullanarak kısa, anlaşılır ve yaratıcı bir Türkçe hikaye oluştur.
 
-    story_parts = [
-        f"{first_word} adlı meraklı bir karakter, yeni kelimeleri öğrenmek için küçük bir yolculuğa çıktı."
+Kelimeler:
+{", ".join(words)}
+
+Kurallar:
+- Hikaye Türkçe olsun.
+- Verilen İngilizce kelimeler hikayenin içinde aynen geçsin.
+- Hikaye çok uzun olmasın.
+- Ayrıca 1 cümlelik kısa Türkçe özet üret.
+- Sadece geçerli JSON döndür.
+
+JSON formatı:
+{{
+  "story": "...",
+  "summary": "..."
+}}
+"""
+
+    response = client.responses.create(
+        model=TEXT_MODEL,
+        input=prompt,
+    )
+
+    raw_text = response.output_text.strip()
+
+    try:
+        data = json.loads(raw_text)
+    except json.JSONDecodeError:
+        return raw_text, "LLM tarafından oluşturulan Word Chain hikayesi."
+
+    story = data.get("story", "").strip()
+    summary = data.get("summary", "").strip()
+
+    if not story:
+        story = raw_text
+
+    if not summary:
+        summary = "LLM tarafından oluşturulan Word Chain hikayesi."
+
+    return story, summary
+
+
+def generate_story_image(client: OpenAI, story_id: int, words: list[str], summary: str) -> str:
+    image_prompt = f"""
+Create a colorful educational illustration for a vocabulary learning app.
+
+Words: {", ".join(words)}
+Story summary: {summary}
+
+Style:
+- friendly digital illustration
+- suitable for students
+- no text in the image
+- clear objects representing the story
+"""
+
+    response = client.responses.create(
+        model=IMAGE_MODEL,
+        input=image_prompt,
+        tools=[{"type": "image_generation"}],
+    )
+
+    image_base64_list = [
+        output.result
+        for output in response.output
+        if output.type == "image_generation_call"
     ]
 
-    for word in middle_words:
-        story_parts.append(
-            f"Yolculuk sırasında karşısına çıkan '{word}' kelimesi ona hikayenin yeni bir ipucunu verdi."
+    if not image_base64_list:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="LLM görsel üretimi başarısız oldu.",
         )
 
-    story_parts.append(
-        f"Sonunda '{last_word}' kelimesine ulaşarak bütün kelimeleri anlamlı bir hikaye zincirine dönüştürdü."
-    )
-
-    return " ".join(story_parts)
-
-
-def generate_demo_summary(words: list[str]) -> str:
-    return (
-        f"{words[0]} ile başlayan hikaye, "
-        f"{', '.join(words[1:-1])} kelimeleriyle gelişir ve "
-        f"{words[-1]} kelimesiyle tamamlanır."
-    )
-
-
-def create_story_svg(story_id: int, words: list[str], summary: str) -> str:
-    safe_words = [html.escape(word) for word in words]
-    safe_summary = html.escape(summary)
-
-    word_items = ""
-    start_x = 60
-    start_y = 145
-
-    for index, word in enumerate(safe_words):
-        y = start_y + (index * 42)
-        word_items += f"""
-        <text x="{start_x}" y="{y}" font-size="24" fill="#ffffff" font-family="Arial">
-            {index + 1}. {word}
-        </text>
-        """
-
-    svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600">
-    <rect width="900" height="600" rx="32" fill="#161b3a"/>
-    <rect x="30" y="30" width="840" height="540" rx="28" fill="#23295c"/>
-    <text x="60" y="85" font-size="34" fill="#ffffff" font-family="Arial" font-weight="bold">
-        Word Chain Story
-    </text>
-    <text x="60" y="115" font-size="18" fill="#aeb8ff" font-family="Arial">
-        LLM demo görseli - kelime zinciri
-    </text>
-    {word_items}
-    <text x="60" y="520" font-size="20" fill="#f1f1f1" font-family="Arial">
-        {safe_summary[:95]}
-    </text>
-</svg>"""
-
-    file_name = f"story_{story_id}.svg"
+    file_name = f"story_{story_id}.png"
     file_path = STORY_IMAGE_DIR / file_name
-    file_path.write_text(svg_content, encoding="utf-8")
+
+    image_bytes = base64.b64decode(image_base64_list[0])
+    file_path.write_bytes(image_bytes)
 
     return f"/uploads/stories/{file_name}"
 
@@ -130,8 +158,9 @@ def generate_word_chain_story(
     words = clean_words(payload.words)
     validate_words(words)
 
-    story_text = generate_demo_story(words)
-    summary_text = generate_demo_summary(words)
+    client = get_openai_client()
+
+    story_text, summary_text = generate_story_with_llm(client, words)
 
     new_story = models.WordChainStory(
         user_id=current_user.id,
@@ -139,13 +168,14 @@ def generate_word_chain_story(
         story_text=story_text,
         summary_text=summary_text,
         image_url=None,
-        llm_model_name="demo-word-chain-generator",
+        llm_model_name=TEXT_MODEL,
     )
 
     db.add(new_story)
     db.flush()
 
-    image_url = create_story_svg(
+    image_url = generate_story_image(
+        client=client,
         story_id=new_story.id,
         words=words,
         summary=summary_text,

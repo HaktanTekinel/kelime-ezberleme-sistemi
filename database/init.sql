@@ -18,9 +18,9 @@ CREATE TABLE public.words (
 	id bigserial NOT NULL,
 	eng_word varchar(150) NOT NULL,
 	tur_word varchar(150) NOT NULL,
-	picture_url text NULL,
-	audio_url text NULL,
-	topic varchar(100) NULL,
+	picture_url varchar(255) NULL,
+	audio_url varchar(255) NULL,
+	topic varchar(80) NULL,
 	difficulty_level int4 DEFAULT 1 NOT NULL,
 	created_by int8 NULL,
 	is_active bool DEFAULT true NOT NULL,
@@ -33,18 +33,6 @@ CREATE TABLE public.words (
 -- public.words foreign keys
 
 ALTER TABLE public.words ADD CONSTRAINT words_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE SET NULL;
-
-CREATE TABLE IF NOT EXISTS public.word_samples (
-    id BIGSERIAL PRIMARY KEY,
-    word_id BIGINT NOT NULL,
-    sample_text TEXT NOT NULL,
-    sample_order INT DEFAULT 1 NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT word_samples_word_id_fkey
-        FOREIGN KEY (word_id)
-        REFERENCES public.words(id)
-        ON DELETE CASCADE
-);
 
 CREATE TABLE public.user_settings (
 	id bigserial NOT NULL,
@@ -62,6 +50,28 @@ CREATE TABLE public.user_settings (
 -- public.user_settings foreign keys
 
 ALTER TABLE public.user_settings ADD CONSTRAINT user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+-- public.password_reset_tokens definition
+
+-- Drop table
+
+-- DROP TABLE public.password_reset_tokens;
+
+CREATE TABLE public.password_reset_tokens (
+	id bigserial NOT NULL,
+	token varchar(128) NOT NULL,
+	user_id int8 NOT NULL,
+	expires_at timestamp NULL,
+	is_used bool DEFAULT false NOT NULL,
+	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (id),
+	CONSTRAINT password_reset_tokens_token_key UNIQUE (token)
+);
+
+
+-- public.password_reset_tokens foreign keys
+
+ALTER TABLE public.password_reset_tokens ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 -- public.user_word_progress definition
 
 -- Drop table
@@ -75,9 +85,8 @@ CREATE TABLE public.user_word_progress (
 	current_stage int4 DEFAULT 0 NOT NULL,
 	consecutive_correct int4 DEFAULT 0 NOT NULL,
 	last_answer_correct bool NULL,
-	last_review_at timestamp NULL,
 	next_review_at timestamp NULL,
-	learned bool DEFAULT false NOT NULL,
+	is_learned bool DEFAULT false NOT NULL,
 	reset_count int4 DEFAULT 0 NOT NULL,
 	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT uq_user_word UNIQUE (user_id, word_id),
@@ -148,7 +157,7 @@ ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_word_id_fkey FOREIGN
 CREATE TABLE public.word_samples (
 	id bigserial NOT NULL,
 	word_id int8 NOT NULL,
-	sample_text text NOT NULL,
+	sample_text varchar(500) NOT NULL,
 	sample_order int4 DEFAULT 1 NOT NULL,
 	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT word_samples_pkey PRIMARY KEY (id)
