@@ -259,7 +259,6 @@ class WordleGameRead(ORMBaseModel):
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
 
-
 class WordChainStoryRead(ORMBaseModel):
     id: int
     user_id: int
@@ -269,3 +268,40 @@ class WordChainStoryRead(ORMBaseModel):
     image_url: Optional[str] = None
     llm_model_name: Optional[str] = None
     created_at: Optional[datetime] = None
+
+
+class WordleStartRequest(BaseModel):
+    restart: bool = False
+    word_length: Optional[int] = Field(default=5, ge=3, le=15)
+
+
+class WordleGameResponse(BaseModel):
+    id: int
+    status: str
+    attempt_count: int
+    max_attempts: int
+    word_length: int
+    message: str
+    finished_at: Optional[datetime] = None
+
+
+class WordleGuessRequest(BaseModel):
+    guess: str = Field(min_length=1, max_length=150)
+
+
+class WordleLetterResult(BaseModel):
+    letter: str
+    status: str
+
+
+class WordleGuessResponse(BaseModel):
+    game_id: int
+    guess: str
+    result: List[WordleLetterResult]
+    attempt_count: int
+    max_attempts: int
+    is_correct: bool
+    status: str
+    target_word: Optional[str] = None
+    message: str
+

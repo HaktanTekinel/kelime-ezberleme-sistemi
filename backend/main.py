@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, selectinload
+from wordle import router as wordle_router
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -55,7 +56,7 @@ app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
-
+app.include_router(wordle_router, prefix="/wordle", tags=["Wordle"])
 
 @app.get("/")
 def home():
