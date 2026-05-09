@@ -305,3 +305,28 @@ class WordleGameData(BaseModel):
 class WordleGameEnvelopeResponse(BaseModel):
     game: WordleGameData
     message: Optional[str] = None
+
+class WordChainGenerateRequest(BaseModel):
+    words: List[str] = Field(min_length=3, max_length=10)
+
+
+class WordChainGenerateResponse(BaseModel):
+    id: int
+    words: List[str]
+    story: str
+    summary: str
+    image_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class WordChainHistoryItem(BaseModel):
+    id: int
+    words: List[str]
+    story: str
+    summary: Optional[str] = None
+    image_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class WordChainHistoryResponse(BaseModel):
+    history: List[WordChainHistoryItem]

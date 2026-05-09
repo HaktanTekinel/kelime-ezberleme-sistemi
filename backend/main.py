@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, selectinload
 from wordle import router as wordle_router
+from word_chain import router as word_chain_router
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -57,6 +58,7 @@ app.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
 app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(wordle_router, prefix="/wordle", tags=["Wordle"])
+app.include_router(word_chain_router, prefix="/word-chain", tags=["Word Chain"])
 
 @app.get("/")
 def home():
