@@ -114,3 +114,11 @@ temp/
 # =========================
 database/update_audio_urls.sql
 database/update_missing_audio_urls.sql
+
+# Local database and backup files
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+backup/
+.local_backup_before_main_merge/
