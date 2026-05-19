@@ -86,12 +86,20 @@ class UserSettingsResponse(BaseModel):
     allow_skip_questions: bool
 
 
+class CategoryWordItem(BaseModel):
+    word_id: int
+    eng_word: str
+    tur_word: Optional[str] = None
+
+
 class CategoryReport(BaseModel):
     name: str
     correct: int
     wrong: int
     total: int
     success_rate: float
+    correct_words: List[CategoryWordItem] = Field(default_factory=list)
+    wrong_words: List[CategoryWordItem] = Field(default_factory=list)
 
 
 class ReportResponse(BaseModel):

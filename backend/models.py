@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     Column,
     Date,
@@ -21,7 +20,7 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
@@ -57,9 +56,9 @@ class User(Base):
 class UserSettings(Base):
     __tablename__ = "user_settings"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
         nullable=False,
@@ -81,7 +80,7 @@ class UserSettings(Base):
 class Word(Base):
     __tablename__ = "words"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     eng_word = Column(String(150), nullable=False, index=True)
     tur_word = Column(String(150), nullable=False)
     difficulty_level = Column(Integer, default=1, nullable=False)
@@ -89,7 +88,7 @@ class Word(Base):
     picture_url = Column(String(255), nullable=True)
     audio_url = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_by_user_id = Column(BigInteger, ForeignKey("users.id"), nullable=True)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(
         TIMESTAMP,
@@ -112,9 +111,9 @@ class Word(Base):
 class WordSample(Base):
     __tablename__ = "word_samples"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     word_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("words.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -129,14 +128,14 @@ class UserWordProgress(Base):
     __tablename__ = "user_word_progress"
     __table_args__ = (UniqueConstraint("user_id", "word_id", name="uq_user_word"),)
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     word_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("words.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -160,9 +159,9 @@ class UserWordProgress(Base):
 class QuizSession(Base):
     __tablename__ = "quiz_sessions"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -185,19 +184,19 @@ class QuizSession(Base):
 class QuizAnswer(Base):
     __tablename__ = "quiz_answers"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     quiz_session_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("quiz_sessions.id", ondelete="CASCADE"),
         nullable=False,
     )
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     word_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("words.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -216,10 +215,10 @@ class QuizAnswer(Base):
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     token = Column(String(128), unique=True, nullable=False)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -231,9 +230,9 @@ class PasswordResetToken(Base):
 class ReportSnapshot(Base):
     __tablename__ = "report_snapshots"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -244,17 +243,18 @@ class ReportSnapshot(Base):
     strong_topics_json = Column(JSON, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
 
+
 class WordleGame(Base):
     __tablename__ = "wordle_games"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     target_word_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("words.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -267,14 +267,14 @@ class WordleGame(Base):
 class WordleGuess(Base):
     __tablename__ = "wordle_guesses"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     game_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("wordle_games.id", ondelete="CASCADE"),
         nullable=False,
     )
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -286,9 +286,9 @@ class WordleGuess(Base):
 class WordChainStory(Base):
     __tablename__ = "word_chain_stories"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        BigInteger,
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )

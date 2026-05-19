@@ -3,30 +3,35 @@ import shutil
 import sys
 from pathlib import Path
 
+sys.path.append(os.path.dirname(__file__))
+
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, selectinload
-from wordle import router as wordle_router
-from word_chain import router as word_chain_router
-
-sys.path.append(os.path.dirname(__file__))
 
 import models
 import schemas
 from auth import get_current_user_id, router as auth_router
 from dashboard import router as dashboard_router
 from database import engine, get_db
+from db_setup import initialize_database
 from quiz import router as quiz_router
 from reports import router as reports_router
 from users import router as users_router
+from word_chain import router as word_chain_router
+from wordle import router as wordle_router
 
 load_dotenv()
 
-models.Base.metadata.create_all(bind=engine)
+initialize_database(engine)
 
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads")).resolve()
+BACKEND_DIR = Path(__file__).resolve().parent
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
+if not UPLOAD_DIR.is_absolute():
+    UPLOAD_DIR = BACKEND_DIR / UPLOAD_DIR
+UPLOAD_DIR = UPLOAD_DIR.resolve()
 WORD_IMAGE_DIR = UPLOAD_DIR / "words"
 WORD_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 

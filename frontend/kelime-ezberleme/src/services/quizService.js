@@ -11,7 +11,11 @@ export const getDailyQuizAPI = async () => {
   return handleResponse(response);
 };
 
-export const submitQuizAnswerAPI = async ({ word_id, selected_answer }) => {
+export const submitQuizAnswerAPI = async ({
+  word_id,
+  selected_answer,
+  quiz_session_id,
+}) => {
   const response = await fetch(`${API_BASE_URL}/quiz/answer`, {
     method: "POST",
     headers: {
@@ -23,6 +27,8 @@ export const submitQuizAnswerAPI = async ({ word_id, selected_answer }) => {
       wordId: word_id,
       selected_answer,
       selectedAnswer: selected_answer,
+      quiz_session_id,
+      quizSessionId: quiz_session_id,
     }),
   });
 

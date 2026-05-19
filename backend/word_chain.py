@@ -19,7 +19,7 @@ STORY_IMAGE_DIR = UPLOAD_DIR / "stories"
 STORY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 TEXT_MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4.1-mini")
-IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL", "gpt-4.1-mini")
+IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
 
 
 def get_openai_client() -> OpenAI:
