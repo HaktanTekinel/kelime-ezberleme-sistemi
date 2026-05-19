@@ -1,18 +1,116 @@
-# Gizli Çevre Değişkenleri
+# =========================
+# ENV / SECRET FILES
+# =========================
 .env
+.env.*
+!.env.example
 
-# Veritabanı dosyası (Localde kalmalı)
-app.db
+backend/.env
+backend/.env.*
+!backend/.env.example
 
-# Python Önbellek Dosyaları
+frontend/kelime-ezberleme/.env
+frontend/kelime-ezberleme/.env.*
+!frontend/kelime-ezberleme/.env.example
+
+
+# =========================
+# PYTHON
+# =========================
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
+*.pyc
+.Python
 
-# Sanal Ortamlar
 .venv/
 venv/
 env/
+ENV/
 
+backend/.venv/
+backend/venv/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+
+# =========================
+# DATABASE LOCAL FILES
+# =========================
 *.db
+*.sqlite
+*.sqlite3
 backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+
+# =========================
+# NODE / FRONTEND
+# =========================
+node_modules/
+frontend/kelime-ezberleme/node_modules/
+
+dist/
+build/
+frontend/kelime-ezberleme/dist/
+frontend/kelime-ezberleme/build/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# =========================
+# IDE / OS
+# =========================
+.vscode/
+!.vscode/extensions.json
+
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# =========================
+# LOGS
+# =========================
+*.log
+logs/
+backend/logs/
+
+
+# =========================
+# UPLOADS
+# Normal kullanıcı yüklemeleri GitHub'a gitmesin.
+# Ama telaffuz için ürettiğimiz mp3 dosyaları projede kalsın.
+# =========================
+backend/uploads/*
+!backend/uploads/audio/
+!backend/uploads/audio/words/
+!backend/uploads/audio/words/*.mp3
+
+
+# =========================
+# TEMP / BACKUP
+# =========================
+backup/
+backend/backup/
+tmp/
+temp/
+*.bak
+*.old
+
+
+# =========================
+# GENERATED SQL TEMP FILES
+# Bunlar otomatik üretildiyse commit'e almak zorunda değiliz.
+# Gerekliyse ayrıca database/seeds altına düzenli koyarız.
+# =========================
+database/update_audio_urls.sql
+database/update_missing_audio_urls.sql

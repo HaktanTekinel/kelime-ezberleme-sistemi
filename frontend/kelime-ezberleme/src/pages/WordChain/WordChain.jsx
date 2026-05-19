@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "../../services/apiClient";
 import {
   generateWordChainStoryAPI,
   getWordChainHistoryAPI,
@@ -23,21 +24,38 @@ function pickValue(source, keys) {
   return undefined;
 }
 
+function resolveImageUrl(imageUrl) {
+  if (!imageUrl) {
+    return "";
+  }
+
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+
+  if (imageUrl.startsWith("/")) {
+    return `${API_BASE_URL}${imageUrl}`;
+  }
+
+  return `${API_BASE_URL}/${imageUrl}`;
+}
+
 function normalizeGeneratedStory(data) {
   const storyData = data?.story_data || data?.storyData || data?.result || data || {};
+  const imageUrl = pickValue(storyData, [
+    "image_url",
+    "imageUrl",
+    "visual_url",
+    "visualUrl",
+    "picture",
+  ]);
 
   return {
     id: pickValue(storyData, ["id", "story_id", "storyId"]),
     words: pickValue(storyData, ["words", "selected_words", "selectedWords"]) || [],
     story: pickValue(storyData, ["story", "story_text", "storyText", "text"]),
     summary: pickValue(storyData, ["summary", "short_summary", "shortSummary"]),
-    imageUrl: pickValue(storyData, [
-      "image_url",
-      "imageUrl",
-      "visual_url",
-      "visualUrl",
-      "picture",
-    ]),
+    imageUrl: resolveImageUrl(imageUrl),
     createdAt: pickValue(storyData, ["created_at", "createdAt"]),
   };
 }
@@ -110,9 +128,9 @@ function WordChain() {
     try {
       const data = await getWordChainHistoryAPI();
       setHistory(normalizeHistory(data));
-    } catch {
+    } catch (error) {
       setHistory([]);
-      setHistoryError("Hikaye geçmişi şu anda yüklenemedi.");
+      setHistoryError(error.message || "Hikaye geçmişi şu anda yüklenemedi.");
     } finally {
       setHistoryLoading(false);
     }
@@ -123,8 +141,8 @@ function WordChain() {
   }, [loadHistory]);
 
   const validateWords = () => {
-    if (selectedWords.length < 2) {
-      return "Hikaye oluşturmak için en az 2 kelime girmelisin.";
+    if (selectedWords.length < 3) {
+      return "Hikaye oluşturmak için en az 3 kelime girmelisin.";
     }
 
     if (selectedWords.length > 10) {
@@ -164,8 +182,8 @@ function WordChain() {
       setWordInput("");
 
       await loadHistory();
-    } catch {
-      setCreateError("Hikaye oluşturulamadı. Lütfen daha sonra tekrar deneyin.");
+    } catch (error) {
+      setCreateError(error.message || "Hikaye oluşturulamadı. Lütfen daha sonra tekrar deneyin.");
     } finally {
       setCreating(false);
     }
@@ -177,8 +195,8 @@ function WordChain() {
         <div>
           <h2>Word Chain</h2>
           <p>
-            Seçtiğin kelimeleri kullanarak anlamlı bir hikaye ve görsel çalışma
-            oluştur.
+            Seçtiğin kelimeleri LLM ile anlamlı bir hikayeye dönüştür ve hikayeye
+            uygun görseli uygulama içinde kaydet.
           </p>
         </div>
       </section>
@@ -204,7 +222,7 @@ function WordChain() {
                 setFormError("");
                 setCreateError("");
               }}
-              placeholder="Kelimeleri virgülle ayırarak veya alt alta yazabilirsin."
+              placeholder="Örnek: Brain, Night, Tiger, Robin, Noble"
               rows={7}
             />
           </label>
@@ -222,20 +240,14 @@ function WordChain() {
                 ))}
               </div>
             ) : (
-              <p className="selected-word-empty">
-                Henüz kelime girilmedi.
-              </p>
+              <p className="selected-word-empty">Henüz kelime girilmedi.</p>
             )}
           </div>
 
           {formError && <div className="word-chain-alert error">{formError}</div>}
           {createError && <div className="word-chain-alert error">{createError}</div>}
 
-          <button
-            type="submit"
-            className="word-chain-submit"
-            disabled={creating}
-          >
+          <button type="submit" className="word-chain-submit" disabled={creating}>
             {creating ? "Oluşturuluyor..." : "Hikaye Oluştur"}
           </button>
         </form>
@@ -250,13 +262,13 @@ function WordChain() {
             </div>
 
             <div>
-              <strong>Hikayeyi oluştur</strong>
-              <span>Kelimeler bir bütün olarak anlamlı bir metne dönüştürülür.</span>
+              <strong>LLM hikaye üretir</strong>
+              <span>Kelimeler sırayla kullanılan Türkçe bir metne dönüştürülür.</span>
             </div>
 
             <div>
-              <strong>Görselle destekle</strong>
-              <span>Oluşturulan hikayeye uygun görsel çalışma eklenebilir.</span>
+              <strong>Görsel kaydedilir</strong>
+              <span>Oluşturulan görsel backend uploads klasörüne kaydedilir.</span>
             </div>
           </div>
         </aside>
@@ -272,21 +284,18 @@ function WordChain() {
               </div>
             </div>
 
-            {Array.isArray(generatedStory.words) &&
-              generatedStory.words.length > 0 && (
-                <div className="story-word-list">
-                  {generatedStory.words.map((word) => (
-                    <span key={word}>{word}</span>
-                  ))}
-                </div>
-              )}
+            {Array.isArray(generatedStory.words) && generatedStory.words.length > 0 && (
+              <div className="story-word-list">
+                {generatedStory.words.map((word) => (
+                  <span key={word}>{word}</span>
+                ))}
+              </div>
+            )}
 
             {generatedStory.story ? (
               <p className="story-text">{generatedStory.story}</p>
             ) : (
-              <p className="story-empty">
-                Hikaye metni alınamadı.
-              </p>
+              <p className="story-empty">Hikaye metni alınamadı.</p>
             )}
 
             {generatedStory.summary && (
@@ -317,18 +326,12 @@ function WordChain() {
           </button>
         </div>
 
-        {historyLoading && (
-          <div className="word-chain-state">Hikaye geçmişi yükleniyor...</div>
-        )}
+        {historyLoading && <div className="word-chain-state">Hikaye geçmişi yükleniyor...</div>}
 
-        {!historyLoading && historyError && (
-          <div className="word-chain-state error">{historyError}</div>
-        )}
+        {!historyLoading && historyError && <div className="word-chain-state error">{historyError}</div>}
 
         {!historyLoading && !historyError && history.length === 0 && (
-          <div className="word-chain-state">
-            Henüz kaydedilmiş hikaye bulunmuyor.
-          </div>
+          <div className="word-chain-state">Henüz kaydedilmiş hikaye bulunmuyor.</div>
         )}
 
         {!historyLoading && !historyError && history.length > 0 && (
@@ -348,14 +351,10 @@ function WordChain() {
                     </div>
                   )}
 
-                  {item.createdAt && (
-                    <small>{formatDate(item.createdAt)}</small>
-                  )}
+                  {item.createdAt && <small>{formatDate(item.createdAt)}</small>}
                 </div>
 
-                {item.imageUrl && (
-                  <img src={item.imageUrl} alt="Kaydedilen hikaye görseli" />
-                )}
+                {item.imageUrl && <img src={item.imageUrl} alt="Kaydedilen hikaye görseli" />}
               </article>
             ))}
           </div>

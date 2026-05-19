@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getCurrentWordleGameAPI,
+  getWordleHistoryAPI,
   startWordleGameAPI,
   submitWordleGuessAPI,
 } from "../../services/wordleService";
@@ -27,35 +28,24 @@ function pickValue(source, keys) {
 function normalizeStatus(status) {
   const normalized = String(status || "").toLowerCase();
 
-  if (
-    normalized === "correct" ||
-    normalized === "green" ||
-    normalized === "right" ||
-    normalized === "dogru" ||
-    normalized === "doğru"
-  ) {
+  if (["correct", "green", "right", "dogru", "doğru"].includes(normalized)) {
     return "correct";
   }
 
   if (
-    normalized === "present" ||
-    normalized === "yellow" ||
-    normalized === "misplaced" ||
-    normalized === "wrong_position" ||
-    normalized === "yanlis_yer" ||
-    normalized === "yanlış_yer"
+    [
+      "present",
+      "yellow",
+      "misplaced",
+      "wrong_position",
+      "yanlis_yer",
+      "yanlış_yer",
+    ].includes(normalized)
   ) {
     return "present";
   }
 
-  if (
-    normalized === "absent" ||
-    normalized === "gray" ||
-    normalized === "grey" ||
-    normalized === "wrong" ||
-    normalized === "not_found" ||
-    normalized === "yok"
-  ) {
+  if (["absent", "gray", "grey", "wrong", "not_found", "yok"].includes(normalized)) {
     return "absent";
   }
 
@@ -73,15 +63,8 @@ function normalizeFeedback(rawFeedback, fallbackGuess) {
       }
 
       return {
-        letter:
-          item.letter ||
-          item.char ||
-          item.character ||
-          fallbackGuess?.[index] ||
-          "",
-        status: normalizeStatus(
-          item.status || item.result || item.state || item.color
-        ),
+        letter: item.letter || item.char || item.character || fallbackGuess?.[index] || "",
+        status: normalizeStatus(item.status || item.result || item.state || item.color),
       };
     });
   }
@@ -108,9 +91,7 @@ function normalizeGuess(item, index) {
       pickValue(item, ["feedback", "letters", "result", "results"]),
       guessText
     ),
-    isCorrect: Boolean(
-      pickValue(item, ["is_correct", "isCorrect", "correct", "won"])
-    ),
+    isCorrect: Boolean(pickValue(item, ["is_correct", "isCorrect", "correct", "won"])),
   };
 }
 
@@ -141,21 +122,11 @@ function normalizeGame(data) {
     status: pickValue(gameData, ["status", "state"]) || "active",
     wordLength:
       Number(
-        pickValue(gameData, [
-          "word_length",
-          "wordLength",
-          "letter_count",
-          "letterCount",
-        ])
+        pickValue(gameData, ["word_length", "wordLength", "letter_count", "letterCount"])
       ) || undefined,
     maxAttempts:
       Number(
-        pickValue(gameData, [
-          "max_attempts",
-          "maxAttempts",
-          "attempt_limit",
-          "attemptLimit",
-        ])
+        pickValue(gameData, ["max_attempts", "maxAttempts", "attempt_limit", "attemptLimit"])
       ) || undefined,
     attemptsUsed:
       Number(
@@ -164,11 +135,12 @@ function normalizeGame(data) {
           "attemptsUsed",
           "current_attempt",
           "currentAttempt",
+          "attempt_count",
         ])
       ) || guesses.length,
-    message: pickValue(gameData, ["message", "detail"]),
+    message: data?.message || pickValue(gameData, ["message", "detail"]),
     guesses,
-    createdAt: pickValue(gameData, ["created_at", "createdAt"]),
+    createdAt: pickValue(gameData, ["created_at", "createdAt", "started_at", "startedAt"]),
     finishedAt: pickValue(gameData, ["finished_at", "finishedAt"]),
   };
 }
@@ -184,10 +156,7 @@ function normalizeGuessResponse(data, currentGame) {
     data?.wordle_game ||
     data?.wordleGame;
 
-  const normalizedGame = gameFromResponse
-    ? normalizeGame(gameFromResponse)
-    : null;
-
+  const normalizedGame = gameFromResponse ? normalizeGame(gameFromResponse) : null;
   const guessText = pickValue(resultData, ["guess", "word", "answer", "text"]);
 
   const singleGuess = guessText
@@ -205,27 +174,45 @@ function normalizeGuessResponse(data, currentGame) {
     game: normalizedGame,
     guess: singleGuess,
     status: pickValue(resultData, ["status", "state"]),
-    message: pickValue(resultData, ["message", "detail"]),
-    isFinished: Boolean(
-      pickValue(resultData, ["is_finished", "isFinished", "finished"])
-    ),
-    isCorrect: Boolean(
-      pickValue(resultData, ["is_correct", "isCorrect", "correct", "won"])
-    ),
+    message: data?.message || pickValue(resultData, ["message", "detail"]),
+    isFinished: Boolean(pickValue(resultData, ["is_finished", "isFinished", "finished"])),
+    isCorrect: Boolean(pickValue(resultData, ["is_correct", "isCorrect", "correct", "won"])),
   };
+}
+
+function normalizeHistoryItem(item, index) {
+  const guesses = Array.isArray(item?.guesses)
+    ? item.guesses.map((guessItem, guessIndex) => normalizeGuess(guessItem, guessIndex))
+    : [];
+
+  return {
+    id: pickValue(item, ["id", "game_id", "gameId"]) || `history-${index}`,
+    status: pickValue(item, ["status", "state"]) || "active",
+    targetWord: pickValue(item, ["target_word", "targetWord", "word", "eng_word"]),
+    wordLength: Number(pickValue(item, ["word_length", "wordLength"])) || undefined,
+    attemptsUsed: Number(pickValue(item, ["attempt_count", "attempts_used", "attemptsUsed"])) || 0,
+    maxAttempts: Number(pickValue(item, ["max_attempts", "maxAttempts"])) || undefined,
+    startedAt: pickValue(item, ["started_at", "startedAt", "created_at", "createdAt"]),
+    finishedAt: pickValue(item, ["finished_at", "finishedAt"]),
+    guesses,
+  };
+}
+
+function normalizeHistoryResponse(data) {
+  const rawGames = data?.games || data?.history || data?.items || [];
+
+  if (!Array.isArray(rawGames)) {
+    return [];
+  }
+
+  return rawGames.map((item, index) => normalizeHistoryItem(item, index));
 }
 
 function isGameFinished(game) {
   const status = String(game?.status || "").toLowerCase();
 
-  return (
-    status === "won" ||
-    status === "lost" ||
-    status === "finished" ||
-    status === "completed" ||
-    status === "bitti" ||
-    status === "kazandi" ||
-    status === "kaybetti"
+  return ["won", "lost", "finished", "completed", "bitti", "kazandi", "kaybetti"].includes(
+    status
   );
 }
 
@@ -247,11 +234,38 @@ function getGameResultText(game) {
   return "";
 }
 
+function getStatusText(status) {
+  const normalized = String(status || "").toLowerCase();
+
+  if (normalized === "won") return "Kazanıldı";
+  if (normalized === "lost") return "Kaybedildi";
+  if (normalized === "cancelled") return "İptal edildi";
+  if (normalized === "active") return "Devam ediyor";
+
+  return "Tamamlandı";
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  return new Date(value).toLocaleString("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function Puzzle() {
   const [game, setGame] = useState(null);
+  const [history, setHistory] = useState([]);
   const [guess, setGuess] = useState("");
 
   const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [starting, setStarting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -271,6 +285,19 @@ function Puzzle() {
 
     return Math.max(0, maxAttempts - attemptsUsed);
   }, [maxAttempts, attemptsUsed]);
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+
+    try {
+      const data = await getWordleHistoryAPI();
+      setHistory(normalizeHistoryResponse(data));
+    } catch {
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
 
   const loadCurrentGame = useCallback(async () => {
     setLoading(true);
@@ -296,7 +323,8 @@ function Puzzle() {
 
   useEffect(() => {
     loadCurrentGame();
-  }, [loadCurrentGame]);
+    loadHistory();
+  }, [loadCurrentGame, loadHistory]);
 
   const handleStartGame = async () => {
     setStarting(true);
@@ -304,14 +332,15 @@ function Puzzle() {
     setNotice("");
 
     try {
-      const data = await startWordleGameAPI();
+      const data = await startWordleGameAPI({ restart: true, wordLength: null });
       const normalizedGame = normalizeGame(data);
 
       setGame(normalizedGame);
       setGuess("");
       setNotice("Yeni bulmaca başladı.");
+      loadHistory();
     } catch {
-      setError("Bulmaca başlatılamadı. Lütfen daha sonra tekrar deneyin.");
+      setError("Bulmaca başlatılamadı. Öğrenilmiş kelime yoksa önce quiz ile kelime öğrenmelisin.");
     } finally {
       setStarting(false);
     }
@@ -386,6 +415,7 @@ function Puzzle() {
       }
 
       setGuess("");
+      loadHistory();
 
       if (result.message) {
         setNotice(result.message);
@@ -432,9 +462,7 @@ function Puzzle() {
       {!loading && (
         <>
           {(error || notice) && (
-            <section
-              className={`puzzle-message ${error ? "error" : "success"}`}
-            >
+            <section className={`puzzle-message ${error ? "error" : "success"}`}>
               {error || notice}
             </section>
           )}
@@ -464,9 +492,7 @@ function Puzzle() {
                   </div>
 
                   <div className="attempt-badge">
-                    {maxAttempts
-                      ? `${attemptsUsed}/${maxAttempts}`
-                      : `${attemptsUsed} deneme`}
+                    {maxAttempts ? `${attemptsUsed}/${maxAttempts}` : `${attemptsUsed} deneme`}
                   </div>
                 </div>
 
@@ -485,17 +511,11 @@ function Puzzle() {
                       </div>
                     ))
                   ) : (
-                    <div className="board-empty">
-                      İlk tahminini girerek bulmacaya başla.
-                    </div>
+                    <div className="board-empty">İlk tahminini girerek bulmacaya başla.</div>
                   )}
                 </div>
 
-                {finished && (
-                  <div className="game-result">
-                    {game.message || getGameResultText(game)}
-                  </div>
-                )}
+                {finished && <div className="game-result">{game.message || getGameResultText(game)}</div>}
 
                 {!finished && (
                   <form className="guess-form" onSubmit={handleSubmitGuess}>
@@ -511,11 +531,7 @@ function Puzzle() {
                           setNotice("");
                         }}
                         maxLength={wordLength || 30}
-                        placeholder={
-                          wordLength
-                            ? `${wordLength} harfli tahmin yaz`
-                            : "Tahminini yaz"
-                        }
+                        placeholder={wordLength ? `${wordLength} harfli tahmin yaz` : "Tahminini yaz"}
                       />
                     </label>
 
@@ -538,9 +554,7 @@ function Puzzle() {
                   <div>
                     <strong>Kalan deneme</strong>
                     <span>
-                      {remainingAttempts !== undefined
-                        ? `${remainingAttempts} hak`
-                        : "Sınır belirtilmedi"}
+                      {remainingAttempts !== undefined ? `${remainingAttempts} hak` : "Sınır belirtilmedi"}
                     </span>
                   </div>
 
@@ -573,6 +587,42 @@ function Puzzle() {
               </aside>
             </section>
           )}
+
+          <section className="puzzle-history-card">
+            <div className="puzzle-history-header">
+              <div>
+                <p>Geçmiş</p>
+                <h3>Önceki bulmacalar</h3>
+              </div>
+
+              <button type="button" onClick={loadHistory} disabled={historyLoading}>
+                {historyLoading ? "Yükleniyor..." : "Geçmişi Yenile"}
+              </button>
+            </div>
+
+            {history.length === 0 ? (
+              <div className="puzzle-history-empty">Henüz kayıtlı bulmaca geçmişi yok.</div>
+            ) : (
+              <div className="puzzle-history-list">
+                {history.map((item) => (
+                  <div className="puzzle-history-item" key={item.id}>
+                    <div>
+                      <strong>{item.targetWord || "Aktif oyunda kelime gizli"}</strong>
+                      <span>{formatDate(item.finishedAt || item.startedAt)}</span>
+                    </div>
+
+                    <div className="history-meta">
+                      <span>{getStatusText(item.status)}</span>
+                      <span>
+                        {item.attemptsUsed}/{item.maxAttempts || 6} deneme
+                      </span>
+                      <span>{item.wordLength ? `${item.wordLength} harf` : "-"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </>
       )}
     </div>

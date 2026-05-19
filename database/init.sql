@@ -1,225 +1,141 @@
-CREATE TABLE IF NOT EXISTS public.users (
-    id BIGSERIAL PRIMARY KEY,
+-- Kelime Ezberleme Sistemi - PostgreSQL başlangıç şeması
+-- Not: Backend ilk açılışta database/word_seed_final_samples.csv dosyasındaki
+-- 1440 kelimeyi 1-10 seviye dağılımıyla otomatik içeri aktarır.
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     role VARCHAR(30) NOT NULL DEFAULT 'user',
+    daily_quiz_limit INTEGER NOT NULL DEFAULT 10,
+    total_correct_answers INTEGER NOT NULL DEFAULT 0,
+    total_wrong_answers INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
--- public.words definition
 
--- Drop table
-
--- DROP TABLE public.words;
-
-CREATE TABLE public.words (
-	id bigserial NOT NULL,
-	eng_word varchar(150) NOT NULL,
-	tur_word varchar(150) NOT NULL,
-	picture_url text NULL,
-	audio_url text NULL,
-	topic varchar(100) NULL,
-	difficulty_level int4 DEFAULT 1 NOT NULL,
-	created_by int8 NULL,
-	is_active bool DEFAULT true NOT NULL,
-	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT words_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS words (
+    id SERIAL PRIMARY KEY,
+    eng_word VARCHAR(150) NOT NULL,
+    tur_word VARCHAR(150) NOT NULL,
+    difficulty_level INTEGER NOT NULL DEFAULT 1 CHECK (difficulty_level BETWEEN 1 AND 10),
+    topic VARCHAR(80),
+    picture_url VARCHAR(255),
+    audio_url VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_by_user_id INTEGER NULL REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS ix_words_eng_word ON words (eng_word);
+CREATE INDEX IF NOT EXISTS ix_words_difficulty_level ON words (difficulty_level);
 
--- public.words foreign keys
-
-ALTER TABLE public.words ADD CONSTRAINT words_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE SET NULL;
-
-CREATE TABLE IF NOT EXISTS public.word_samples (
-    id BIGSERIAL PRIMARY KEY,
-    word_id BIGINT NOT NULL,
-    sample_text TEXT NOT NULL,
-    sample_order INT DEFAULT 1 NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT word_samples_word_id_fkey
-        FOREIGN KEY (word_id)
-        REFERENCES public.words(id)
-        ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS word_samples (
+    id SERIAL PRIMARY KEY,
+    word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    sample_text VARCHAR(500) NOT NULL,
+    sample_order INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE public.user_settings (
-	id bigserial NOT NULL,
-	user_id int8 NOT NULL,
-	daily_new_word_count int4 DEFAULT 10 NOT NULL,
-	quiz_question_count int4 DEFAULT 10 NOT NULL,
-	show_instant_feedback bool DEFAULT true NOT NULL,
-	allow_skip_questions bool DEFAULT true NOT NULL,
-	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT user_settings_pkey PRIMARY KEY (id),
-	CONSTRAINT user_settings_user_id_key UNIQUE (user_id)
+CREATE TABLE IF NOT EXISTS user_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    daily_new_word_count INTEGER NOT NULL DEFAULT 10,
+    quiz_question_count INTEGER NOT NULL DEFAULT 10,
+    show_instant_feedback BOOLEAN NOT NULL DEFAULT TRUE,
+    allow_skip_questions BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- public.user_settings foreign keys
-
-ALTER TABLE public.user_settings ADD CONSTRAINT user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
--- public.user_word_progress definition
-
--- Drop table
-
--- DROP TABLE public.user_word_progress;
-
-CREATE TABLE public.user_word_progress (
-	id bigserial NOT NULL,
-	user_id int8 NOT NULL,
-	word_id int8 NOT NULL,
-	current_stage int4 DEFAULT 0 NOT NULL,
-	consecutive_correct int4 DEFAULT 0 NOT NULL,
-	last_answer_correct bool NULL,
-	last_review_at timestamp NULL,
-	next_review_at timestamp NULL,
-	learned bool DEFAULT false NOT NULL,
-	reset_count int4 DEFAULT 0 NOT NULL,
-	updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT uq_user_word UNIQUE (user_id, word_id),
-	CONSTRAINT user_word_progress_current_stage_check CHECK (((current_stage >= 0) AND (current_stage <= 6))),
-	CONSTRAINT user_word_progress_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS user_word_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    current_stage INTEGER NOT NULL DEFAULT 0 CHECK (current_stage BETWEEN 0 AND 6),
+    next_review_at TIMESTAMP NULL,
+    is_learned BOOLEAN NOT NULL DEFAULT FALSE,
+    consecutive_correct INTEGER NOT NULL DEFAULT 0,
+    last_answer_correct BOOLEAN NULL,
+    reset_count INTEGER NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_word UNIQUE (user_id, word_id)
 );
 
-
--- public.user_word_progress foreign keys
-
-ALTER TABLE public.user_word_progress ADD CONSTRAINT user_word_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-ALTER TABLE public.user_word_progress ADD CONSTRAINT user_word_progress_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
--- public.quiz_sessions definition
-
--- Drop table
-
--- DROP TABLE public.quiz_sessions;
-
-CREATE TABLE public.quiz_sessions (
-	id bigserial NOT NULL,
-	user_id int8 NOT NULL,
-	session_type varchar(30) NOT NULL,
-	total_questions int4 DEFAULT 0 NOT NULL,
-	correct_count int4 DEFAULT 0 NOT NULL,
-	wrong_count int4 DEFAULT 0 NOT NULL,
-	skipped_count int4 DEFAULT 0 NOT NULL,
-	started_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	finished_at timestamp NULL,
-	CONSTRAINT quiz_sessions_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS quiz_sessions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    session_type VARCHAR(30) NOT NULL DEFAULT 'daily',
+    total_questions INTEGER NOT NULL DEFAULT 0,
+    correct_count INTEGER NOT NULL DEFAULT 0,
+    wrong_count INTEGER NOT NULL DEFAULT 0,
+    skipped_count INTEGER NOT NULL DEFAULT 0,
+    started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finished_at TIMESTAMP NULL
 );
 
-
--- public.quiz_sessions foreign keys
-
-ALTER TABLE public.quiz_sessions ADD CONSTRAINT quiz_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
--- public.quiz_answers definition
-
--- Drop table
-
--- DROP TABLE public.quiz_answers;
-
-CREATE TABLE public.quiz_answers (
-	id bigserial NOT NULL,
-	quiz_session_id int8 NOT NULL,
-	user_id int8 NOT NULL,
-	word_id int8 NOT NULL,
-	selected_answer text NULL,
-	correct_answer text NOT NULL,
-	is_correct bool NOT NULL,
-	question_type varchar(30) NOT NULL,
-	response_time_ms int4 NULL,
-	answered_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT quiz_answers_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS quiz_answers (
+    id SERIAL PRIMARY KEY,
+    quiz_session_id INTEGER NOT NULL REFERENCES quiz_sessions(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    selected_answer TEXT NULL,
+    correct_answer TEXT NOT NULL,
+    is_correct BOOLEAN NOT NULL,
+    question_type VARCHAR(30) NOT NULL DEFAULT 'multiple_choice',
+    response_time_ms INTEGER NULL,
+    answered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- public.quiz_answers foreign keys
-
-ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_quiz_session_id_fkey FOREIGN KEY (quiz_session_id) REFERENCES public.quiz_sessions(id) ON DELETE CASCADE;
-ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-ALTER TABLE public.quiz_answers ADD CONSTRAINT quiz_answers_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
--- public.word_samples definition
-
--- Drop table
-
--- DROP TABLE public.word_samples;
-
-CREATE TABLE public.word_samples (
-	id bigserial NOT NULL,
-	word_id int8 NOT NULL,
-	sample_text text NOT NULL,
-	sample_order int4 DEFAULT 1 NOT NULL,
-	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT word_samples_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    token VARCHAR(128) NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at TIMESTAMP NULL,
+    is_used BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- public.word_samples foreign keys
-
-ALTER TABLE public.word_samples ADD CONSTRAINT word_samples_word_id_fkey FOREIGN KEY (word_id) REFERENCES public.words(id) ON DELETE CASCADE;
--- public.word_chain_stories definition
-
--- Drop table
-
--- DROP TABLE public.word_chain_stories;
-
-CREATE TABLE public.word_chain_stories (
-	id bigserial NOT NULL,
-	user_id int8 NOT NULL,
-	prompt_words_json jsonb NOT NULL,
-	story_text text NOT NULL,
-	image_url text NULL,
-	llm_model_name varchar(100) NULL,
-	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT word_chain_stories_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS report_snapshots (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    report_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    total_learned_words INTEGER NOT NULL DEFAULT 0,
+    success_rate NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    weak_topics_json JSONB NULL,
+    strong_topics_json JSONB NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- public.word_chain_stories foreign keys
-
-ALTER TABLE public.word_chain_stories ADD CONSTRAINT word_chain_stories_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
--- public.wordle_games definition
-
--- Drop table
-
--- DROP TABLE public.wordle_games;
-
-CREATE TABLE public.wordle_games (
-	id bigserial NOT NULL,
-	user_id int8 NOT NULL,
-	target_word_id int8 NOT NULL,
-	status varchar(20) DEFAULT 'active'::character varying NOT NULL,
-	attempt_count int4 DEFAULT 0 NOT NULL,
-	started_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	finished_at timestamp NULL,
-	CONSTRAINT wordle_games_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS wordle_games (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    target_word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finished_at TIMESTAMP NULL
 );
 
-
--- public.wordle_games foreign keys
-
-ALTER TABLE public.wordle_games ADD CONSTRAINT wordle_games_target_word_id_fkey FOREIGN KEY (target_word_id) REFERENCES public.words(id) ON DELETE CASCADE;
-ALTER TABLE public.wordle_games ADD CONSTRAINT wordle_games_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
--- public.report_snapshots definition
-
--- Drop table
-
--- DROP TABLE public.report_snapshots;
-
-CREATE TABLE public.report_snapshots (
-	id bigserial NOT NULL,
-	user_id int8 NOT NULL,
-	report_date date NOT NULL,
-	total_learned_words int4 DEFAULT 0 NOT NULL,
-	success_rate numeric(5, 2) DEFAULT 0.00 NOT NULL,
-	weak_topics_json jsonb NULL,
-	strong_topics_json jsonb NULL,
-	created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT report_snapshots_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS wordle_guesses (
+    id SERIAL PRIMARY KEY,
+    game_id INTEGER NOT NULL REFERENCES wordle_games(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    guess VARCHAR(150) NOT NULL,
+    feedback_json JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- public.report_snapshots foreign keys
-
-ALTER TABLE public.report_snapshots ADD CONSTRAINT report_snapshots_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+CREATE TABLE IF NOT EXISTS word_chain_stories (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    prompt_words_json JSONB NOT NULL,
+    story_text TEXT NOT NULL,
+    summary_text TEXT NULL,
+    image_url TEXT NULL,
+    llm_model_name VARCHAR(100) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

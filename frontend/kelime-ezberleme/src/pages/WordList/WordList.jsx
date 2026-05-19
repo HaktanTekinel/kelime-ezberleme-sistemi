@@ -110,6 +110,20 @@ function getAssetUrl(url) {
   return `${API_BASE_URL}${url}`;
 }
 
+function playAudioUrl(audioUrl) {
+  const resolvedAudioUrl = getAssetUrl(audioUrl);
+
+  if (!resolvedAudioUrl) {
+    return;
+  }
+
+  const audio = new Audio(resolvedAudioUrl);
+
+  audio.play().catch(() => {
+    alert("Ses oynatılamadı. Ses dosyası bulunamadı ya da tarayıcı engelledi.");
+  });
+}
+
 function getDifficultyText(level) {
   if (level <= 3) {
     return "Kolay";
@@ -171,6 +185,21 @@ function WordList() {
   });
 
   const [editErrors, setEditErrors] = useState({});
+  const [expandedSampleIds, setExpandedSampleIds] = useState(() => new Set());
+
+  const toggleSamples = (wordId) => {
+    setExpandedSampleIds((previousIds) => {
+      const nextIds = new Set(previousIds);
+
+      if (nextIds.has(wordId)) {
+        nextIds.delete(wordId);
+      } else {
+        nextIds.add(wordId);
+      }
+
+      return nextIds;
+    });
+  };
 
   const loadWords = useCallback(async () => {
     setLoading(true);
@@ -551,86 +580,120 @@ function WordList() {
           </div>
         ) : (
           <div className="word-cards-grid">
-            {filteredWords.map((word) => (
-              <article className="word-list-card-item" key={word.id}>
-                <div className="word-card-media">
-                  {word.picture_url ? (
-                    <img
-                      src={getAssetUrl(word.picture_url)}
-                      alt={word.eng_word}
-                    />
-                  ) : (
-                    <div className="word-card-placeholder">
-                      {word.eng_word.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+            {filteredWords.map((word) => {
+              const isSamplesExpanded = expandedSampleIds.has(word.id);
+              const visibleSamples = isSamplesExpanded
+                ? word.samples
+                : word.samples.slice(0, 1);
 
-                  <span
-                    className={`difficulty-badge ${getDifficultyClass(
-                      word.difficulty_level
-                    )}`}
-                  >
-                    {getDifficultyText(word.difficulty_level)}
-                  </span>
-                </div>
-
-                <div className="word-card-body">
-                  <div className="word-card-title-row">
-                    <div>
-                      <h3>{word.eng_word}</h3>
-                      <p>{word.tur_word}</p>
-                    </div>
-
-                    <span>Seviye {word.difficulty_level}</span>
-                  </div>
-
-                  <div className="word-card-meta">
-                    {word.topic && <span>{word.topic}</span>}
-                    {word.picture_url && <span>Görsel</span>}
-                    {word.audio_url && <span>Ses</span>}
-                  </div>
-
-                  {word.samples.length > 0 && (
-                    <div className="word-sample-box">
-                      <strong>Örnek cümle</strong>
-                      <p>{word.samples[0]}</p>
-
-                      {word.samples.length > 1 && (
-                        <small>+{word.samples.length - 1} örnek daha</small>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="word-card-actions">
-                    {word.audio_url && (
-                      <a
-                        href={getAssetUrl(word.audio_url)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Sesi Aç
-                      </a>
+              return (
+                <article className="word-list-card-item" key={word.id}>
+                  <div className="word-card-media">
+                    {word.picture_url ? (
+                      <img
+                        src={getAssetUrl(word.picture_url)}
+                        alt={word.eng_word}
+                      />
+                    ) : (
+                      <div className="word-card-placeholder">
+                        {word.eng_word.charAt(0).toUpperCase()}
+                      </div>
                     )}
 
-                    <button
-                      type="button"
-                      className="edit-word-button"
-                      onClick={() => openEditModal(word)}
+                    <span
+                      className={`difficulty-badge ${getDifficultyClass(
+                        word.difficulty_level
+                      )}`}
                     >
-                      Düzenle
-                    </button>
-
-                    <button
-                      type="button"
-                      className="delete-word-button"
-                      onClick={() => handleDeleteWord(word.id)}
-                    >
-                      Sil
-                    </button>
+                      {getDifficultyText(word.difficulty_level)}
+                    </span>
                   </div>
-                </div>
-              </article>
-            ))}
+
+                  <div className="word-card-body">
+                    <div className="word-card-title-row">
+                      <div>
+                        <h3>{word.eng_word}</h3>
+                        <p>{word.tur_word}</p>
+                      </div>
+
+                      <span>Seviye {word.difficulty_level}</span>
+                    </div>
+
+                    <div className="word-card-meta">
+                      {word.topic && <span>{word.topic}</span>}
+                      {word.picture_url && <span>Görsel</span>}
+                      {word.audio_url && <span>Ses</span>}
+                    </div>
+
+                    {word.samples.length > 0 && (
+                      <div className="word-sample-box">
+                        <div className="word-sample-header">
+                          <strong>Örnek cümle</strong>
+
+                          {word.samples.length > 1 && (
+                            <button
+                              type="button"
+                              className="sample-toggle-button"
+                              onClick={() => toggleSamples(word.id)}
+                              aria-label={
+                                isSamplesExpanded
+                                  ? "Ek örnekleri gizle"
+                                  : "Ek örnekleri göster"
+                              }
+                            >
+                              <span>
+                                {isSamplesExpanded
+                                  ? "Gizle"
+                                  : `+${word.samples.length - 1} örnek daha`}
+                              </span>
+                              <span className="sample-toggle-icon">
+                                {isSamplesExpanded ? "▲" : "▼"}
+                              </span>
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="word-sample-list">
+                          {visibleSamples.map((sample, sampleIndex) => (
+                            <p key={`${word.id}-sample-${sampleIndex}`}>
+                              {sample}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="word-card-actions">
+                      {word.audio_url && (
+                        <button
+                          type="button"
+                          className="audio-word-button"
+                          onClick={() => playAudioUrl(word.audio_url)}
+                        >
+                          🔊 Sesi Dinle
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className="edit-word-button"
+                        onClick={() => openEditModal(word)}
+                      >
+                        Düzenle
+                      </button>
+
+                      <button
+                        type="button"
+                        className="delete-word-button"
+                        onClick={() => handleDeleteWord(word.id)}
+                      >
+                        Sil
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
@@ -746,7 +809,9 @@ function WordList() {
                 accept="image/*"
                 onChange={handleEditFileChange}
               />
-              {editErrors.pictureFile && <small>{editErrors.pictureFile}</small>}
+              {editErrors.pictureFile && (
+                <small>{editErrors.pictureFile}</small>
+              )}
             </label>
 
             <div className="word-edit-actions">

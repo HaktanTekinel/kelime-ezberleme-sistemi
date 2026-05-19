@@ -8,6 +8,9 @@ import {
 import QuizQuestionCard from "../../components/QuizQuestionCard/QuizQuestionCard";
 import "./Quiz.css";
 
+const ACTIVE_QUIZ_STORAGE_KEY = "kelimeEzberleme.activeQuiz.v1";
+const ACTIVE_QUIZ_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
 function hasValue(value) {
   return value !== undefined && value !== null && value !== "";
 }
@@ -95,6 +98,12 @@ function normalizeQuizData(data) {
     : quiz.questions || quiz.items || quiz.words || [];
 
   return {
+    quiz_session_id: pickValue(quiz, [
+      "quiz_session_id",
+      "quizSessionId",
+      "session_id",
+      "sessionId",
+    ]),
     questions: Array.isArray(rawQuestions)
       ? rawQuestions.map((question, index) => normalizeQuestion(question, index))
       : [],
@@ -119,6 +128,12 @@ function normalizeAnswerResult(data) {
   const result = data?.result || data?.answer || data || {};
 
   return {
+    quiz_session_id: pickValue(result, [
+      "quiz_session_id",
+      "quizSessionId",
+      "session_id",
+      "sessionId",
+    ]),
     is_correct: Boolean(
       pickValue(result, ["is_correct", "isCorrect", "correct"])
     ),
@@ -161,19 +176,77 @@ function formatNumber(value) {
     : value;
 }
 
-function Quiz() {
-  const [quizData, setQuizData] = useState({
+function getEmptyQuizData() {
+  return {
+    quiz_session_id: undefined,
     questions: [],
     due_count: undefined,
     new_count: undefined,
-  });
+  };
+}
 
+function readActiveQuiz() {
+  try {
+    const rawValue = localStorage.getItem(ACTIVE_QUIZ_STORAGE_KEY);
+
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsedValue = JSON.parse(rawValue);
+    const createdAt = Number(parsedValue?.createdAt || 0);
+    const isExpired = Date.now() - createdAt > ACTIVE_QUIZ_MAX_AGE_MS;
+
+    if (isExpired || !Array.isArray(parsedValue?.quizData?.questions)) {
+      localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+      return null;
+    }
+
+    if (parsedValue.quizData.questions.length === 0) {
+      localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+      return null;
+    }
+
+    return parsedValue;
+  } catch {
+    localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+    return null;
+  }
+}
+
+function saveActiveQuiz({
+  quizData,
+  currentIndex,
+  selectedAnswer,
+  answerResult,
+  answeredQuestions,
+}) {
+  const existingQuiz = readActiveQuiz();
+
+  const payload = {
+    createdAt: existingQuiz?.createdAt || Date.now(),
+    quizData,
+    currentIndex,
+    selectedAnswer,
+    answerResult,
+    answeredQuestions,
+  };
+
+  localStorage.setItem(ACTIVE_QUIZ_STORAGE_KEY, JSON.stringify(payload));
+}
+
+function clearActiveQuiz() {
+  localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+}
+
+function Quiz() {
+  const [quizData, setQuizData] = useState(getEmptyQuizData);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [answerResult, setAnswerResult] = useState(null);
   const [answeredQuestions, setAnsweredQuestions] = useState([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [answerLoading, setAnswerLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -216,14 +289,14 @@ function Quiz() {
     return `${API_BASE_URL}${pictureUrl}`;
   };
 
-  const loadDailyQuiz = useCallback(async () => {
+  const loadDailyQuiz = useCallback(async ({ forceNew = false } = {}) => {
+    if (forceNew) {
+      clearActiveQuiz();
+    }
+
     setLoading(true);
     setMessage({ type: "", text: "" });
-    setQuizData({
-      questions: [],
-      due_count: undefined,
-      new_count: undefined,
-    });
+    setQuizData(getEmptyQuizData());
     setCurrentIndex(0);
     setSelectedAnswer("");
     setAnswerResult(null);
@@ -231,7 +304,21 @@ function Quiz() {
 
     try {
       const data = await getDailyQuizAPI();
-      setQuizData(normalizeQuizData(data));
+      const normalizedQuiz = normalizeQuizData(data);
+
+      setQuizData(normalizedQuiz);
+
+      if (normalizedQuiz.questions.length > 0) {
+        saveActiveQuiz({
+          quizData: normalizedQuiz,
+          currentIndex: 0,
+          selectedAnswer: "",
+          answerResult: null,
+          answeredQuestions: [],
+        });
+      } else {
+        clearActiveQuiz();
+      }
     } catch {
       setMessage({
         type: "error",
@@ -243,8 +330,61 @@ function Quiz() {
   }, []);
 
   useEffect(() => {
+    const activeQuiz = readActiveQuiz();
+
+    if (activeQuiz) {
+      setQuizData(activeQuiz.quizData || getEmptyQuizData());
+      setCurrentIndex(Number(activeQuiz.currentIndex || 0));
+      setSelectedAnswer(activeQuiz.selectedAnswer || "");
+      setAnswerResult(activeQuiz.answerResult || null);
+      setAnsweredQuestions(
+        Array.isArray(activeQuiz.answeredQuestions)
+          ? activeQuiz.answeredQuestions
+          : []
+      );
+      setLoading(false);
+      return;
+    }
+
     loadDailyQuiz();
   }, [loadDailyQuiz]);
+
+  useEffect(() => {
+    if (questions.length === 0) {
+      return;
+    }
+
+    saveActiveQuiz({
+      quizData,
+      currentIndex,
+      selectedAnswer,
+      answerResult,
+      answeredQuestions,
+    });
+  }, [
+    quizData,
+    questions.length,
+    currentIndex,
+    selectedAnswer,
+    answerResult,
+    answeredQuestions,
+  ]);
+
+  const handleStartNewQuiz = () => {
+    const hasActiveQuiz = questions.length > 0 && !isQuizFinished;
+
+    if (hasActiveQuiz) {
+      const isConfirmed = window.confirm(
+        "Devam eden quiz sıfırlanacak. Yeni quiz başlatmak istiyor musun?"
+      );
+
+      if (!isConfirmed) {
+        return;
+      }
+    }
+
+    loadDailyQuiz({ forceNew: true });
+  };
 
   const handleSelectAnswer = (option) => {
     if (answerResult) {
@@ -279,10 +419,18 @@ function Quiz() {
       const data = await submitQuizAnswerAPI({
         word_id: currentQuestion.word_id || currentQuestion.id,
         selected_answer: selectedAnswer,
+        quiz_session_id: quizData.quiz_session_id,
       });
 
       const normalizedResult = normalizeAnswerResult(data);
       setAnswerResult(normalizedResult);
+
+      if (normalizedResult.quiz_session_id && !quizData.quiz_session_id) {
+        setQuizData((previousQuizData) => ({
+          ...previousQuizData,
+          quiz_session_id: normalizedResult.quiz_session_id,
+        }));
+      }
 
       setAnsweredQuestions((prevAnswers) => [
         ...prevAnswers,
@@ -333,10 +481,10 @@ function Quiz() {
           <button
             type="button"
             className="quiz-primary-button"
-            onClick={loadDailyQuiz}
+            onClick={handleStartNewQuiz}
             disabled={loading}
           >
-            {loading ? "Yükleniyor..." : "Yenile"}
+            {loading ? "Yükleniyor..." : "Yeni Quiz Başlat"}
           </button>
         </div>
       </section>
@@ -436,9 +584,9 @@ function Quiz() {
             <button
               type="button"
               className="quiz-primary-button"
-              onClick={loadDailyQuiz}
+              onClick={() => loadDailyQuiz({ forceNew: true })}
             >
-              Tekrar Başlat
+              Yeni Quiz Başlat
             </button>
 
             <Link to="/home" className="quiz-secondary-link">

@@ -34,16 +34,29 @@ function formatNumber(value) {
 
 function formatPercent(value) {
   if (!hasValue(value)) {
-    return "-";
+    return "%0";
   }
 
   const numericValue = Number(value);
 
   if (!Number.isFinite(numericValue)) {
-    return value;
+    return "%0";
   }
 
   return `%${Math.round(numericValue)}`;
+}
+
+function normalizeWordItems(rawItems) {
+  if (!Array.isArray(rawItems)) {
+    return [];
+  }
+
+  return rawItems.map((item, index) => ({
+    id: pickValue(item, ["word_id", "wordId", "id"]) || index,
+    engWord:
+      pickValue(item, ["eng_word", "engWord", "word", "name"]) || "Kelime",
+    turWord: pickValue(item, ["tur_word", "turWord", "translation"]) || "",
+  }));
 }
 
 function normalizeCategoryReports(data) {
@@ -63,7 +76,7 @@ function normalizeCategoryReports(data) {
   }
 
   return rawCategories.map((item, index) => ({
-    id: item.id || item.category || item.level || item.topic || index,
+    id: item.id || item.category || item.level || item.topic || item.name || index,
     name:
       item.name ||
       item.category ||
@@ -71,15 +84,29 @@ function normalizeCategoryReports(data) {
       item.topic ||
       item.title ||
       "Kategori",
-    correct: pickValue(item, ["correct", "correct_count", "correctCount"]),
-    wrong: pickValue(item, ["wrong", "wrong_count", "wrongCount"]),
-    total: pickValue(item, ["total", "total_count", "totalCount"]),
-    successRate: pickValue(item, [
-      "success_rate",
-      "successRate",
-      "rate",
-      "percentage",
-    ]),
+    correct: Number(
+      pickValue(item, ["correct", "correct_count", "correctCount"]) || 0
+    ),
+    wrong: Number(
+      pickValue(item, ["wrong", "wrong_count", "wrongCount"]) || 0
+    ),
+    total: Number(
+      pickValue(item, ["total", "total_count", "totalCount"]) || 0
+    ),
+    successRate: Number(
+      pickValue(item, [
+        "success_rate",
+        "successRate",
+        "rate",
+        "percentage",
+      ]) || 0
+    ),
+    correctWords: normalizeWordItems(
+      pickValue(item, ["correct_words", "correctWords", "learned_words", "learnedWords"])
+    ),
+    wrongWords: normalizeWordItems(
+      pickValue(item, ["wrong_words", "wrongWords"])
+    ),
   }));
 }
 
@@ -212,10 +239,181 @@ function createSummaryCards(summary) {
   return cards;
 }
 
+function isLevelCategory(name) {
+  return /^seviye\s+\d+$/i.test(String(name).trim());
+}
+
+function getLevelNumber(name) {
+  const match = String(name).match(/\d+/);
+  return match ? Number(match[0]) : 999;
+}
+
+function sortLevelCategories(categories) {
+  return [...categories].sort(
+    (firstItem, secondItem) =>
+      getLevelNumber(firstItem.name) - getLevelNumber(secondItem.name)
+  );
+}
+
+function sortTopicCategories(categories) {
+  return [...categories].sort((firstItem, secondItem) =>
+    String(firstItem.name).localeCompare(String(secondItem.name), "tr")
+  );
+}
+
+function getRateClass(successRate) {
+  const rate = Number(successRate || 0);
+
+  if (rate >= 70) {
+    return "good";
+  }
+
+  if (rate >= 40) {
+    return "medium";
+  }
+
+  return "weak";
+}
+
+function WordChip({ word }) {
+  return (
+    <span className="report-word-chip">
+      <strong>{word.engWord}</strong>
+      {word.turWord && <small>{word.turWord}</small>}
+    </span>
+  );
+}
+
+function CategoryDetails({ item }) {
+  return (
+    <div className="category-details">
+      <div className="category-detail-box success">
+        <div className="category-detail-title">
+          <h5>Doğru / öğrenilen kelimeler</h5>
+          <span>{item.correctWords.length}</span>
+        </div>
+
+        {item.correctWords.length > 0 ? (
+          <div className="report-word-chip-list">
+            {item.correctWords.map((word) => (
+              <WordChip key={`correct-${item.id}-${word.id}`} word={word} />
+            ))}
+          </div>
+        ) : (
+          <p className="category-detail-empty">
+            Bu bölüm için doğru kelime detayı henüz yok.
+          </p>
+        )}
+      </div>
+
+      <div className="category-detail-box danger">
+        <div className="category-detail-title">
+          <h5>Yanlış yaptığın kelimeler</h5>
+          <span>{item.wrongWords.length}</span>
+        </div>
+
+        {item.wrongWords.length > 0 ? (
+          <div className="report-word-chip-list">
+            {item.wrongWords.map((word) => (
+              <WordChip key={`wrong-${item.id}-${word.id}`} word={word} />
+            ))}
+          </div>
+        ) : (
+          <p className="category-detail-empty">
+            Bu bölümde yanlış yaptığın kelime bulunmuyor.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CategoryRow({ item, isExpanded, onToggle }) {
+  const progressWidth = Math.min(100, Math.max(0, Number(item.successRate)));
+
+  return (
+    <div className={`category-row ${isExpanded ? "expanded" : ""}`}>
+      <div className="category-main">
+        <div className="category-info">
+          <div className="category-title-row">
+            <h4>{item.name}</h4>
+
+            <button
+              type="button"
+              className="category-toggle-button"
+              onClick={() => onToggle(item.id)}
+              aria-label={isExpanded ? "Detayları gizle" : "Detayları göster"}
+            >
+              <span>{isExpanded ? "Gizle" : "Detay"}</span>
+              <span className="category-toggle-icon">⌄</span>
+            </button>
+          </div>
+
+          <p>
+            <span>{formatNumber(item.correct)} doğru</span>
+            <span>{formatNumber(item.wrong)} yanlış</span>
+            <span>{formatNumber(item.total)} toplam</span>
+          </p>
+        </div>
+
+        <strong className={`rate-label ${getRateClass(item.successRate)}`}>
+          {formatPercent(item.successRate)}
+        </strong>
+      </div>
+
+      <div className="category-progress">
+        <div
+          className={getRateClass(item.successRate)}
+          style={{ width: `${progressWidth}%` }}
+        />
+      </div>
+
+      {isExpanded && <CategoryDetails item={item} />}
+    </div>
+  );
+}
+
+function CategoryPanel({
+  title,
+  description,
+  emptyText,
+  items,
+  expandedIds,
+  onToggle,
+}) {
+  return (
+    <article className="report-panel">
+      <div className="report-panel-header">
+        <div>
+          <p>Başarı Dağılımı</p>
+          <h3>{title}</h3>
+          <span className="report-panel-description">{description}</span>
+        </div>
+      </div>
+
+      {items.length > 0 ? (
+        <div className="category-list">
+          {items.map((item) => (
+            <CategoryRow
+              key={item.id}
+              item={item}
+              isExpanded={expandedIds.has(item.id)}
+              onToggle={onToggle}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="panel-empty">{emptyText}</div>
+      )}
+    </article>
+  );
+}
+
 function Reports() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState(() => new Set());
 
   const loadReport = useCallback(async () => {
     setLoading(true);
@@ -226,7 +424,9 @@ function Reports() {
       setReport(normalizeReport(data));
     } catch {
       setReport(null);
-      setError("Rapor bilgileri şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.");
+      setError(
+        "Rapor bilgileri şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin."
+      );
     } finally {
       setLoading(false);
     }
@@ -241,11 +441,37 @@ function Reports() {
     [report]
   );
 
+  const levelCategories = useMemo(() => {
+    const categories = report?.categories || [];
+    return sortLevelCategories(categories.filter((item) => isLevelCategory(item.name)));
+  }, [report]);
+
+  const topicCategories = useMemo(() => {
+    const categories = report?.categories || [];
+    return sortTopicCategories(categories.filter((item) => !isLevelCategory(item.name)));
+  }, [report]);
+
   const hasReportContent =
-    summaryCards.length > 0 || (report?.categories || []).length > 0;
+    summaryCards.length > 0 ||
+    levelCategories.length > 0 ||
+    topicCategories.length > 0;
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const toggleCategory = (categoryId) => {
+    setExpandedCategoryIds((previousIds) => {
+      const nextIds = new Set(previousIds);
+
+      if (nextIds.has(categoryId)) {
+        nextIds.delete(categoryId);
+      } else {
+        nextIds.add(categoryId);
+      }
+
+      return nextIds;
+    });
   };
 
   return (
@@ -324,60 +550,25 @@ function Reports() {
           )}
 
           <section className="report-content-grid">
-            <article className="report-panel">
-              <div className="report-panel-header">
-                <div>
-                  <p>Başarı Dağılımı</p>
-                  <h3>Konu / seviye bazlı sonuçlar</h3>
-                </div>
-              </div>
+            <div className="report-left-column">
+              <CategoryPanel
+                title="Seviye bazlı sonuçlar"
+                description="Başarı durumunu kelime seviyelerine göre ayrı ayrı gösterir."
+                emptyText="Seviye bazlı sonuç henüz bulunmuyor."
+                items={levelCategories}
+                expandedIds={expandedCategoryIds}
+                onToggle={toggleCategory}
+              />
 
-              {report.categories.length > 0 ? (
-                <div className="category-list">
-                  {report.categories.map((item) => (
-                    <div className="category-row" key={item.id}>
-                      <div className="category-main">
-                        <div>
-                          <h4>{item.name}</h4>
-                          <p>
-                            {hasValue(item.correct) && (
-                              <span>{formatNumber(item.correct)} doğru</span>
-                            )}
-
-                            {hasValue(item.wrong) && (
-                              <span>{formatNumber(item.wrong)} yanlış</span>
-                            )}
-
-                            {hasValue(item.total) && (
-                              <span>{formatNumber(item.total)} toplam</span>
-                            )}
-                          </p>
-                        </div>
-
-                        <strong>{formatPercent(item.successRate)}</strong>
-                      </div>
-
-                      {hasValue(item.successRate) && (
-                        <div className="category-progress">
-                          <div
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                Math.max(0, Number(item.successRate))
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="panel-empty">
-                  Konu veya seviye bazlı sonuç henüz bulunmuyor.
-                </div>
-              )}
-            </article>
+              <CategoryPanel
+                title="Konu bazlı sonuçlar"
+                description="Hangi konularda güçlü veya zayıf olduğunu daha net gösterir."
+                emptyText="Konu bazlı sonuç henüz bulunmuyor."
+                items={topicCategories}
+                expandedIds={expandedCategoryIds}
+                onToggle={toggleCategory}
+              />
+            </div>
 
             <aside className="report-panel tips-panel">
               <div className="report-panel-header">
@@ -399,16 +590,16 @@ function Reports() {
                 <div>
                   <strong>Yanlış yaptığın kelimelere dön</strong>
                   <span>
-                    Yanlış cevaplanan kelimeler tekrar döngüsünde yeniden
-                    çalışılmalıdır.
+                    Detay okuna basarak yanlış yaptığın kelimeleri görebilir ve
+                    tekrar çalışabilirsin.
                   </span>
                 </div>
 
                 <div>
                   <strong>Raporunu takip et</strong>
                   <span>
-                    Başarı oranındaki değişim hangi seviyelerde güçlendiğini
-                    veya zorlandığını gösterir.
+                    Seviye ve konu ayrımı hangi alanlarda güçlendiğini daha
+                    anlaşılır gösterir.
                   </span>
                 </div>
               </div>

@@ -368,11 +368,47 @@
   border: 1px solid #e5e7eb;
 }
 
+.word-sample-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
 .word-sample-box strong {
   display: block;
   color: #111827;
-  margin-bottom: 5px;
   font-size: 13px;
+}
+
+.sample-toggle-button {
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 2px;
+}
+
+.sample-toggle-button:hover {
+  color: #3730a3;
+}
+
+.sample-toggle-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.word-sample-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .word-sample-box p {
@@ -381,14 +417,6 @@
   line-height: 1.5;
   font-weight: 650;
   font-size: 13px;
-}
-
-.word-sample-box small {
-  display: inline-flex;
-  margin-top: 8px;
-  color: #4f46e5;
-  font-size: 12px;
-  font-weight: 850;
 }
 
 .word-card-actions {
@@ -411,6 +439,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.audio-word-button {
+  border: 1px solid #c7d2fe;
+  color: #4f46e5;
+  background: #eef2ff;
+}
+
+.audio-word-button:hover {
+  background: #e0e7ff;
 }
 
 .word-card-actions a {

@@ -17,6 +17,31 @@ function QuizQuestionCard({
 
   const options = Array.isArray(question.options) ? question.options : [];
 
+  const getAudioUrl = () => {
+    if (!question.audio_url) {
+      return "";
+    }
+
+    if (question.audio_url.startsWith("http")) {
+      return question.audio_url;
+    }
+
+    return getImageUrl(question.audio_url);
+  };
+
+  const handlePlayAudio = () => {
+    const audioUrl = getAudioUrl();
+
+    if (!audioUrl) {
+      return;
+    }
+
+    const audio = new Audio(audioUrl);
+    audio.play().catch(() => {
+      window.open(audioUrl, "_blank", "noopener,noreferrer");
+    });
+  };
+
   const getOptionClassName = (option) => {
     if (!answerResult) {
       return selectedAnswer === option
@@ -50,10 +75,24 @@ function QuizQuestionCard({
           </div>
         )}
 
-        <div>
+        <div className="quiz-question-content">
           <span className="quiz-question-label">Türkçe karşılığını seç</span>
 
-          <h2>{question.eng_word}</h2>
+          <div className="quiz-word-title-row">
+            <h2>{question.eng_word}</h2>
+
+            {question.audio_url && (
+              <button
+                type="button"
+                className="quiz-audio-button"
+                onClick={handlePlayAudio}
+                aria-label={`${question.eng_word} telaffuzunu dinle`}
+              >
+                <span>🔊</span>
+                Telaffuzu Dinle
+              </button>
+            )}
+          </div>
 
           <p>
             Bu kelimenin doğru Türkçe anlamını aşağıdaki seçeneklerden seç.
