@@ -1,3 +1,5 @@
+import { isValidDifficultyValue } from "../utils/difficultyLevel";
+
 const MAX_IMAGE_SIZE_MB = 5;
 
 const isValidUrl = (value) => {
@@ -36,7 +38,6 @@ export const validateWordForm = (formData, existingWords = [], samples = []) => 
   const englishWord = formData.eng_word?.trim();
   const turkishWord = formData.tur_word?.trim();
   const topic = formData.topic?.trim();
-  const difficultyLevel = Number(formData.difficulty_level);
 
   if (!englishWord) {
     errors.eng_word = "İngilizce kelime boş bırakılamaz.";
@@ -65,10 +66,8 @@ export const validateWordForm = (formData, existingWords = [], samples = []) => 
     errors.topic = "Konu alanı en fazla 60 karakter olabilir.";
   }
 
-  if (!Number.isInteger(difficultyLevel)) {
-    errors.difficulty_level = "Zorluk seviyesi tam sayı olmalıdır.";
-  } else if (difficultyLevel < 1 || difficultyLevel > 10) {
-    errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+  if (!isValidDifficultyValue(formData.difficulty_level)) {
+    errors.difficulty_level = "Zorluk seviyesi A1, A2, B1, B2, C1 veya C2 olmalıdır.";
   }
 
   if (!Array.isArray(samples) || samples.length === 0) {
@@ -112,7 +111,6 @@ export const validateWordEditForm = (formData) => {
   const englishWord = formData.eng_word?.trim();
   const turkishWord = formData.tur_word?.trim();
   const topic = formData.topic?.trim();
-  const difficultyLevel = Number(formData.difficulty_level);
 
   if (!englishWord) {
     errors.eng_word = "İngilizce kelime boş bırakılamaz.";
@@ -130,10 +128,8 @@ export const validateWordEditForm = (formData) => {
     errors.topic = "Konu alanı en fazla 60 karakter olabilir.";
   }
 
-  if (!Number.isInteger(difficultyLevel)) {
-    errors.difficulty_level = "Zorluk seviyesi tam sayı olmalıdır.";
-  } else if (difficultyLevel < 1 || difficultyLevel > 10) {
-    errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+  if (!isValidDifficultyValue(formData.difficulty_level)) {
+    errors.difficulty_level = "Zorluk seviyesi A1, A2, B1, B2, C1 veya C2 olmalıdır.";
   }
 
   if (formData.picture_url && !isValidUrl(formData.picture_url.trim())) {

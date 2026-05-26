@@ -7,6 +7,16 @@ import {
   updateWordAPI,
   uploadWordImageAPI,
 } from "../../services/wordService";
+import {
+  CEFR_LEVEL_OPTIONS,
+  getCefrLabel,
+  getCefrSortOrder,
+  getDifficultyClassName,
+  getDifficultyGroupText,
+  getDifficultyValue,
+  isCefrLevel,
+  isValidDifficultyValue,
+} from "../../utils/difficultyLevel";
 import "./WordList.css";
 
 function hasValue(value) {
@@ -50,6 +60,12 @@ function normalizeSamples(samples) {
 }
 
 function normalizeWord(word, index) {
+  const difficultyLevel =
+    Number(
+      pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"])
+    ) || 1;
+  const topic = pickValue(word, ["topic", "category", "level"]) || "";
+
   return {
     id: pickValue(word, ["id", "word_id", "wordId", "WordID"]) || index,
     eng_word:
@@ -68,11 +84,8 @@ function normalizeWord(word, index) {
         "turWordName",
         "TurWordName",
       ]) || "",
-    topic: pickValue(word, ["topic", "category", "level"]) || "",
-    difficulty_level:
-      Number(
-        pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"])
-      ) || 1,
+    topic: isCefrLevel(topic) ? "" : topic,
+    difficulty_level: difficultyLevel,
     picture_url:
       pickValue(word, [
         "picture_url",
@@ -125,27 +138,11 @@ function playAudioUrl(audioUrl) {
 }
 
 function getDifficultyText(level) {
-  if (level <= 3) {
-    return "Kolay";
-  }
-
-  if (level <= 7) {
-    return "Orta";
-  }
-
-  return "Zor";
+  return getDifficultyGroupText(level);
 }
 
 function getDifficultyClass(level) {
-  if (level <= 3) {
-    return "easy";
-  }
-
-  if (level <= 7) {
-    return "medium";
-  }
-
-  return "hard";
+  return getDifficultyClassName(level);
 }
 
 function getInitialEditForm(word) {
@@ -153,7 +150,7 @@ function getInitialEditForm(word) {
     eng_word: word.eng_word || "",
     tur_word: word.tur_word || "",
     topic: word.topic || "",
-    difficulty_level: String(word.difficulty_level || 1),
+    difficulty_level: getDifficultyValue(word.difficulty_level),
     picture_url: word.picture_url || "",
     audio_url: word.audio_url || "",
     samplesText: Array.isArray(word.samples) ? word.samples.join("\n") : "",
@@ -255,7 +252,7 @@ function WordList() {
 
       const matchesDifficulty =
         difficultyFilter === "all" ||
-        String(word.difficulty_level) === difficultyFilter;
+        getCefrLabel(word.difficulty_level) === difficultyFilter;
 
       return matchesSearch && matchesTopic && matchesDifficulty;
     });
@@ -270,11 +267,11 @@ function WordList() {
       }
 
       if (sortType === "difficultyHigh") {
-        return b.difficulty_level - a.difficulty_level;
+        return getCefrSortOrder(b.difficulty_level) - getCefrSortOrder(a.difficulty_level);
       }
 
       if (sortType === "difficultyLow") {
-        return a.difficulty_level - b.difficulty_level;
+        return getCefrSortOrder(a.difficulty_level) - getCefrSortOrder(b.difficulty_level);
       }
 
       return Number(b.id) - Number(a.id);
@@ -334,7 +331,6 @@ function WordList() {
 
   const validateEditForm = () => {
     const errors = {};
-    const difficulty = Number(editFormData.difficulty_level);
 
     if (!editFormData.eng_word.trim()) {
       errors.eng_word = "İngilizce kelime boş bırakılamaz.";
@@ -344,8 +340,8 @@ function WordList() {
       errors.tur_word = "Türkçe karşılık boş bırakılamaz.";
     }
 
-    if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 10) {
-      errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+    if (!isValidDifficultyValue(editFormData.difficulty_level)) {
+      errors.difficulty_level = "Zorluk seviyesi A1, A2, B1, B2, C1 veya C2 olmalıdır.";
     }
 
     if (editFormData.pictureFile) {
@@ -525,16 +521,12 @@ function WordList() {
               onChange={(event) => setDifficultyFilter(event.target.value)}
             >
               <option value="all">Tüm seviyeler</option>
-              <option value="1">Seviye 1</option>
-              <option value="2">Seviye 2</option>
-              <option value="3">Seviye 3</option>
-              <option value="4">Seviye 4</option>
-              <option value="5">Seviye 5</option>
-              <option value="6">Seviye 6</option>
-              <option value="7">Seviye 7</option>
-              <option value="8">Seviye 8</option>
-              <option value="9">Seviye 9</option>
-              <option value="10">Seviye 10</option>
+
+              {CEFR_LEVEL_OPTIONS.map((level) => (
+                <option key={level.label} value={level.label}>
+                  {level.label}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -616,7 +608,7 @@ function WordList() {
                         <p>{word.tur_word}</p>
                       </div>
 
-                      <span>Seviye {word.difficulty_level}</span>
+                      <span>{getCefrLabel(word.difficulty_level)}</span>
                     </div>
 
                     <div className="word-card-meta">
@@ -752,16 +744,11 @@ function WordList() {
                   value={editFormData.difficulty_level}
                   onChange={handleEditChange}
                 >
-                  <option value="1">1 - Çok kolay</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5 - Orta</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10 - Zor</option>
+                  {CEFR_LEVEL_OPTIONS.map((level) => (
+                    <option key={level.label} value={level.value}>
+                      {level.label} - {level.description}
+                    </option>
+                  ))}
                 </select>
                 {editErrors.difficulty_level && (
                   <small>{editErrors.difficulty_level}</small>

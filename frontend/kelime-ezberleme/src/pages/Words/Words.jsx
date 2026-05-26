@@ -7,6 +7,11 @@ import {
   uploadWordImageAPI,
 } from "../../services/wordService";
 import { validateWordForm } from "../../validations/wordsValidation";
+import {
+  CEFR_LEVEL_OPTIONS,
+  getCefrLabel,
+  isCefrLevel,
+} from "../../utils/difficultyLevel";
 import "./Words.css";
 
 const initialFormData = {
@@ -41,6 +46,9 @@ function pickValue(source, keys) {
 function normalizeWord(word, index) {
   const samples =
     pickValue(word, ["samples", "word_samples", "wordSamples", "examples"]) || [];
+  const difficultyLevel =
+    Number(pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"])) || 1;
+  const topic = pickValue(word, ["topic", "category", "level"]) || "";
 
   return {
     id: pickValue(word, ["id", "word_id", "wordId", "WordID"]) || index,
@@ -60,9 +68,8 @@ function normalizeWord(word, index) {
         "turWordName",
         "TurWordName",
       ]) || "",
-    topic: pickValue(word, ["topic", "category", "level"]) || "",
-    difficulty_level:
-      pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"]) || 1,
+    topic: isCefrLevel(topic) ? "" : topic,
+    difficulty_level: difficultyLevel,
     picture_url:
       pickValue(word, ["picture_url", "pictureUrl", "image_url", "imageUrl", "picture"]) ||
       "",
@@ -326,16 +333,11 @@ function Words() {
                 value={formData.difficulty_level}
                 onChange={handleChange}
               >
-                <option value="1">1 - Çok kolay</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 - Orta</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 - Zor</option>
+                {CEFR_LEVEL_OPTIONS.map((level) => (
+                  <option key={level.label} value={level.value}>
+                    {level.label} - {level.description}
+                  </option>
+                ))}
               </select>
               {fieldErrors.difficulty_level && (
                 <small>{fieldErrors.difficulty_level}</small>
@@ -466,7 +468,7 @@ function Words() {
                     <p>{word.tur_word}</p>
 
                     <div className="recent-word-meta">
-                      <span>Seviye {word.difficulty_level}</span>
+                      <span>{getCefrLabel(word.difficulty_level)}</span>
                       {word.topic && <span>{word.topic}</span>}
                     </div>
                   </div>
