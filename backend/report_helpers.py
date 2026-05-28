@@ -43,10 +43,24 @@ def create_category_bucket() -> dict:
     }
 
 
+CEFR_LEVELS = ("A1", "A2", "B1", "B2", "C1", "C2")
+
+
+def get_cefr_level_label(word: models.Word) -> str:
+    topic = (word.topic or "").strip().upper()
+
+    if topic in CEFR_LEVELS:
+        return topic
+
+    level = word.difficulty_level or 1
+    index = min(max(level, 1), len(CEFR_LEVELS)) - 1
+    return CEFR_LEVELS[index]
+
+
 def get_category_names(word: models.Word) -> list[str]:
     return [
         word.topic or "Genel",
-        f"Seviye {word.difficulty_level or 1}",
+        get_cefr_level_label(word),
     ]
 
 
@@ -93,13 +107,8 @@ def build_category_report(name: str, bucket: dict) -> schemas.CategoryReport:
 
 def sort_category_reports(reports: list[schemas.CategoryReport]) -> list[schemas.CategoryReport]:
     def sort_key(report: schemas.CategoryReport) -> tuple[int, int | str]:
-        name = report.name.lower().strip()
-
-        if name.startswith("seviye "):
-            try:
-                return (0, int(name.replace("seviye ", "").strip()))
-            except ValueError:
-                return (0, 999)
+        if report.name in CEFR_LEVELS:
+            return (0, CEFR_LEVELS.index(report.name))
 
         return (1, report.name)
 
@@ -122,8 +131,8 @@ def build_category_reports(
             add_word_to_categories(stats, word, "wrong")
 
     reports = [
-        build_category_report(name=name, bucket=bucket)
-        for name, bucket in stats.items()
+        build_category_report(name=category_name, bucket=bucket)
+        for category_name, bucket in stats.items()
     ]
 
     return sort_category_reports(reports)

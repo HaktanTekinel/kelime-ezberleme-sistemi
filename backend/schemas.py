@@ -130,7 +130,7 @@ class UserStatsResponse(BaseModel):
 class WordBase(BaseModel):
     eng_word: str = Field(min_length=1, max_length=150)
     tur_word: str = Field(min_length=1, max_length=150)
-    difficulty_level: int = Field(default=1, ge=1, le=10)
+    difficulty_level: int = Field(default=1, ge=1, le=6)
     topic: Optional[str] = Field(default=None, max_length=80)
     picture_url: Optional[str] = None
     audio_url: Optional[str] = None
