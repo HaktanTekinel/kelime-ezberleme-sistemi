@@ -7,6 +7,12 @@ import {
   updateWordAPI,
   uploadWordImageAPI,
 } from "../../services/wordService";
+import {
+  CEFR_LEVELS,
+  CEFR_LEVEL_OPTIONS,
+  getCefrLevelLabel,
+  getCefrLevelOrder,
+} from "../../utils/cefrLevels";
 import "./WordList.css";
 
 const ALL_FILTER_VALUE = "all";
@@ -26,37 +32,17 @@ const EMPTY_EDIT_FORM = {
 
 const DIFFICULTY_OPTIONS = [
   { value: ALL_FILTER_VALUE, label: "Tüm seviyeler" },
-  { value: "1", label: "Seviye 1" },
-  { value: "2", label: "Seviye 2" },
-  { value: "3", label: "Seviye 3" },
-  { value: "4", label: "Seviye 4" },
-  { value: "5", label: "Seviye 5" },
-  { value: "6", label: "Seviye 6" },
-  { value: "7", label: "Seviye 7" },
-  { value: "8", label: "Seviye 8" },
-  { value: "9", label: "Seviye 9" },
-  { value: "10", label: "Seviye 10" },
+  ...CEFR_LEVELS.map((level) => ({ value: level, label: level })),
 ];
 
-const EDIT_DIFFICULTY_OPTIONS = [
-  { value: "1", label: "1 - Çok kolay" },
-  { value: "2", label: "2" },
-  { value: "3", label: "3" },
-  { value: "4", label: "4" },
-  { value: "5", label: "5 - Orta" },
-  { value: "6", label: "6" },
-  { value: "7", label: "7" },
-  { value: "8", label: "8" },
-  { value: "9", label: "9" },
-  { value: "10", label: "10 - Zor" },
-];
+const EDIT_DIFFICULTY_OPTIONS = CEFR_LEVEL_OPTIONS;
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Yeni eklenen" },
   { value: "az", label: "A-Z" },
   { value: "za", label: "Z-A" },
-  { value: "difficultyHigh", label: "Zorluk yüksek" },
-  { value: "difficultyLow", label: "Zorluk düşük" },
+  { value: "difficultyHigh", label: "Seviye yüksek" },
+  { value: "difficultyLow", label: "Seviye düşük" },
 ];
 
 function hasValue(value) {
@@ -103,6 +89,16 @@ function normalizeSamples(samples) {
     .filter(Boolean);
 }
 
+function normalizeTopic(topic) {
+  const topicText = String(topic || "").trim();
+
+  if (!topicText || CEFR_LEVELS.includes(topicText.toUpperCase())) {
+    return "Genel";
+  }
+
+  return topicText;
+}
+
 function normalizeWord(word, index) {
   return {
     id: pickValue(word, ["id", "word_id", "wordId", "WordID"]) || index,
@@ -122,7 +118,7 @@ function normalizeWord(word, index) {
         "turWordName",
         "TurWordName",
       ]) || "",
-    topic: pickValue(word, ["topic", "category", "level"]) || "",
+    topic: normalizeTopic(pickValue(word, ["topic", "category"])),
     difficulty_level:
       Number(
         pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"])
@@ -164,6 +160,35 @@ function getAssetUrl(url) {
   return `${API_BASE_URL}${url}`;
 }
 
+function getWordImageKeyword(word) {
+  return word.eng_word || word.tur_word || "english vocabulary";
+}
+
+function getAutomaticImageUrl(word) {
+  const keyword = encodeURIComponent(getWordImageKeyword(word));
+
+  return `https://en.wikipedia.org/api/rest_v1/page/summary/${keyword}`;
+}
+
+function getFallbackImageUrl(word) {
+  const keyword = encodeURIComponent(getWordImageKeyword(word));
+
+  return `https://api.dicebear.com/9.x/icons/svg?seed=${keyword}`;
+}
+
+function getWordImageUrl(word) {
+  if (word.picture_url) {
+    return getAssetUrl(word.picture_url);
+  }
+
+  return getFallbackImageUrl(word);
+}
+
+function handleImageError(event, word) {
+  event.currentTarget.onerror = null;
+  event.currentTarget.src = getFallbackImageUrl(word);
+}
+
 function playAudioUrl(audioUrl) {
   const resolvedAudioUrl = getAssetUrl(audioUrl);
 
@@ -180,24 +205,14 @@ function playAudioUrl(audioUrl) {
   });
 }
 
-function getDifficultyText(level) {
-  if (level <= 3) {
-    return "Kolay";
-  }
+function getDifficultyClass(level, topic) {
+  const order = getCefrLevelOrder(level, topic);
 
-  if (level <= 7) {
-    return "Orta";
-  }
-
-  return "Zor";
-}
-
-function getDifficultyClass(level) {
-  if (level <= 3) {
+  if (order <= 1) {
     return "easy";
   }
 
-  if (level <= 7) {
+  if (order <= 3) {
     return "medium";
   }
 
@@ -209,7 +224,9 @@ function getInitialEditForm(word) {
     eng_word: word.eng_word || "",
     tur_word: word.tur_word || "",
     topic: word.topic || "",
-    difficulty_level: String(word.difficulty_level || 1),
+    difficulty_level: String(
+      getCefrLevelOrder(word.difficulty_level, word.topic) + 1
+    ),
     picture_url: word.picture_url || "",
     audio_url: word.audio_url || "",
     samplesText: Array.isArray(word.samples) ? word.samples.join("\n") : "",
@@ -259,14 +276,16 @@ function sortWords(words, sortType) {
   if (sortType === "difficultyHigh") {
     return sortedWords.sort(
       (firstWord, secondWord) =>
-        secondWord.difficulty_level - firstWord.difficulty_level
+        getCefrLevelOrder(secondWord.difficulty_level, secondWord.topic) -
+        getCefrLevelOrder(firstWord.difficulty_level, firstWord.topic)
     );
   }
 
   if (sortType === "difficultyLow") {
     return sortedWords.sort(
       (firstWord, secondWord) =>
-        firstWord.difficulty_level - secondWord.difficulty_level
+        getCefrLevelOrder(firstWord.difficulty_level, firstWord.topic) -
+        getCefrLevelOrder(secondWord.difficulty_level, secondWord.topic)
     );
   }
 
@@ -329,20 +348,19 @@ function renderEmptyState() {
 function renderWordMedia(word) {
   return (
     <div className="word-card-media">
-      {word.picture_url ? (
-        <img src={getAssetUrl(word.picture_url)} alt={word.eng_word} />
-      ) : (
-        <div className="word-card-placeholder">
-          {word.eng_word.charAt(0).toUpperCase()}
-        </div>
-      )}
+      <img
+        src={getWordImageUrl(word)}
+        alt={`${word.eng_word} kelime görseli`}
+        onError={(event) => handleImageError(event, word)}
+      />
 
       <span
         className={`difficulty-badge ${getDifficultyClass(
-          word.difficulty_level
+          word.difficulty_level,
+          word.topic
         )}`}
       >
-        {getDifficultyText(word.difficulty_level)}
+        {getCefrLevelLabel(word.difficulty_level, word.topic)}
       </span>
     </div>
   );
@@ -352,7 +370,7 @@ function renderWordMeta(word) {
   return (
     <div className="word-card-meta">
       {word.topic && <span>{word.topic}</span>}
-      {word.picture_url && <span>Görsel</span>}
+      <span>Görsel</span>
       {word.audio_url && <span>Ses</span>}
     </div>
   );
@@ -446,7 +464,7 @@ function renderWordCard({
             <p>{word.tur_word}</p>
           </div>
 
-          <span>Seviye {word.difficulty_level}</span>
+          <span>{getCefrLevelLabel(word.difficulty_level, word.topic)}</span>
         </div>
 
         {renderWordMeta(word)}
@@ -564,7 +582,11 @@ function WordList() {
   }, []);
 
   useEffect(() => {
-    loadWords();
+    const wordLoadTimer = globalThis.setTimeout(() => {
+      void loadWords();
+    }, 0);
+
+    return () => globalThis.clearTimeout(wordLoadTimer);
   }, [loadWords]);
 
   const topicOptions = useMemo(() => {
@@ -580,7 +602,7 @@ function WordList() {
   const stats = useMemo(() => {
     return {
       total: words.length,
-      withImage: words.filter((word) => Boolean(word.picture_url)).length,
+      withImage: words.length,
       withAudio: words.filter((word) => Boolean(word.audio_url)).length,
       topicCount: topicOptions.length,
     };
@@ -600,7 +622,7 @@ function WordList() {
 
       const matchesDifficulty =
         difficultyFilter === ALL_FILTER_VALUE ||
-        String(word.difficulty_level) === difficultyFilter;
+        getCefrLevelLabel(word.difficulty_level, word.topic) === difficultyFilter;
 
       return matchesSearch && matchesTopic && matchesDifficulty;
     });
@@ -671,8 +693,8 @@ function WordList() {
       errors.tur_word = "Türkçe karşılık boş bırakılamaz.";
     }
 
-    if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 10) {
-      errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+    if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 6) {
+      errors.difficulty_level = "Seviye A1 ile C2 arasında olmalıdır.";
     }
 
     if (editFormData.pictureFile) {
@@ -804,7 +826,7 @@ function WordList() {
         <article className="word-stat-card">
           <span>Görsel</span>
           <strong>{stats.withImage}</strong>
-          <p>Resimli kelime</p>
+          <p>Otomatik görselli kelime</p>
         </article>
 
         <article className="word-stat-card">
@@ -844,7 +866,7 @@ function WordList() {
           </label>
 
           <label>
-            <span>Zorluk</span>
+            <span>Seviye</span>
             <select
               value={difficultyFilter}
               onChange={(event) => setDifficultyFilter(event.target.value)}
@@ -925,7 +947,7 @@ function WordList() {
               </label>
 
               <label className="word-edit-field">
-                <span>Zorluk seviyesi</span>
+                <span>Seviye</span>
                 <select
                   name="difficulty_level"
                   value={editFormData.difficulty_level}

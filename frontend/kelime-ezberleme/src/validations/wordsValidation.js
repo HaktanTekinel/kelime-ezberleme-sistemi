@@ -2,6 +2,7 @@ const MAX_IMAGE_SIZE_MB = 5;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const ENGLISH_WORD_PATTERN = /^[a-zA-Z\s'-]+$/;
+const CEFR_LEVELS = new Set(["A1", "A2", "B1", "B2", "C1", "C2"]);
 
 const isValidUrl = (value) => {
   if (!value) {
@@ -20,6 +21,12 @@ const normalizeWord = (value) => {
   return String(value || "")
     .trim()
     .toLocaleLowerCase("tr-TR");
+};
+
+const normalizeLevel = (value) => {
+  return String(value || "")
+    .trim()
+    .toUpperCase();
 };
 
 const getWordEnglishName = (word) => {
@@ -68,13 +75,8 @@ const validateTopic = (errors, topic) => {
 };
 
 const validateDifficultyLevel = (errors, difficultyLevel) => {
-  if (!Number.isInteger(difficultyLevel)) {
-    errors.difficulty_level = "Zorluk seviyesi tam sayı olmalıdır.";
-    return;
-  }
-
-  if (difficultyLevel < 1 || difficultyLevel > 10) {
-    errors.difficulty_level = "Zorluk seviyesi 1 ile 10 arasında olmalıdır.";
+  if (!CEFR_LEVELS.has(difficultyLevel)) {
+    errors.difficulty_level = "Seviye A1, A2, B1, B2, C1 veya C2 olmalıdır.";
   }
 };
 
@@ -130,10 +132,10 @@ const validateDuplicateWord = (errors, englishWord, existingWords) => {
 
 const getPreparedWordFields = (formData) => {
   return {
-    englishWord: formData.eng_word?.trim(),
-    turkishWord: formData.tur_word?.trim(),
-    topic: formData.topic?.trim(),
-    difficultyLevel: Number(formData.difficulty_level),
+    englishWord: formData.eng_word?.trim() || "",
+    turkishWord: formData.tur_word?.trim() || "",
+    topic: formData.topic?.trim() || "",
+    difficultyLevel: normalizeLevel(formData.difficulty_level),
   };
 };
 

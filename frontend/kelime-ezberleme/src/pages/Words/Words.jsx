@@ -9,11 +9,22 @@ import {
 import { validateWordForm } from "../../validations/wordsValidation";
 import "./Words.css";
 
+const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+const CEFR_TO_BACKEND_LEVEL = {
+  A1: 1,
+  A2: 2,
+  B1: 3,
+  B2: 4,
+  C1: 5,
+  C2: 6,
+};
+
 const initialFormData = {
   eng_word: "",
   tur_word: "",
   topic: "",
-  difficulty_level: "1",
+  difficulty_level: "A1",
   picture_url: "",
   audio_url: "",
   samplesText: "",
@@ -38,10 +49,47 @@ function pickValue(source, keys) {
   return undefined;
 }
 
-function normalizeWord(word, index) {
-  const samples =
-    pickValue(word, ["samples", "word_samples", "wordSamples", "examples"]) || [];
+function normalizeLevel(level) {
+  const levelText = String(level || "A1").toUpperCase();
 
+  if (CEFR_LEVELS.includes(levelText)) {
+    return levelText;
+  }
+
+  const numericLevel = Number(level);
+
+  if (numericLevel <= 1) return "A1";
+  if (numericLevel === 2) return "A2";
+  if (numericLevel === 3) return "B1";
+  if (numericLevel === 4) return "B2";
+  if (numericLevel === 5) return "C1";
+
+  return "C2";
+}
+
+function normalizeSamples(samples) {
+  if (!Array.isArray(samples)) {
+    return [];
+  }
+
+  return samples
+    .map((sample) => {
+      if (typeof sample === "string") {
+        return sample;
+      }
+
+      return (
+        sample.sample_text ||
+        sample.sampleText ||
+        sample.text ||
+        sample.sentence ||
+        ""
+      );
+    })
+    .filter(Boolean);
+}
+
+function normalizeWord(word, index) {
   return {
     id: pickValue(word, ["id", "word_id", "wordId", "WordID"]) || index,
     eng_word:
@@ -60,14 +108,27 @@ function normalizeWord(word, index) {
         "turWordName",
         "TurWordName",
       ]) || "",
-    topic: pickValue(word, ["topic", "category", "level"]) || "",
-    difficulty_level:
-      pickValue(word, ["difficulty_level", "difficultyLevel", "difficulty"]) || 1,
+    topic: pickValue(word, ["topic", "category"]) || "",
+    difficulty_level: normalizeLevel(
+      pickValue(word, [
+        "difficulty_level",
+        "difficultyLevel",
+        "difficulty",
+        "level",
+      ])
+    ),
     picture_url:
-      pickValue(word, ["picture_url", "pictureUrl", "image_url", "imageUrl", "picture"]) ||
-      "",
+      pickValue(word, [
+        "picture_url",
+        "pictureUrl",
+        "image_url",
+        "imageUrl",
+        "picture",
+      ]) || "",
     audio_url: pickValue(word, ["audio_url", "audioUrl"]) || "",
-    samples: Array.isArray(samples) ? samples : [],
+    samples: normalizeSamples(
+      pickValue(word, ["samples", "word_samples", "wordSamples", "examples"])
+    ),
   };
 }
 
@@ -91,6 +152,48 @@ function getImageUrl(pictureUrl) {
   }
 
   return `${API_BASE_URL}${pictureUrl}`;
+}
+
+function getWordImageKeyword(word) {
+  return word.eng_word || word.tur_word || "english vocabulary";
+}
+
+function getFallbackWordImageUrl(word) {
+  const keyword = getWordImageKeyword(word);
+
+  return `https://api.dicebear.com/9.x/icons/svg?seed=${encodeURIComponent(
+    keyword
+  )}`;
+}
+
+function handleWordImageError(event, word) {
+  event.currentTarget.onerror = null;
+  event.currentTarget.src = getFallbackWordImageUrl(word);
+}
+
+function getApiErrorMessage(error) {
+  const detail = error?.detail;
+
+  if (typeof detail === "string") {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    const detailMessage = detail
+      .map((item) => item?.msg)
+      .filter(Boolean)
+      .join(" ");
+
+    if (detailMessage) {
+      return detailMessage;
+    }
+  }
+
+  if (typeof error?.message === "string" && error.message !== "[object Object]") {
+    return error.message;
+  }
+
+  return "Kelime kaydedilemedi. Lütfen bilgileri kontrol edin.";
 }
 
 function Words() {
@@ -195,7 +298,7 @@ function Words() {
     const payload = {
       eng_word: formData.eng_word.trim(),
       tur_word: formData.tur_word.trim(),
-      difficulty_level: Number(formData.difficulty_level),
+      difficulty_level: CEFR_TO_BACKEND_LEVEL[formData.difficulty_level],
       topic: formData.topic.trim() || null,
       picture_url: formData.picture_url.trim() || null,
       audio_url: formData.audio_url.trim() || null,
@@ -221,7 +324,7 @@ function Words() {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.message || "Kelime kaydedilemedi. Lütfen tekrar deneyin.",
+        text: getApiErrorMessage(error),
       });
     } finally {
       setSaving(false);
@@ -288,9 +391,7 @@ function Words() {
                 value={formData.eng_word}
                 onChange={handleChange}
               />
-              {fieldErrors.eng_word && (
-                <small>{fieldErrors.eng_word}</small>
-              )}
+              {fieldErrors.eng_word && <small>{fieldErrors.eng_word}</small>}
             </label>
 
             <label className="form-field">
@@ -302,9 +403,7 @@ function Words() {
                 value={formData.tur_word}
                 onChange={handleChange}
               />
-              {fieldErrors.tur_word && (
-                <small>{fieldErrors.tur_word}</small>
-              )}
+              {fieldErrors.tur_word && <small>{fieldErrors.tur_word}</small>}
             </label>
 
             <label className="form-field">
@@ -312,7 +411,7 @@ function Words() {
               <input
                 name="topic"
                 type="text"
-                placeholder="Örn: Günlük hayat"
+                placeholder="Örn: Günlük yaşam"
                 value={formData.topic}
                 onChange={handleChange}
               />
@@ -320,22 +419,17 @@ function Words() {
             </label>
 
             <label className="form-field">
-              <span>Zorluk seviyesi</span>
+              <span>Seviye</span>
               <select
                 name="difficulty_level"
                 value={formData.difficulty_level}
                 onChange={handleChange}
               >
-                <option value="1">1 - Çok kolay</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 - Orta</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10 - Zor</option>
+                {CEFR_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
               </select>
               {fieldErrors.difficulty_level && (
                 <small>{fieldErrors.difficulty_level}</small>
@@ -383,9 +477,7 @@ function Words() {
                 value={formData.audio_url}
                 onChange={handleChange}
               />
-              {fieldErrors.audio_url && (
-                <small>{fieldErrors.audio_url}</small>
-              )}
+              {fieldErrors.audio_url && <small>{fieldErrors.audio_url}</small>}
             </label>
           </div>
 
@@ -453,20 +545,22 @@ function Words() {
             <div className="recent-word-list">
               {filteredWords.slice(0, 5).map((word) => (
                 <article className="recent-word-item" key={word.id}>
-                  {word.picture_url ? (
-                    <img src={getImageUrl(word.picture_url)} alt={word.eng_word} />
-                  ) : (
-                    <div className="recent-word-placeholder">
-                      {word.eng_word.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <img
+                    src={
+                      word.picture_url
+                        ? getImageUrl(word.picture_url)
+                        : getFallbackWordImageUrl(word)
+                    }
+                    alt={`${word.eng_word} kelime görseli`}
+                    onError={(event) => handleWordImageError(event, word)}
+                  />
 
                   <div>
                     <h4>{word.eng_word}</h4>
                     <p>{word.tur_word}</p>
 
                     <div className="recent-word-meta">
-                      <span>Seviye {word.difficulty_level}</span>
+                      <span>{word.difficulty_level}</span>
                       {word.topic && <span>{word.topic}</span>}
                     </div>
                   </div>

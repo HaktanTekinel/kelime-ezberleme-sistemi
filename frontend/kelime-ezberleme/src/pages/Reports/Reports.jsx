@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUserReportAPI } from "../../services/reportService";
+import { CEFR_LEVELS, getCefrLevelLabel, getCefrLevelOrder, isCefrLevel } from "../../utils/cefrLevels";
 import "./Reports.css";
 
 const EMPTY_TEXT = "";
@@ -63,16 +64,19 @@ function normalizeWordItems(rawItems) {
   }));
 }
 
+function normalizeCategoryName(item) {
+  const rawName =
+    item.name || item.category || item.level || item.topic || item.title || "Kategori";
+
+  return isLevelCategory(rawName) ? getCefrLevelLabel(rawName) : rawName;
+}
+
 function normalizeCategoryItem(item, index) {
+  const name = normalizeCategoryName(item);
+
   return {
     id: item.id || item.category || item.level || item.topic || item.name || index,
-    name:
-      item.name ||
-      item.category ||
-      item.level ||
-      item.topic ||
-      item.title ||
-      "Kategori",
+    name,
     correct: Number(
       pickValue(item, ["correct", "correct_count", "correctCount"]) || 0
     ),
@@ -249,20 +253,20 @@ function createSummaryCards(summary) {
 }
 
 function isLevelCategory(name) {
-  return /^seviye\s+\d+$/i.test(String(name).trim());
-}
+  const categoryName = String(name || "").trim();
 
-function getLevelNumber(name) {
-  const levelMatch = /\d+/.exec(String(name));
-
-  return levelMatch ? Number(levelMatch[0]) : 999;
+  return isCefrLevel(categoryName) || /^seviye\s+\d+$/i.test(categoryName);
 }
 
 function sortLevelCategories(categories) {
-  return [...categories].sort(
-    (firstItem, secondItem) =>
-      getLevelNumber(firstItem.name) - getLevelNumber(secondItem.name)
-  );
+  const knownLevels = new Set(CEFR_LEVELS);
+
+  return [...categories]
+    .filter((item) => knownLevels.has(item.name))
+    .sort(
+      (firstItem, secondItem) =>
+        getCefrLevelOrder(firstItem.name) - getCefrLevelOrder(secondItem.name)
+    );
 }
 
 function sortTopicCategories(categories) {
@@ -490,7 +494,11 @@ function Reports() {
   }, []);
 
   useEffect(() => {
-    loadReport();
+    const reportLoadTimer = globalThis.setTimeout(() => {
+      void loadReport();
+    }, 0);
+
+    return () => globalThis.clearTimeout(reportLoadTimer);
   }, [loadReport]);
 
   const summaryCards = useMemo(
