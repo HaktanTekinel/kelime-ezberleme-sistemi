@@ -160,33 +160,18 @@ function getAssetUrl(url) {
   return `${API_BASE_URL}${url}`;
 }
 
-function getWordImageKeyword(word) {
-  return word.eng_word || word.tur_word || "english vocabulary";
-}
+function getWordInitial(word) {
+  const wordText = word.eng_word || word.tur_word || "?";
 
-function getAutomaticImageUrl(word) {
-  const keyword = encodeURIComponent(getWordImageKeyword(word));
-
-  return `https://en.wikipedia.org/api/rest_v1/page/summary/${keyword}`;
-}
-
-function getFallbackImageUrl(word) {
-  const keyword = encodeURIComponent(getWordImageKeyword(word));
-
-  return `https://api.dicebear.com/9.x/icons/svg?seed=${keyword}`;
+  return wordText.trim().charAt(0).toUpperCase() || "?";
 }
 
 function getWordImageUrl(word) {
-  if (word.picture_url) {
-    return getAssetUrl(word.picture_url);
-  }
-
-  return getFallbackImageUrl(word);
+  return word.picture_url ? getAssetUrl(word.picture_url) : "";
 }
 
-function handleImageError(event, word) {
-  event.currentTarget.onerror = null;
-  event.currentTarget.src = getFallbackImageUrl(word);
+function handleImageError(event) {
+  event.currentTarget.closest(".word-card-media")?.classList.add("image-failed");
 }
 
 function playAudioUrl(audioUrl) {
@@ -346,13 +331,21 @@ function renderEmptyState() {
 }
 
 function renderWordMedia(word) {
+  const imageUrl = getWordImageUrl(word);
+
   return (
-    <div className="word-card-media">
-      <img
-        src={getWordImageUrl(word)}
-        alt={`${word.eng_word} kelime görseli`}
-        onError={(event) => handleImageError(event, word)}
-      />
+    <div className={`word-card-media ${imageUrl ? "has-image" : ""}`}>
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt={`${word.eng_word} kelime görseli`}
+          onError={handleImageError}
+        />
+      )}
+
+      <div className="word-card-placeholder" aria-hidden="true">
+        {getWordInitial(word)}
+      </div>
 
       <span
         className={`difficulty-badge ${getDifficultyClass(
@@ -370,7 +363,7 @@ function renderWordMeta(word) {
   return (
     <div className="word-card-meta">
       {word.topic && <span>{word.topic}</span>}
-      <span>Görsel</span>
+      {word.picture_url && <span>Görsel</span>}
       {word.audio_url && <span>Ses</span>}
     </div>
   );
@@ -602,7 +595,7 @@ function WordList() {
   const stats = useMemo(() => {
     return {
       total: words.length,
-      withImage: words.length,
+      withImage: words.filter((word) => Boolean(word.picture_url)).length,
       withAudio: words.filter((word) => Boolean(word.audio_url)).length,
       topicCount: topicOptions.length,
     };
@@ -826,7 +819,7 @@ function WordList() {
         <article className="word-stat-card">
           <span>Görsel</span>
           <strong>{stats.withImage}</strong>
-          <p>Otomatik görselli kelime</p>
+          <p>Resimli kelime</p>
         </article>
 
         <article className="word-stat-card">

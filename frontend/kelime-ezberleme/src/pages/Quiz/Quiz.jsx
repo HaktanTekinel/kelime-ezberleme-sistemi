@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  advanceQuizReviewsDemoAPI,
   getDailyQuizAPI,
   submitQuizAnswerAPI,
 } from "../../services/quizService";
@@ -197,6 +198,20 @@ function formatNumber(value) {
   return numberValue.toLocaleString("tr-TR");
 }
 
+function formatDateTime(value) {
+  if (!value) {
+    return "-";
+  }
+
+  const dateValue = new Date(value);
+
+  if (Number.isNaN(dateValue.getTime())) {
+    return value;
+  }
+
+  return dateValue.toLocaleString("tr-TR");
+}
+
 function readActiveQuiz() {
   try {
     const rawValue = globalThis.localStorage.getItem(ACTIVE_QUIZ_STORAGE_KEY);
@@ -295,6 +310,7 @@ function Quiz() {
 
   const [loading, setLoading] = useState(true);
   const [answerLoading, setAnswerLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const [message, setMessage] = useState(createEmptyMessage);
 
   const questions = quizData.questions || [];
@@ -416,6 +432,35 @@ function Quiz() {
     loadDailyQuiz({ forceNew: true });
   };
 
+  const handleAdvanceDemoReviews = async () => {
+    setDemoLoading(true);
+    setMessage(createEmptyMessage());
+
+    try {
+      const data = await advanceQuizReviewsDemoAPI();
+      const advancedCount = data?.advanced_count ?? data?.advancedCount ?? 0;
+
+      clearActiveQuiz();
+
+      setMessage({
+        type: "success",
+        text:
+          advancedCount > 0
+            ? `${advancedCount} kelimenin tekrar zamanı bugüne çekildi. Şimdi "Yeni Quiz Başlat" ile tekrar sorularını görebilirsin.`
+            : "İleri alınacak bekleyen tekrar bulunamadı. Önce quizde doğru cevap verip bir tekrar oluştur.",
+      });
+
+      await loadDailyQuiz({ forceNew: true });
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Demo zamanı ileri alınamadı. Backend çalışıyor mu kontrol et.",
+      });
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   const handleSelectAnswer = (option) => {
     if (answerResult) {
       return;
@@ -501,6 +546,62 @@ function Quiz() {
     );
   };
 
+  const renderDemoPanel = () => (
+    <section className="quiz-demo-panel">
+      <div>
+        <span>Sunum Modu</span>
+        <h3>6 tekrar algoritmasını hızlı göster</h3>
+        <p>
+          Doğru cevaplanan kelimeler normalde 1 gün, 1 hafta, 1 ay, 3 ay, 6 ay
+          ve 1 yıl aralıklarla tekrar gelir. Bu buton bekleyen tekrarları
+          bugüne çeker.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        className="quiz-demo-button"
+        onClick={handleAdvanceDemoReviews}
+        disabled={demoLoading || loading}
+      >
+        {demoLoading ? "İleri alınıyor..." : "Demo: Zamanı İleri Al"}
+      </button>
+    </section>
+  );
+
+  const renderAnswerStatus = () => {
+    if (!answerResult) {
+      return null;
+    }
+
+    return (
+      <section
+        className={`quiz-answer-status ${
+          answerResult.is_correct ? "correct" : "wrong"
+        }`}
+      >
+        <div>
+          <strong>{answerResult.is_correct ? "Doğru cevap" : "Yanlış cevap"}</strong>
+          <p>{answerResult.message || "Cevap kaydedildi."}</p>
+        </div>
+
+        <div className="quiz-stage-info">
+          <span>6 tekrar aşaması</span>
+          <strong>{formatNumber(answerResult.current_stage)} / 6</strong>
+        </div>
+
+        <div className="quiz-stage-info">
+          <span>Sonraki tekrar</span>
+          <strong>
+            {answerResult.is_learned
+              ? "Öğrenildi"
+              : formatDateTime(answerResult.next_review_at)}
+          </strong>
+        </div>
+      </section>
+    );
+  };
+
   const renderLoadingState = () => (
     <section className="quiz-state">
       <div className="quiz-state-icon">🧠</div>
@@ -549,6 +650,12 @@ function Quiz() {
             {answer.correct_answer && (
               <p>
                 Doğru cevap: <strong>{answer.correct_answer}</strong>
+              </p>
+            )}
+
+            {hasValue(answer.current_stage) && (
+              <p>
+                6 tekrar aşaması: <strong>{answer.current_stage} / 6</strong>
               </p>
             )}
           </div>
@@ -601,6 +708,15 @@ function Quiz() {
           onClick={() => loadDailyQuiz({ forceNew: true })}
         >
           Yeni Quiz Başlat
+        </button>
+
+        <button
+          type="button"
+          className="quiz-demo-button"
+          onClick={handleAdvanceDemoReviews}
+          disabled={demoLoading || loading}
+        >
+          {demoLoading ? "İleri alınıyor..." : "Demo: Zamanı İleri Al"}
         </button>
 
         <Link to="/home" className="quiz-secondary-link">
@@ -686,6 +802,8 @@ function Quiz() {
           getImageUrl={getImageUrl}
         />
 
+        {renderAnswerStatus()}
+
         <div className="quiz-actions">{renderQuizAction()}</div>
       </section>
     </section>
@@ -738,6 +856,7 @@ function Quiz() {
         </div>
       </section>
 
+      {renderDemoPanel()}
       {renderMessage()}
       {renderContent()}
     </div>

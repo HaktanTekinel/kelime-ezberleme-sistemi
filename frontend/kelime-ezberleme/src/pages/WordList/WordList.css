@@ -285,6 +285,18 @@
   font-weight: 950;
 }
 
+.word-card-media.has-image .word-card-placeholder {
+  display: none;
+}
+
+.word-card-media.image-failed img {
+  display: none;
+}
+
+.word-card-media.image-failed .word-card-placeholder {
+  display: flex;
+}
+
 .difficulty-badge {
   position: absolute;
   top: 12px;

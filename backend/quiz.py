@@ -286,6 +286,33 @@ def get_daily_quiz(
     )
 
 
+@router.post("/demo/advance-reviews")
+def advance_demo_reviews(
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    now = get_utc_now()
+
+    progress_items = (
+        db.query(models.UserWordProgress)
+        .filter(models.UserWordProgress.user_id == current_user.id)
+        .filter(models.UserWordProgress.is_learned.is_(False))
+        .filter(models.UserWordProgress.next_review_at.isnot(None))
+        .filter(models.UserWordProgress.next_review_at > now)
+        .all()
+    )
+
+    for progress in progress_items:
+        progress.next_review_at = now
+
+    db.commit()
+
+    return {
+        "advanced_count": len(progress_items),
+        "message": f"{len(progress_items)} kelimenin tekrar zamanı bugüne çekildi.",
+    }
+
+
 def get_active_word(db: DbSession, word_id: int) -> models.Word:
     word = (
         db.query(models.Word)
