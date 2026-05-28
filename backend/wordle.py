@@ -1,25 +1,36 @@
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 import models
 import schemas
-from auth import get_current_user
-from database import get_db
+from auth import CurrentUser, DbSession
 
 router = APIRouter()
 
 MAX_ATTEMPTS = 6
+
+WORDLE_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Wordle isteği geçersiz veya öğrenilmiş kelime yok."
+    },
+    status.HTTP_404_NOT_FOUND: {
+        "description": "Aktif oyun veya hedef kelime bulunamadı."
+    },
+}
+
+
+def get_utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def normalize_word(word: str) -> str:
     return word.strip().lower()
 
 
-def get_active_game(db: Session, user_id: int) -> models.WordleGame | None:
+def get_active_game(db: DbSession, user_id: int) -> models.WordleGame | None:
     return (
         db.query(models.WordleGame)
         .filter(
@@ -31,11 +42,11 @@ def get_active_game(db: Session, user_id: int) -> models.WordleGame | None:
     )
 
 
-def get_target_word(db: Session, game: models.WordleGame) -> models.Word:
+def get_target_word(db: DbSession, game: models.WordleGame) -> models.Word:
     word = (
         db.query(models.Word)
         .filter(models.Word.id == game.target_word_id)
-        .filter(models.Word.is_active == True)
+        .filter(models.Word.is_active.is_(True))
         .first()
     )
 
@@ -49,7 +60,7 @@ def get_target_word(db: Session, game: models.WordleGame) -> models.Word:
 
 
 def get_learned_words(
-    db: Session,
+    db: DbSession,
     user_id: int,
     word_length: int | None = None,
 ) -> list[models.Word]:
@@ -57,8 +68,8 @@ def get_learned_words(
         db.query(models.Word)
         .join(models.UserWordProgress, models.UserWordProgress.word_id == models.Word.id)
         .filter(models.UserWordProgress.user_id == user_id)
-        .filter(models.UserWordProgress.is_learned == True)
-        .filter(models.Word.is_active == True)
+        .filter(models.UserWordProgress.is_learned.is_(True))
+        .filter(models.Word.is_active.is_(True))
     )
 
     if word_length:
@@ -68,7 +79,7 @@ def get_learned_words(
 
 
 def pick_target_word(
-    db: Session,
+    db: DbSession,
     user_id: int,
     word_length: int | None,
 ) -> models.Word:
@@ -87,19 +98,19 @@ def pick_target_word(
 
 
 def evaluate_guess(guess: str, target: str) -> list[dict]:
-    guess = normalize_word(guess)
-    target = normalize_word(target)
+    normalized_guess = normalize_word(guess)
+    normalized_target = normalize_word(target)
 
-    result = ["absent"] * len(guess)
+    result = ["absent"] * len(normalized_guess)
     remaining_letters: dict[str, int] = {}
 
-    for index, target_letter in enumerate(target):
-        if guess[index] == target_letter:
+    for index, target_letter in enumerate(normalized_target):
+        if normalized_guess[index] == target_letter:
             result[index] = "correct"
         else:
             remaining_letters[target_letter] = remaining_letters.get(target_letter, 0) + 1
 
-    for index, guess_letter in enumerate(guess):
+    for index, guess_letter in enumerate(normalized_guess):
         if result[index] == "correct":
             continue
 
@@ -112,11 +123,11 @@ def evaluate_guess(guess: str, target: str) -> list[dict]:
             "letter": letter,
             "status": result[index],
         }
-        for index, letter in enumerate(guess)
+        for index, letter in enumerate(normalized_guess)
     ]
 
 
-def get_game_guesses(db: Session, game_id: int) -> list[schemas.WordleGuessItem]:
+def get_game_guesses(db: DbSession, game_id: int) -> list[schemas.WordleGuessItem]:
     guesses = (
         db.query(models.WordleGuess)
         .filter(models.WordleGuess.game_id == game_id)
@@ -140,7 +151,7 @@ def get_game_guesses(db: Session, game_id: int) -> list[schemas.WordleGuessItem]
 
 
 def build_game_response(
-    db: Session,
+    db: DbSession,
     game: models.WordleGame,
     target_word: models.Word,
     message: str | None = None,
@@ -158,14 +169,22 @@ def build_game_response(
     )
 
 
-@router.post("/start", response_model=schemas.WordleGameEnvelopeResponse)
+def finish_game(game: models.WordleGame, status_value: str) -> None:
+    game.status = status_value
+    game.finished_at = get_utc_now()
+
+
+@router.post(
+    "/start",
+    response_model=schemas.WordleGameEnvelopeResponse,
+    responses=WORDLE_RESPONSES,
+)
 def start_wordle_game(
+    current_user: CurrentUser,
+    db: DbSession,
     payload: schemas.WordleStartRequest | None = None,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     payload = payload or schemas.WordleStartRequest()
-
     active_game = get_active_game(db, current_user.id)
 
     if active_game and not payload.restart:
@@ -178,8 +197,7 @@ def start_wordle_game(
         )
 
     if active_game and payload.restart:
-        active_game.status = "cancelled"
-        active_game.finished_at = datetime.utcnow()
+        finish_game(active_game, "cancelled")
         db.flush()
 
     target_word = pick_target_word(
@@ -207,10 +225,14 @@ def start_wordle_game(
     )
 
 
-@router.get("/current", response_model=schemas.WordleGameEnvelopeResponse)
+@router.get(
+    "/current",
+    response_model=schemas.WordleGameEnvelopeResponse,
+    responses=WORDLE_RESPONSES,
+)
 def get_current_wordle_game(
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     active_game = get_active_game(db, current_user.id)
 
@@ -230,11 +252,15 @@ def get_current_wordle_game(
     )
 
 
-@router.post("/guess", response_model=schemas.WordleGameEnvelopeResponse)
+@router.post(
+    "/guess",
+    response_model=schemas.WordleGameEnvelopeResponse,
+    responses=WORDLE_RESPONSES,
+)
 def guess_wordle(
     payload: schemas.WordleGuessRequest,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     active_game = get_active_game(db, current_user.id)
 
@@ -251,7 +277,6 @@ def guess_wordle(
         )
 
     target_word = get_target_word(db, active_game)
-
     guess = normalize_word(payload.guess)
     target = normalize_word(target_word.eng_word)
 
@@ -262,18 +287,13 @@ def guess_wordle(
         )
 
     feedback = evaluate_guess(guess, target)
-
     active_game.attempt_count += 1
 
-    is_correct = guess == target
-
-    if is_correct:
-        active_game.status = "won"
-        active_game.finished_at = datetime.utcnow()
+    if guess == target:
+        finish_game(active_game, "won")
         message = "Tebrikler, kelimeyi doğru buldun."
     elif active_game.attempt_count >= MAX_ATTEMPTS:
-        active_game.status = "lost"
-        active_game.finished_at = datetime.utcnow()
+        finish_game(active_game, "lost")
         message = f"Tahmin hakkın bitti. Doğru kelime: {target_word.eng_word}"
     else:
         message = "Tahmin kaydedildi."

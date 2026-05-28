@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./Landing.css";
 
-const features = [
+const FEATURES = [
   {
     icon: "🔁",
     title: "6 Sefer Tekrar",
@@ -24,7 +24,7 @@ const features = [
   },
 ];
 
-const steps = [
+const STEPS = [
   {
     number: "01",
     title: "Kelime ekle",
@@ -39,6 +39,38 @@ const steps = [
     number: "03",
     title: "Gelişimini takip et",
     text: "Analiz raporu üzerinden öğrenme durumunu ve başarı oranını görüntüle.",
+  },
+];
+
+const PREVIEW_ITEMS = [
+  {
+    label: "Quiz",
+    title: "Tekrar zamanı gelen kelimeler",
+    action: "Çöz",
+    isActive: true,
+  },
+  {
+    label: "Kelime Havuzu",
+    title: "Kelime, anlam ve örnek cümle",
+    action: "Ekle",
+    isActive: false,
+  },
+  {
+    label: "Analiz",
+    title: "Başarı oranı ve gelişim takibi",
+    action: "İncele",
+    isActive: false,
+  },
+];
+
+const EXTRA_MODULES = [
+  {
+    title: "🧩 Bulmaca",
+    text: "Öğrenilen kelimelerden oluşan kelime oyunu.",
+  },
+  {
+    title: "🔗 Word Chain",
+    text: "Seçilen kelimelerle hikaye ve görsel çalışması.",
   },
 ];
 
@@ -71,8 +103,8 @@ function Landing() {
           <span className="landing-pill">Kelime öğrenme sistemi</span>
 
           <h1>
-            İngilizce kelimeleri
-            <span> düzenli tekrarlarla </span>
+            İngilizce kelimeleri{" "}
+            <span>düzenli tekrarlarla</span>{" "}
             kalıcı hale getir.
           </h1>
 
@@ -103,32 +135,23 @@ function Landing() {
             <div className="preview-icon">🎯</div>
           </div>
 
-          <div className="preview-word-card active">
-            <div>
-              <span>Quiz</span>
-              <strong>Tekrar zamanı gelen kelimeler</strong>
+          {PREVIEW_ITEMS.map((item) => (
+            <div
+              className={
+                item.isActive
+                  ? "preview-word-card active"
+                  : "preview-word-card"
+              }
+              key={item.label}
+            >
+              <div>
+                <span>{item.label}</span>
+                <strong>{item.title}</strong>
+              </div>
+
+              <small>{item.action}</small>
             </div>
-
-            <small>Çöz</small>
-          </div>
-
-          <div className="preview-word-card">
-            <div>
-              <span>Kelime Havuzu</span>
-              <strong>Kelime, anlam ve örnek cümle</strong>
-            </div>
-
-            <small>Ekle</small>
-          </div>
-
-          <div className="preview-word-card">
-            <div>
-              <span>Analiz</span>
-              <strong>Başarı oranı ve gelişim takibi</strong>
-            </div>
-
-            <small>İncele</small>
-          </div>
+          ))}
 
           <div className="preview-progress">
             <div className="preview-progress-header">
@@ -144,7 +167,7 @@ function Landing() {
       </section>
 
       <section className="landing-features">
-        {features.map((feature) => (
+        {FEATURES.map((feature) => (
           <article className="landing-feature-card" key={feature.title}>
             <div className="feature-icon">{feature.icon}</div>
 
@@ -162,7 +185,7 @@ function Landing() {
         </div>
 
         <div className="landing-steps">
-          {steps.map((step) => (
+          {STEPS.map((step) => (
             <article className="landing-step-card" key={step.number}>
               <span>{step.number}</span>
 
@@ -187,15 +210,12 @@ function Landing() {
         </div>
 
         <div className="extra-module-list">
-          <div>
-            <strong>🧩 Bulmaca</strong>
-            <span>Öğrenilen kelimelerden oluşan kelime oyunu.</span>
-          </div>
-
-          <div>
-            <strong>🔗 Word Chain</strong>
-            <span>Seçilen kelimelerle hikaye ve görsel çalışması.</span>
-          </div>
+          {EXTRA_MODULES.map((module) => (
+            <div key={module.title}>
+              <strong>{module.title}</strong>
+              <span>{module.text}</span>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -2,20 +2,21 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from typing import Annotated
 
 sys.path.append(os.path.dirname(__file__))
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import selectinload
 
 import models
 import schemas
-from auth import get_current_user_id, router as auth_router
+from auth import DbSession, get_current_user_id, router as auth_router
 from dashboard import router as dashboard_router
-from database import engine, get_db
+from database import engine
 from db_setup import initialize_database
 from quiz import router as quiz_router
 from reports import router as reports_router
@@ -29,11 +30,25 @@ initialize_database(engine)
 
 BACKEND_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
+
 if not UPLOAD_DIR.is_absolute():
     UPLOAD_DIR = BACKEND_DIR / UPLOAD_DIR
+
 UPLOAD_DIR = UPLOAD_DIR.resolve()
 WORD_IMAGE_DIR = UPLOAD_DIR / "words"
 WORD_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+UserId = Annotated[int, Depends(get_current_user_id)]
+ImageFile = Annotated[UploadFile, File(...)]
+
+WORD_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Kelime verisi geçersiz veya aynı kelime zaten kayıtlı."
+    },
+    status.HTTP_404_NOT_FOUND: {
+        "description": "Kelime bulunamadı."
+    },
+}
 
 app = FastAPI(
     title="Kelime Ezberleme Sistemi API",
@@ -65,6 +80,7 @@ app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(wordle_router, prefix="/wordle", tags=["Wordle"])
 app.include_router(word_chain_router, prefix="/word-chain", tags=["Word Chain"])
 
+
 @app.get("/")
 def home():
     return {"message": "Backend çalışıyor"}
@@ -86,26 +102,99 @@ def serialize_word(word: models.Word) -> dict:
     }
 
 
-@app.post("/words", status_code=201, tags=["Words"])
-def create_word(
-    word_data: schemas.WordCreate,
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
-):
-    same_word = (
+def get_active_word(db: DbSession, word_id: int) -> models.Word:
+    word = (
         db.query(models.Word)
-        .filter(models.Word.eng_word.ilike(word_data.eng_word.strip()))
-        .filter(models.Word.is_active == True)
+        .options(selectinload(models.Word.samples))
+        .filter(models.Word.id == word_id, models.Word.is_active.is_(True))
         .first()
     )
 
-    if same_word:
-        raise HTTPException(status_code=400, detail="Bu İngilizce kelime zaten kayıtlı")
+    if not word:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Kelime bulunamadı",
+        )
+
+    return word
+
+
+def find_duplicate_word(
+    db: DbSession,
+    english_word: str,
+    excluded_word_id: int | None = None,
+) -> models.Word | None:
+    query = (
+        db.query(models.Word)
+        .filter(models.Word.eng_word.ilike(english_word.strip()))
+        .filter(models.Word.is_active.is_(True))
+    )
+
+    if excluded_word_id is not None:
+        query = query.filter(models.Word.id != excluded_word_id)
+
+    return query.first()
+
+
+def normalize_topic(topic: str | None) -> str | None:
+    return topic.strip() if topic else None
+
+
+def add_word_samples(
+    db: DbSession,
+    word_id: int,
+    samples: list[str],
+) -> None:
+    for index, sample in enumerate(samples, start=1):
+        clean_sample = sample.strip()
+
+        if not clean_sample:
+            continue
+
+        db.add(
+            models.WordSample(
+                word_id=word_id,
+                sample_text=clean_sample,
+                sample_order=index,
+            )
+        )
+
+
+def apply_word_payload(
+    word: models.Word,
+    payload: schemas.WordCreate,
+    user_id: int,
+) -> None:
+    word.eng_word = payload.eng_word.strip()
+    word.tur_word = payload.tur_word.strip()
+    word.topic = normalize_topic(payload.topic)
+    word.difficulty_level = payload.difficulty_level
+    word.picture_url = payload.picture_url
+    word.audio_url = payload.audio_url
+    word.created_by_user_id = word.created_by_user_id or user_id
+
+
+@app.post(
+    "/words",
+    status_code=status.HTTP_201_CREATED,
+    tags=["Words"],
+    responses=WORD_RESPONSES,
+)
+def create_word(
+    word_data: schemas.WordCreate,
+    db: DbSession,
+    user_id: UserId,
+):
+    if find_duplicate_word(db, word_data.eng_word):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bu İngilizce kelime zaten kayıtlı",
+        )
 
     new_word = models.Word(
         eng_word=word_data.eng_word.strip(),
         tur_word=word_data.tur_word.strip(),
-        topic=word_data.topic.strip() if word_data.topic else None,
+        topic=normalize_topic(word_data.topic),
         difficulty_level=word_data.difficulty_level,
         picture_url=word_data.picture_url,
         audio_url=word_data.audio_url,
@@ -115,19 +204,7 @@ def create_word(
     db.add(new_word)
     db.flush()
 
-    for index, sample in enumerate(word_data.samples, start=1):
-        clean_sample = sample.strip()
-
-        if not clean_sample:
-            continue
-
-        db.add(
-            models.WordSample(
-                word_id=new_word.id,
-                sample_text=clean_sample,
-                sample_order=index,
-            )
-        )
+    add_word_samples(db, new_word.id, word_data.samples)
 
     db.commit()
     db.refresh(new_word)
@@ -142,11 +219,11 @@ def create_word(
 
 
 @app.get("/words", response_model=list[schemas.WordRead], tags=["Words"])
-def list_words(db: Session = Depends(get_db)):
+def list_words(db: DbSession):
     words = (
         db.query(models.Word)
         .options(selectinload(models.Word.samples))
-        .filter(models.Word.is_active == True)
+        .filter(models.Word.is_active.is_(True))
         .order_by(models.Word.id.desc())
         .all()
     )
@@ -154,95 +231,67 @@ def list_words(db: Session = Depends(get_db)):
     return [serialize_word(word) for word in words]
 
 
-@app.get("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
-def get_word(word_id: int, db: Session = Depends(get_db)):
-    word = (
-        db.query(models.Word)
-        .options(selectinload(models.Word.samples))
-        .filter(models.Word.id == word_id, models.Word.is_active == True)
-        .first()
-    )
-
-    if not word:
-        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
-
-    return serialize_word(word)
+@app.get(
+    "/words/{word_id}",
+    response_model=schemas.WordRead,
+    tags=["Words"],
+    responses=WORD_RESPONSES,
+)
+def get_word(word_id: int, db: DbSession):
+    return serialize_word(get_active_word(db, word_id))
 
 
-@app.put("/words/{word_id}", response_model=schemas.WordRead, tags=["Words"])
+@app.put(
+    "/words/{word_id}",
+    response_model=schemas.WordRead,
+    tags=["Words"],
+    responses=WORD_RESPONSES,
+)
 def update_word(
     word_id: int,
     payload: schemas.WordCreate,
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    db: DbSession,
+    user_id: UserId,
 ):
-    word = (
-        db.query(models.Word)
-        .options(selectinload(models.Word.samples))
-        .filter(models.Word.id == word_id, models.Word.is_active == True)
-        .first()
-    )
+    word = get_active_word(db, word_id)
 
-    if not word:
-        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+    if find_duplicate_word(db, payload.eng_word, excluded_word_id=word_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bu İngilizce kelime zaten kayıtlı",
+        )
 
-    duplicate_word = (
-        db.query(models.Word)
-        .filter(models.Word.id != word_id)
-        .filter(models.Word.eng_word.ilike(payload.eng_word.strip()))
-        .filter(models.Word.is_active == True)
-        .first()
-    )
-
-    if duplicate_word:
-        raise HTTPException(status_code=400, detail="Bu İngilizce kelime zaten kayıtlı")
-
-    word.eng_word = payload.eng_word.strip()
-    word.tur_word = payload.tur_word.strip()
-    word.topic = payload.topic.strip() if payload.topic else None
-    word.difficulty_level = payload.difficulty_level
-    word.picture_url = payload.picture_url
-    word.audio_url = payload.audio_url
-    word.created_by_user_id = word.created_by_user_id or user_id
+    apply_word_payload(word, payload, user_id)
 
     db.query(models.WordSample).filter(models.WordSample.word_id == word.id).delete()
-
-    for index, sample in enumerate(payload.samples, start=1):
-        clean_sample = sample.strip()
-
-        if not clean_sample:
-            continue
-
-        db.add(
-            models.WordSample(
-                word_id=word.id,
-                sample_text=clean_sample,
-                sample_order=index,
-            )
-        )
+    add_word_samples(db, word.id, payload.samples)
 
     db.commit()
 
-    updated_word = (
-        db.query(models.Word)
-        .options(selectinload(models.Word.samples))
-        .filter(models.Word.id == word_id)
-        .first()
-    )
+    updated_word = get_active_word(db, word_id)
 
     return serialize_word(updated_word)
 
 
-@app.delete("/words/{word_id}", tags=["Words"])
+@app.delete(
+    "/words/{word_id}",
+    tags=["Words"],
+    responses=WORD_RESPONSES,
+)
 def delete_word(
     word_id: int,
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    db: DbSession,
+    user_id: UserId,
 ):
+    del user_id
+
     word = db.query(models.Word).filter(models.Word.id == word_id).first()
 
     if not word or not word.is_active:
-        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Kelime bulunamadı",
+        )
 
     word.is_active = False
     db.commit()
@@ -250,38 +299,39 @@ def delete_word(
     return {"message": "Kelime devre dışı bırakıldı", "word_id": word.id}
 
 
-@app.post("/words/{word_id}/image", tags=["Words"])
-def upload_word_image(
-    word_id: int,
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
-):
-    word = (
-        db.query(models.Word)
-        .filter(models.Word.id == word_id, models.Word.is_active == True)
-        .first()
-    )
-
-    if not word:
-        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
-
+def get_allowed_image_extension(filename: str | None) -> str:
     allowed_extensions = {"jpg", "jpeg", "png", "webp"}
-    file_extension = (
-        file.filename.rsplit(".", 1)[-1].lower()
-        if file.filename and "." in file.filename
-        else "bin"
-    )
+
+    if filename and "." in filename:
+        file_extension = filename.rsplit(".", 1)[-1].lower()
+    else:
+        file_extension = "bin"
 
     if file_extension not in allowed_extensions:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Sadece jpg, jpeg, png veya webp görsel yüklenebilir",
         )
 
+    return file_extension
+
+
+@app.post(
+    "/words/{word_id}/image",
+    tags=["Words"],
+    responses=WORD_RESPONSES,
+)
+def upload_word_image(
+    word_id: int,
+    file: ImageFile,
+    db: DbSession,
+    user_id: UserId,
+):
+    word = get_active_word(db, word_id)
+    file_extension = get_allowed_image_extension(file.filename)
     file_location = WORD_IMAGE_DIR / f"word_{word_id}.{file_extension}"
 
-    with open(file_location, "wb") as file_object:
+    with file_location.open("wb") as file_object:
         shutil.copyfileobj(file.file, file_object)
 
     word.picture_url = f"/uploads/words/{file_location.name}"

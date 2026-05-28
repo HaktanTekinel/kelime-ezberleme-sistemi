@@ -1,7 +1,14 @@
+import PropTypes from "prop-types";
 import "./QuizQuestionCard.css";
 
+const EMPTY_TEXT = "";
+
 function hasValue(value) {
-  return value !== undefined && value !== null && value !== "";
+  return value !== undefined && value !== null && value !== EMPTY_TEXT;
+}
+
+function getSafeText(value, fallback = EMPTY_TEXT) {
+  return hasValue(value) ? String(value) : fallback;
 }
 
 function QuizQuestionCard({
@@ -16,10 +23,12 @@ function QuizQuestionCard({
   }
 
   const options = Array.isArray(question.options) ? question.options : [];
+  const word = getSafeText(question.eng_word, "Kelime");
+  const firstLetter = word.charAt(0).toUpperCase();
 
   const getAudioUrl = () => {
     if (!question.audio_url) {
-      return "";
+      return EMPTY_TEXT;
     }
 
     if (question.audio_url.startsWith("http")) {
@@ -37,8 +46,9 @@ function QuizQuestionCard({
     }
 
     const audio = new Audio(audioUrl);
+
     audio.play().catch(() => {
-      window.open(audioUrl, "_blank", "noopener,noreferrer");
+      globalThis.open(audioUrl, "_blank", "noopener,noreferrer");
     });
   };
 
@@ -67,26 +77,24 @@ function QuizQuestionCard({
           <img
             className="quiz-word-image"
             src={getImageUrl(question.picture_url)}
-            alt={question.eng_word}
+            alt={word}
           />
         ) : (
-          <div className="quiz-word-placeholder">
-            {question.eng_word.charAt(0).toUpperCase()}
-          </div>
+          <div className="quiz-word-placeholder">{firstLetter}</div>
         )}
 
         <div className="quiz-question-content">
           <span className="quiz-question-label">Türkçe karşılığını seç</span>
 
           <div className="quiz-word-title-row">
-            <h2>{question.eng_word}</h2>
+            <h2>{word}</h2>
 
             {question.audio_url && (
               <button
                 type="button"
                 className="quiz-audio-button"
                 onClick={handlePlayAudio}
-                aria-label={`${question.eng_word} telaffuzunu dinle`}
+                aria-label={`${word} telaffuzunu dinle`}
               >
                 <span>🔊</span>
                 Telaffuzu Dinle
@@ -156,5 +164,31 @@ function QuizQuestionCard({
     </div>
   );
 }
+
+QuizQuestionCard.propTypes = {
+  question: PropTypes.shape({
+    audio_url: PropTypes.string,
+    current_stage: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    eng_word: PropTypes.string,
+    options: PropTypes.arrayOf(PropTypes.string),
+    picture_url: PropTypes.string,
+  }),
+  selectedAnswer: PropTypes.string,
+  answerResult: PropTypes.shape({
+    correct_answer: PropTypes.string,
+    current_stage: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    is_correct: PropTypes.bool,
+    is_learned: PropTypes.bool,
+    message: PropTypes.string,
+  }),
+  onSelectAnswer: PropTypes.func.isRequired,
+  getImageUrl: PropTypes.func.isRequired,
+};
+
+QuizQuestionCard.defaultProps = {
+  question: null,
+  selectedAnswer: "",
+  answerResult: null,
+};
 
 export default QuizQuestionCard;

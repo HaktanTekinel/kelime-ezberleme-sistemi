@@ -11,7 +11,7 @@
   position: fixed;
   inset: 0 auto 0 0;
   width: 260px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.94);
   border-right: 1px solid #e5e7eb;
   padding: 22px 16px;
   display: flex;
@@ -54,7 +54,7 @@
 
 .sidebar-header p {
   margin: 4px 0 0;
-  color: #6b7280;
+  color: #374151;
   font-size: 13px;
   font-weight: 700;
 }
@@ -127,12 +127,12 @@
 
 .sidebar-link:hover {
   background: #f3f4ff;
-  color: #4f46e5;
+  color: #3730a3;
 }
 
 .sidebar-link.active {
   background: #ede9fe;
-  color: #4f46e5;
+  color: #3730a3;
   box-shadow: inset 0 0 0 1px #ddd6fe;
 }
 
@@ -168,7 +168,7 @@
   margin-bottom: 20px;
   padding: 16px 20px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(226, 232, 240, 0.92);
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.035);
   display: flex;
@@ -183,7 +183,7 @@
 
 .topbar-small-text {
   margin: 0 0 5px;
-  color: #4f46e5;
+  color: #3730a3;
   font-size: 12px;
   font-weight: 900;
 }
@@ -240,7 +240,7 @@
 }
 
 .search-box input::placeholder {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 .search-clear-button {
@@ -307,14 +307,14 @@
 
 .search-results small {
   display: block;
-  color: #64748b;
+  color: #475569;
   font-size: 12px;
   margin-top: 2px;
 }
 
 .search-empty-result {
   padding: 12px;
-  color: #64748b;
+  color: #475569;
   font-weight: 750;
   font-size: 13px;
   text-align: center;

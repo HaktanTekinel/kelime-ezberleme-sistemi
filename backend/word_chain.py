@@ -3,14 +3,12 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from openai import OpenAI
-from sqlalchemy.orm import Session
 
 import models
 import schemas
-from auth import get_current_user
-from database import get_db
+from auth import CurrentUser, DbSession
 
 router = APIRouter()
 
@@ -20,6 +18,15 @@ STORY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 TEXT_MODEL = os.getenv("OPENAI_TEXT_MODEL", "gpt-4.1-mini")
 IMAGE_MODEL = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
+
+WORD_CHAIN_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Word Chain için kelime sayısı geçersiz."
+    },
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {
+        "description": "LLM ayarı eksik veya görsel üretimi başarısız."
+    },
+}
 
 
 def get_openai_client() -> OpenAI:
@@ -52,12 +59,14 @@ def validate_words(words: list[str]) -> None:
         )
 
 
-def generate_story_with_llm(client: OpenAI, words: list[str]) -> tuple[str, str]:
-    prompt = f"""
+def build_story_prompt(words: list[str]) -> str:
+    word_list = ", ".join(words)
+
+    return f"""
 Aşağıdaki İngilizce kelimeleri sırasıyla kullanarak kısa, anlaşılır ve yaratıcı bir Türkçe hikaye oluştur.
 
 Kelimeler:
-{", ".join(words)}
+{word_list}
 
 Kurallar:
 - Hikaye Türkçe olsun.
@@ -73,23 +82,15 @@ JSON formatı:
 }}
 """
 
-    response = client.responses.create(
-        model=TEXT_MODEL,
-        input=prompt,
-    )
 
-    raw_text = response.output_text.strip()
-
+def parse_story_response(raw_text: str) -> tuple[str, str]:
     try:
         data = json.loads(raw_text)
     except json.JSONDecodeError:
         return raw_text, "LLM tarafından oluşturulan Word Chain hikayesi."
 
-    story = data.get("story", "").strip()
+    story = data.get("story", "").strip() or raw_text
     summary = data.get("summary", "").strip()
-
-    if not story:
-        story = raw_text
 
     if not summary:
         summary = "LLM tarafından oluşturulan Word Chain hikayesi."
@@ -97,8 +98,17 @@ JSON formatı:
     return story, summary
 
 
-def generate_story_image(client: OpenAI, story_id: int, words: list[str], summary: str) -> str:
-    image_prompt = f"""
+def generate_story_with_llm(client: OpenAI, words: list[str]) -> tuple[str, str]:
+    response = client.responses.create(
+        model=TEXT_MODEL,
+        input=build_story_prompt(words),
+    )
+
+    return parse_story_response(response.output_text.strip())
+
+
+def build_image_prompt(words: list[str], summary: str) -> str:
+    return f"""
 Create a colorful educational illustration for a vocabulary learning app.
 
 Words: {", ".join(words)}
@@ -111,12 +121,8 @@ Style:
 - clear objects representing the story
 """
 
-    response = client.responses.create(
-        model=IMAGE_MODEL,
-        input=image_prompt,
-        tools=[{"type": "image_generation"}],
-    )
 
+def get_image_base64(response) -> str:
     image_base64_list = [
         output.result
         for output in response.output
@@ -129,10 +135,25 @@ Style:
             detail="LLM görsel üretimi başarısız oldu.",
         )
 
+    return image_base64_list[0]
+
+
+def generate_story_image(
+    client: OpenAI,
+    story_id: int,
+    words: list[str],
+    summary: str,
+) -> str:
+    response = client.responses.create(
+        model=IMAGE_MODEL,
+        input=build_image_prompt(words, summary),
+        tools=[{"type": "image_generation"}],
+    )
+
     file_name = f"story_{story_id}.png"
     file_path = STORY_IMAGE_DIR / file_name
+    image_bytes = base64.b64decode(get_image_base64(response))
 
-    image_bytes = base64.b64decode(image_base64_list[0])
     file_path.write_bytes(image_bytes)
 
     return f"/uploads/stories/{file_name}"
@@ -149,17 +170,20 @@ def build_history_item(story: models.WordChainStory) -> schemas.WordChainHistory
     )
 
 
-@router.post("/generate", response_model=schemas.WordChainGenerateResponse)
+@router.post(
+    "/generate",
+    response_model=schemas.WordChainGenerateResponse,
+    responses=WORD_CHAIN_RESPONSES,
+)
 def generate_word_chain_story(
     payload: schemas.WordChainGenerateRequest,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     words = clean_words(payload.words)
     validate_words(words)
 
     client = get_openai_client()
-
     story_text, summary_text = generate_story_with_llm(client, words)
 
     new_story = models.WordChainStory(
@@ -174,14 +198,12 @@ def generate_word_chain_story(
     db.add(new_story)
     db.flush()
 
-    image_url = generate_story_image(
+    new_story.image_url = generate_story_image(
         client=client,
         story_id=new_story.id,
         words=words,
         summary=summary_text,
     )
-
-    new_story.image_url = image_url
 
     db.commit()
     db.refresh(new_story)
@@ -198,13 +220,16 @@ def generate_word_chain_story(
 
 @router.get("/history", response_model=schemas.WordChainHistoryResponse)
 def get_word_chain_history(
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     stories = (
         db.query(models.WordChainStory)
         .filter(models.WordChainStory.user_id == current_user.id)
-        .order_by(models.WordChainStory.created_at.desc(), models.WordChainStory.id.desc())
+        .order_by(
+            models.WordChainStory.created_at.desc(),
+            models.WordChainStory.id.desc(),
+        )
         .all()
     )
 

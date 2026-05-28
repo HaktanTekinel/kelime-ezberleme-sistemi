@@ -2,20 +2,31 @@ from __future__ import annotations
 
 import calendar
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 import models
 import schemas
-from auth import get_current_user
-from database import get_db
+from auth import CurrentUser, DbSession
 
 router = APIRouter()
 
 DEFAULT_DAILY_QUESTION_COUNT = 10
+
+QUIZ_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Quiz için yeterli kelime yok veya istek geçersiz."
+    },
+    status.HTTP_404_NOT_FOUND: {
+        "description": "Kelime bulunamadı."
+    },
+}
+
+
+def get_utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def add_months(source_date: datetime, months: int) -> datetime:
@@ -23,11 +34,15 @@ def add_months(source_date: datetime, months: int) -> datetime:
     year = source_date.year + month_index // 12
     month = month_index % 12 + 1
     day = min(source_date.day, calendar.monthrange(year, month)[1])
+
     return source_date.replace(year=year, month=month, day=day)
 
 
-def get_next_review_at(current_stage: int, base_time: datetime | None = None) -> datetime:
-    base_time = base_time or datetime.utcnow()
+def get_next_review_at(
+    current_stage: int,
+    base_time: datetime | None = None,
+) -> datetime:
+    review_time = base_time or get_utc_now()
 
     schedule = {
         0: timedelta(days=1),
@@ -40,13 +55,14 @@ def get_next_review_at(current_stage: int, base_time: datetime | None = None) ->
     }
 
     step = schedule.get(current_stage, timedelta(days=1))
+
     if isinstance(step, timedelta):
-        return base_time + step
+        return review_time + step
 
-    return add_months(base_time, int(step[:-1]))
+    return add_months(review_time, int(step[:-1]))
 
 
-def get_daily_question_count(db: Session, user: models.User) -> int:
+def get_daily_question_count(db: DbSession, user: models.User) -> int:
     settings = (
         db.query(models.UserSettings)
         .filter(models.UserSettings.user_id == user.id)
@@ -59,11 +75,11 @@ def get_daily_question_count(db: Session, user: models.User) -> int:
     return user.daily_quiz_limit or DEFAULT_DAILY_QUESTION_COUNT
 
 
-def build_quiz_options(db: Session, current_word: models.Word) -> list[str]:
+def build_quiz_options(db: DbSession, current_word: models.Word) -> list[str]:
     wrong_answers = (
         db.query(models.Word.tur_word)
         .filter(models.Word.id != current_word.id)
-        .filter(models.Word.is_active == True)
+        .filter(models.Word.is_active.is_(True))
         .all()
     )
 
@@ -73,10 +89,12 @@ def build_quiz_options(db: Session, current_word: models.Word) -> list[str]:
 
     for row in wrong_answers:
         answer = (row[0] or "").strip()
+
         if not answer:
             continue
 
         key = answer.lower()
+
         if key == correct_answer or key in seen:
             continue
 
@@ -85,17 +103,18 @@ def build_quiz_options(db: Session, current_word: models.Word) -> list[str]:
 
     if len(unique_wrong_answers) < 3:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Sınav için yeterli kelime yok. En az 4 aktif kelime ekleyin.",
         )
 
     options = random.sample(unique_wrong_answers, 3) + [current_word.tur_word]
     random.shuffle(options)
+
     return options
 
 
 def build_question(
-    db: Session,
+    db: DbSession,
     word: models.Word,
     current_stage: int = 0,
 ) -> schemas.QuizQuestionRead:
@@ -111,7 +130,7 @@ def build_question(
 
 
 def get_or_create_active_session(
-    db: Session,
+    db: DbSession,
     user_id: int,
     total_questions: int = 0,
 ) -> models.QuizSession:
@@ -130,6 +149,7 @@ def get_or_create_active_session(
         if total_questions and session.total_questions != total_questions:
             session.total_questions = total_questions
             db.flush()
+
         return session
 
     session = models.QuizSession(
@@ -137,64 +157,117 @@ def get_or_create_active_session(
         session_type="daily",
         total_questions=total_questions,
     )
+
     db.add(session)
     db.flush()
+
     return session
 
 
-@router.get("/daily", response_model=schemas.QuizDailyResponse)
-def get_daily_quiz(
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+def get_due_items(
+    db: DbSession,
+    user_id: int,
+    now: datetime,
+    question_limit: int,
 ):
-    now = datetime.utcnow()
-    question_limit = get_daily_question_count(db, current_user)
-
-    due_items = (
+    return (
         db.query(models.UserWordProgress, models.Word)
         .join(models.Word, models.Word.id == models.UserWordProgress.word_id)
-        .filter(models.UserWordProgress.user_id == current_user.id)
-        .filter(models.UserWordProgress.is_learned == False)
+        .filter(models.UserWordProgress.user_id == user_id)
+        .filter(models.UserWordProgress.is_learned.is_(False))
         .filter(models.UserWordProgress.next_review_at.isnot(None))
         .filter(models.UserWordProgress.next_review_at <= now)
-        .filter(models.Word.is_active == True)
-        .order_by(models.UserWordProgress.next_review_at.asc(), models.UserWordProgress.id.asc())
+        .filter(models.Word.is_active.is_(True))
+        .order_by(
+            models.UserWordProgress.next_review_at.asc(),
+            models.UserWordProgress.id.asc(),
+        )
         .limit(question_limit)
         .all()
     )
 
-    questions: list[schemas.QuizQuestionRead] = []
-    selected_word_ids: set[int] = set()
 
+def get_progressed_word_ids(db: DbSession, user_id: int) -> list[int]:
+    return [
+        row[0]
+        for row in (
+            db.query(models.UserWordProgress.word_id)
+            .filter(models.UserWordProgress.user_id == user_id)
+            .all()
+        )
+    ]
+
+
+def get_new_words(
+    db: DbSession,
+    excluded_ids: set[int],
+    limit: int,
+) -> list[models.Word]:
+    query = db.query(models.Word).filter(models.Word.is_active.is_(True))
+
+    if excluded_ids:
+        query = query.filter(~models.Word.id.in_(excluded_ids))
+
+    return query.order_by(func.random()).limit(limit).all()
+
+
+def add_due_questions(
+    db: DbSession,
+    due_items,
+    questions: list[schemas.QuizQuestionRead],
+    selected_word_ids: set[int],
+) -> None:
     for progress, word in due_items:
         questions.append(build_question(db, word, progress.current_stage))
         selected_word_ids.add(word.id)
 
-    remaining_slots = question_limit - len(questions)
 
-    if remaining_slots > 0:
-        progressed_word_ids = [
-            row[0]
-            for row in (
-                db.query(models.UserWordProgress.word_id)
-                .filter(models.UserWordProgress.user_id == current_user.id)
-                .all()
-            )
-        ]
+def add_new_questions(
+    db: DbSession,
+    user_id: int,
+    questions: list[schemas.QuizQuestionRead],
+    selected_word_ids: set[int],
+    remaining_slots: int,
+) -> None:
+    if remaining_slots <= 0:
+        return
 
-        excluded_ids = set(progressed_word_ids) | selected_word_ids
-        new_word_query = db.query(models.Word).filter(models.Word.is_active == True)
+    progressed_word_ids = get_progressed_word_ids(db, user_id)
+    excluded_ids = set(progressed_word_ids) | selected_word_ids
+    new_words = get_new_words(db, excluded_ids, remaining_slots)
 
-        if excluded_ids:
-            new_word_query = new_word_query.filter(~models.Word.id.in_(excluded_ids))
+    for word in new_words:
+        questions.append(build_question(db, word, 0))
+        selected_word_ids.add(word.id)
 
-        new_words = new_word_query.order_by(func.random()).limit(remaining_slots).all()
 
-        for word in new_words:
-            questions.append(build_question(db, word, 0))
-            selected_word_ids.add(word.id)
+@router.get(
+    "/daily",
+    response_model=schemas.QuizDailyResponse,
+    responses=QUIZ_RESPONSES,
+)
+def get_daily_quiz(
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    now = get_utc_now()
+    question_limit = get_daily_question_count(db, current_user)
+    due_items = get_due_items(db, current_user.id, now, question_limit)
+
+    questions: list[schemas.QuizQuestionRead] = []
+    selected_word_ids: set[int] = set()
+
+    add_due_questions(db, due_items, questions, selected_word_ids)
+    add_new_questions(
+        db=db,
+        user_id=current_user.id,
+        questions=questions,
+        selected_word_ids=selected_word_ids,
+        remaining_slots=question_limit - len(questions),
+    )
 
     quiz_session = None
+
     if questions:
         quiz_session = get_or_create_active_session(db, current_user.id, len(questions))
         db.commit()
@@ -213,95 +286,158 @@ def get_daily_quiz(
     )
 
 
-@router.post("/answer", response_model=schemas.QuizAnswerResponse)
-def submit_quiz_answer(
-    payload: schemas.QuizAnswerRequest,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    now = datetime.utcnow()
-
+def get_active_word(db: DbSession, word_id: int) -> models.Word:
     word = (
         db.query(models.Word)
-        .filter(models.Word.id == payload.word_id, models.Word.is_active == True)
+        .filter(models.Word.id == word_id, models.Word.is_active.is_(True))
         .first()
     )
-    if not word:
-        raise HTTPException(status_code=404, detail="Kelime bulunamadı")
 
+    if not word:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Kelime bulunamadı",
+        )
+
+    return word
+
+
+def get_or_create_progress(
+    db: DbSession,
+    user_id: int,
+    word_id: int,
+) -> models.UserWordProgress:
     progress = (
         db.query(models.UserWordProgress)
-        .filter(models.UserWordProgress.user_id == current_user.id)
-        .filter(models.UserWordProgress.word_id == payload.word_id)
+        .filter(models.UserWordProgress.user_id == user_id)
+        .filter(models.UserWordProgress.word_id == word_id)
         .first()
     )
 
-    if not progress:
-        progress = models.UserWordProgress(
-            user_id=current_user.id,
-            word_id=payload.word_id,
+    if progress:
+        return progress
+
+    progress = models.UserWordProgress(user_id=user_id, word_id=word_id)
+
+    db.add(progress)
+    db.flush()
+
+    return progress
+
+
+def apply_correct_answer(
+    user: models.User,
+    progress: models.UserWordProgress,
+    now: datetime,
+) -> str:
+    progress.consecutive_correct = min(progress.consecutive_correct + 1, 6)
+    progress.current_stage = min(progress.current_stage + 1, 6)
+    progress.last_answer_correct = True
+    progress.is_learned = progress.current_stage >= 6
+    progress.next_review_at = (
+        None if progress.is_learned else get_next_review_at(progress.current_stage, now)
+    )
+
+    user.total_correct_answers = (user.total_correct_answers or 0) + 1
+
+    return "Doğru cevap."
+
+
+def apply_wrong_answer(
+    user: models.User,
+    progress: models.UserWordProgress,
+    now: datetime,
+) -> str:
+    progress.current_stage = 0
+    progress.consecutive_correct = 0
+    progress.last_answer_correct = False
+    progress.is_learned = False
+    progress.reset_count = (progress.reset_count or 0) + 1
+    progress.next_review_at = get_next_review_at(0, now)
+
+    user.total_wrong_answers = (user.total_wrong_answers or 0) + 1
+
+    return "Yanlış cevap. Tekrar süreci başa alındı."
+
+
+def get_quiz_session(
+    db: DbSession,
+    user_id: int,
+    quiz_session_id: int | None,
+) -> models.QuizSession:
+    if not quiz_session_id:
+        return get_or_create_active_session(db, user_id)
+
+    quiz_session = (
+        db.query(models.QuizSession)
+        .filter(
+            models.QuizSession.id == quiz_session_id,
+            models.QuizSession.user_id == user_id,
         )
-        db.add(progress)
-        db.flush()
+        .first()
+    )
+
+    return quiz_session or get_or_create_active_session(db, user_id)
+
+
+def update_session_counts(
+    quiz_session: models.QuizSession,
+    is_correct: bool,
+    now: datetime,
+) -> None:
+    if is_correct:
+        quiz_session.correct_count = (quiz_session.correct_count or 0) + 1
+    else:
+        quiz_session.wrong_count = (quiz_session.wrong_count or 0) + 1
+
+    answered_count = (
+        (quiz_session.correct_count or 0)
+        + (quiz_session.wrong_count or 0)
+        + (quiz_session.skipped_count or 0)
+    )
+
+    if quiz_session.total_questions and answered_count >= quiz_session.total_questions:
+        quiz_session.finished_at = now
+
+
+@router.post(
+    "/answer",
+    response_model=schemas.QuizAnswerResponse,
+    responses=QUIZ_RESPONSES,
+)
+def submit_quiz_answer(
+    payload: schemas.QuizAnswerRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    now = get_utc_now()
+    word = get_active_word(db, payload.word_id)
+    progress = get_or_create_progress(db, current_user.id, payload.word_id)
 
     correct_answer = word.tur_word.strip()
     selected_answer = payload.selected_answer.strip()
     is_correct = selected_answer.lower() == correct_answer.lower()
 
     if is_correct:
-        progress.consecutive_correct = min(progress.consecutive_correct + 1, 6)
-        progress.current_stage = min(progress.current_stage + 1, 6)
-        progress.last_answer_correct = True
-        progress.is_learned = progress.current_stage >= 6
-        progress.next_review_at = None if progress.is_learned else get_next_review_at(progress.current_stage, now)
-
-        current_user.total_correct_answers = (current_user.total_correct_answers or 0) + 1
-        message = "Doğru cevap."
+        message = apply_correct_answer(current_user, progress, now)
     else:
-        progress.current_stage = 0
-        progress.consecutive_correct = 0
-        progress.last_answer_correct = False
-        progress.is_learned = False
-        progress.reset_count = (progress.reset_count or 0) + 1
-        progress.next_review_at = get_next_review_at(0, now)
+        message = apply_wrong_answer(current_user, progress, now)
 
-        current_user.total_wrong_answers = (current_user.total_wrong_answers or 0) + 1
-        message = "Yanlış cevap. Tekrar süreci başa alındı."
+    quiz_session = get_quiz_session(db, current_user.id, payload.quiz_session_id)
+    update_session_counts(quiz_session, is_correct, now)
 
-    quiz_session = None
-    if payload.quiz_session_id:
-        quiz_session = (
-            db.query(models.QuizSession)
-            .filter(
-                models.QuizSession.id == payload.quiz_session_id,
-                models.QuizSession.user_id == current_user.id,
-            )
-            .first()
+    db.add(
+        models.QuizAnswer(
+            quiz_session_id=quiz_session.id,
+            user_id=current_user.id,
+            word_id=word.id,
+            selected_answer=selected_answer,
+            correct_answer=correct_answer,
+            is_correct=is_correct,
+            question_type="multiple_choice",
+            response_time_ms=payload.response_time_ms,
         )
-
-    if not quiz_session:
-        quiz_session = get_or_create_active_session(db, current_user.id)
-
-    if is_correct:
-        quiz_session.correct_count = (quiz_session.correct_count or 0) + 1
-    else:
-        quiz_session.wrong_count = (quiz_session.wrong_count or 0) + 1
-
-    quiz_answer = models.QuizAnswer(
-        quiz_session_id=quiz_session.id,
-        user_id=current_user.id,
-        word_id=word.id,
-        selected_answer=selected_answer,
-        correct_answer=correct_answer,
-        is_correct=is_correct,
-        question_type="multiple_choice",
-        response_time_ms=payload.response_time_ms,
     )
-    db.add(quiz_answer)
-
-    answered_count = quiz_session.correct_count + quiz_session.wrong_count + quiz_session.skipped_count
-    if quiz_session.total_questions and answered_count >= quiz_session.total_questions:
-        quiz_session.finished_at = now
 
     db.commit()
     db.refresh(progress)

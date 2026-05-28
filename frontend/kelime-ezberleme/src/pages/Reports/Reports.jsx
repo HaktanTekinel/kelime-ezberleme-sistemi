@@ -1,9 +1,13 @@
+import PropTypes from "prop-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUserReportAPI } from "../../services/reportService";
 import "./Reports.css";
 
+const EMPTY_TEXT = "";
+const EMPTY_RATE = "%0";
+
 function hasValue(value) {
-  return value !== undefined && value !== null && value !== "";
+  return value !== undefined && value !== null && value !== EMPTY_TEXT;
 }
 
 function pickValue(source, keys) {
@@ -34,13 +38,13 @@ function formatNumber(value) {
 
 function formatPercent(value) {
   if (!hasValue(value)) {
-    return "%0";
+    return EMPTY_RATE;
   }
 
   const numericValue = Number(value);
 
   if (!Number.isFinite(numericValue)) {
-    return "%0";
+    return EMPTY_RATE;
   }
 
   return `%${Math.round(numericValue)}`;
@@ -59,23 +63,8 @@ function normalizeWordItems(rawItems) {
   }));
 }
 
-function normalizeCategoryReports(data) {
-  const rawCategories =
-    data?.category_reports ||
-    data?.categoryReports ||
-    data?.level_reports ||
-    data?.levelReports ||
-    data?.topic_success ||
-    data?.topicSuccess ||
-    data?.success_by_level ||
-    data?.successByLevel ||
-    [];
-
-  if (!Array.isArray(rawCategories)) {
-    return [];
-  }
-
-  return rawCategories.map((item, index) => ({
+function normalizeCategoryItem(item, index) {
+  return {
     id: item.id || item.category || item.level || item.topic || item.name || index,
     name:
       item.name ||
@@ -102,12 +91,36 @@ function normalizeCategoryReports(data) {
       ]) || 0
     ),
     correctWords: normalizeWordItems(
-      pickValue(item, ["correct_words", "correctWords", "learned_words", "learnedWords"])
+      pickValue(item, [
+        "correct_words",
+        "correctWords",
+        "learned_words",
+        "learnedWords",
+      ])
     ),
     wrongWords: normalizeWordItems(
       pickValue(item, ["wrong_words", "wrongWords"])
     ),
-  }));
+  };
+}
+
+function normalizeCategoryReports(data) {
+  const rawCategories =
+    data?.category_reports ||
+    data?.categoryReports ||
+    data?.level_reports ||
+    data?.levelReports ||
+    data?.topic_success ||
+    data?.topicSuccess ||
+    data?.success_by_level ||
+    data?.successByLevel ||
+    [];
+
+  if (!Array.isArray(rawCategories)) {
+    return [];
+  }
+
+  return rawCategories.map(normalizeCategoryItem);
 }
 
 function normalizeReport(data) {
@@ -244,8 +257,9 @@ function isLevelCategory(name) {
 }
 
 function getLevelNumber(name) {
-  const match = String(name).match(/\d+/);
-  return match ? Number(match[0]) : 999;
+  const levelMatch = /\d+/.exec(String(name));
+
+  return levelMatch ? Number(levelMatch[0]) : 999;
 }
 
 function sortLevelCategories(categories) {
@@ -284,18 +298,27 @@ function WordChip({ word }) {
   );
 }
 
+WordChip.propTypes = {
+  word: PropTypes.shape({
+    engWord: PropTypes.string.isRequired,
+    turWord: PropTypes.string,
+  }).isRequired,
+};
+
 function CategoryDetails({ item }) {
+  const { correctWords, wrongWords } = item;
+
   return (
     <div className="category-details">
       <div className="category-detail-box success">
         <div className="category-detail-title">
           <h5>Doğru / öğrenilen kelimeler</h5>
-          <span>{item.correctWords.length}</span>
+          <span>{correctWords.length}</span>
         </div>
 
-        {item.correctWords.length > 0 ? (
+        {correctWords.length > 0 ? (
           <div className="report-word-chip-list">
-            {item.correctWords.map((word) => (
+            {correctWords.map((word) => (
               <WordChip key={`correct-${item.id}-${word.id}`} word={word} />
             ))}
           </div>
@@ -309,12 +332,12 @@ function CategoryDetails({ item }) {
       <div className="category-detail-box danger">
         <div className="category-detail-title">
           <h5>Yanlış yaptığın kelimeler</h5>
-          <span>{item.wrongWords.length}</span>
+          <span>{wrongWords.length}</span>
         </div>
 
-        {item.wrongWords.length > 0 ? (
+        {wrongWords.length > 0 ? (
           <div className="report-word-chip-list">
-            {item.wrongWords.map((word) => (
+            {wrongWords.map((word) => (
               <WordChip key={`wrong-${item.id}-${word.id}`} word={word} />
             ))}
           </div>
@@ -327,6 +350,27 @@ function CategoryDetails({ item }) {
     </div>
   );
 }
+
+const wordShape = PropTypes.shape({
+  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  engWord: PropTypes.string.isRequired,
+  turWord: PropTypes.string,
+});
+
+const categoryShape = PropTypes.shape({
+  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  name: PropTypes.string.isRequired,
+  correct: PropTypes.number.isRequired,
+  wrong: PropTypes.number.isRequired,
+  total: PropTypes.number.isRequired,
+  successRate: PropTypes.number.isRequired,
+  correctWords: PropTypes.arrayOf(wordShape).isRequired,
+  wrongWords: PropTypes.arrayOf(wordShape).isRequired,
+});
+
+CategoryDetails.propTypes = {
+  item: categoryShape.isRequired,
+};
 
 function CategoryRow({ item, isExpanded, onToggle }) {
   const progressWidth = Math.min(100, Math.max(0, Number(item.successRate)));
@@ -373,6 +417,12 @@ function CategoryRow({ item, isExpanded, onToggle }) {
   );
 }
 
+CategoryRow.propTypes = {
+  item: categoryShape.isRequired,
+  isExpanded: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+};
+
 function CategoryPanel({
   title,
   description,
@@ -409,11 +459,22 @@ function CategoryPanel({
   );
 }
 
+CategoryPanel.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  emptyText: PropTypes.string.isRequired,
+  items: PropTypes.arrayOf(categoryShape).isRequired,
+  expandedIds: PropTypes.instanceOf(Set).isRequired,
+  onToggle: PropTypes.func.isRequired,
+};
+
 function Reports() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedCategoryIds, setExpandedCategoryIds] = useState(() => new Set());
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState(
+    () => new Set()
+  );
 
   const loadReport = useCallback(async () => {
     setLoading(true);
@@ -443,12 +504,18 @@ function Reports() {
 
   const levelCategories = useMemo(() => {
     const categories = report?.categories || [];
-    return sortLevelCategories(categories.filter((item) => isLevelCategory(item.name)));
+
+    return sortLevelCategories(
+      categories.filter((item) => isLevelCategory(item.name))
+    );
   }, [report]);
 
   const topicCategories = useMemo(() => {
     const categories = report?.categories || [];
-    return sortTopicCategories(categories.filter((item) => !isLevelCategory(item.name)));
+
+    return sortTopicCategories(
+      categories.filter((item) => !isLevelCategory(item.name))
+    );
   }, [report]);
 
   const hasReportContent =
@@ -457,7 +524,7 @@ function Reports() {
     topicCategories.length > 0;
 
   const handlePrint = () => {
-    window.print();
+    globalThis.print();
   };
 
   const toggleCategory = (categoryId) => {

@@ -1,6 +1,8 @@
 import os
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from json import JSONDecodeError
+from typing import Annotated
 from urllib.parse import parse_qs
 
 from dotenv import load_dotenv
@@ -25,15 +27,67 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+DbSession = Annotated[Session, Depends(get_db)]
+OAuthToken = Annotated[str, Depends(oauth2_scheme)]
+
+REGISTER_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Kullanıcı adı veya email zaten kayıtlı."
+    }
+}
+
+LOGIN_RESPONSES = {
+    status.HTTP_401_UNAUTHORIZED: {
+        "description": "Kullanıcı adı/email veya şifre hatalı."
+    },
+    status.HTTP_403_FORBIDDEN: {
+        "description": "Kullanıcı pasif durumda."
+    },
+    status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        "description": "Kullanıcı adı/email ve şifre zorunludur."
+    },
+}
+
+RESET_PASSWORD_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Token kullanılmış veya süresi dolmuş."
+    },
+    status.HTTP_404_NOT_FOUND: {
+        "description": "Token veya kullanıcı bulunamadı."
+    },
+}
+
+ME_RESPONSES = {
+    status.HTTP_401_UNAUTHORIZED: {
+        "description": "Geçersiz token veya pasif kullanıcı."
+    }
+}
+
+
+def get_utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def is_expired(expires_at: datetime | None) -> bool:
+    if not expires_at:
+        return False
+
+    if expires_at.tzinfo:
+        return expires_at < datetime.now(timezone.utc)
+
+    return expires_at < get_utc_now()
+
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = get_utc_now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
     to_encode.update({"exp": expire})
+
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+def get_current_user_id(token: OAuthToken) -> int:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Geçersiz veya süresi dolmuş token",
@@ -48,13 +102,29 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
             raise credentials_exception
 
         return int(user_id)
-    except (JWTError, ValueError):
-        raise credentials_exception
+    except (JWTError, ValueError) as error:
+        raise credentials_exception from error
+
+
+CurrentUserId = Annotated[int, Depends(get_current_user_id)]
+
+
+def get_user_by_login_value(db: Session, login_value: str):
+    return (
+        db.query(models.User)
+        .filter(
+            or_(
+                models.User.username.ilike(login_value),
+                models.User.email.ilike(login_value),
+            )
+        )
+        .first()
+    )
 
 
 def get_current_user(
-    current_user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db),
+    current_user_id: CurrentUserId,
+    db: DbSession,
 ) -> models.User:
     user = db.query(models.User).filter(models.User.id == current_user_id).first()
 
@@ -65,6 +135,9 @@ def get_current_user(
         )
 
     return user
+
+
+CurrentUser = Annotated[models.User, Depends(get_current_user)]
 
 
 async def get_login_payload(request: Request) -> tuple[str, str]:
@@ -81,7 +154,7 @@ async def get_login_payload(request: Request) -> tuple[str, str]:
 
     try:
         body = await request.json()
-    except Exception:
+    except JSONDecodeError:
         body = {}
 
     username_or_email = (
@@ -95,27 +168,34 @@ async def get_login_payload(request: Request) -> tuple[str, str]:
     return username_or_email, password
 
 
-@router.post("/register", response_model=schemas.UserRead)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@router.post(
+    "/register",
+    response_model=schemas.UserRead,
+    responses=REGISTER_RESPONSES,
+)
+def register_user(user: schemas.UserCreate, db: DbSession):
+    username = user.username.strip()
+    email = user.email.strip().lower()
+
     username_exists = (
-        db.query(models.User)
-        .filter(models.User.username.ilike(user.username.strip()))
-        .first()
+        db.query(models.User).filter(models.User.username.ilike(username)).first()
     )
     if username_exists:
-        raise HTTPException(status_code=400, detail="Kullanıcı adı zaten kayıtlı")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kullanıcı adı zaten kayıtlı",
+        )
 
-    email_exists = (
-        db.query(models.User)
-        .filter(models.User.email.ilike(user.email.strip()))
-        .first()
-    )
+    email_exists = db.query(models.User).filter(models.User.email.ilike(email)).first()
     if email_exists:
-        raise HTTPException(status_code=400, detail="Email zaten kayıtlı")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email zaten kayıtlı",
+        )
 
     new_user = models.User(
-        username=user.username.strip(),
-        email=user.email.strip().lower(),
+        username=username,
+        email=email,
         password_hash=hash_password(user.password),
     )
 
@@ -136,8 +216,12 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.post("/login", response_model=schemas.Token)
-async def login(request: Request, db: Session = Depends(get_db)):
+@router.post(
+    "/login",
+    response_model=schemas.Token,
+    responses=LOGIN_RESPONSES,
+)
+async def login(request: Request, db: DbSession):
     username_or_email, password = await get_login_payload(request)
     login_value = username_or_email.strip()
 
@@ -147,16 +231,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
             detail="Kullanıcı adı/email ve şifre zorunludur",
         )
 
-    db_user = (
-        db.query(models.User)
-        .filter(
-            or_(
-                models.User.username.ilike(login_value),
-                models.User.email.ilike(login_value),
-            )
-        )
-        .first()
-    )
+    db_user = get_user_by_login_value(db, login_value)
 
     if not db_user or not verify_password(password, db_user.password_hash):
         raise HTTPException(
@@ -186,12 +261,16 @@ async def login(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/forgot-password", response_model=schemas.ForgotPasswordResponse)
+@router.post(
+    "/forgot-password",
+    response_model=schemas.ForgotPasswordResponse,
+)
 def forgot_password(
     payload: schemas.ForgotPasswordRequest,
-    db: Session = Depends(get_db),
+    db: DbSession,
 ):
-    user = db.query(models.User).filter(models.User.email.ilike(payload.email)).first()
+    email = payload.email.strip().lower()
+    user = db.query(models.User).filter(models.User.email.ilike(email)).first()
 
     if not user:
         return schemas.ForgotPasswordResponse(
@@ -200,7 +279,7 @@ def forgot_password(
         )
 
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(hours=1)
+    expires_at = get_utc_now() + timedelta(hours=1)
 
     reset_token = models.PasswordResetToken(
         token=token,
@@ -217,10 +296,14 @@ def forgot_password(
     )
 
 
-@router.post("/reset-password", response_model=schemas.MessageResponse)
+@router.post(
+    "/reset-password",
+    response_model=schemas.MessageResponse,
+    responses=RESET_PASSWORD_RESPONSES,
+)
 def reset_password(
     payload: schemas.ResetPasswordRequest,
-    db: Session = Depends(get_db),
+    db: DbSession,
 ):
     reset_token = (
         db.query(models.PasswordResetToken)
@@ -240,7 +323,7 @@ def reset_password(
             detail="Bu token zaten kullanılmış",
         )
 
-    if reset_token.expires_at and reset_token.expires_at < datetime.utcnow():
+    if is_expired(reset_token.expires_at):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Token'ın süresi dolmuş",
@@ -269,6 +352,10 @@ def logout():
     )
 
 
-@router.get("/me", response_model=schemas.UserRead)
-def get_me(current_user: models.User = Depends(get_current_user)):
+@router.get(
+    "/me",
+    response_model=schemas.UserRead,
+    responses=ME_RESPONSES,
+)
+def get_me(current_user: CurrentUser):
     return current_user
