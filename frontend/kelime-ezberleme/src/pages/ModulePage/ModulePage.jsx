@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import "./ModulePage.css";
 
@@ -39,5 +40,18 @@ function ModulePage({ title, description, icon, buttonText, buttonPath }) {
     </div>
   );
 }
+
+ModulePage.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  icon: PropTypes.node.isRequired,
+  buttonText: PropTypes.string,
+  buttonPath: PropTypes.string,
+};
+
+ModulePage.defaultProps = {
+  buttonText: "",
+  buttonPath: "",
+};
 
 export default ModulePage;

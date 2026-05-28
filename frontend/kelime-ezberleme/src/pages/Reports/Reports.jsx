@@ -76,12 +76,8 @@ function normalizeCategoryItem(item, index) {
     correct: Number(
       pickValue(item, ["correct", "correct_count", "correctCount"]) || 0
     ),
-    wrong: Number(
-      pickValue(item, ["wrong", "wrong_count", "wrongCount"]) || 0
-    ),
-    total: Number(
-      pickValue(item, ["total", "total_count", "totalCount"]) || 0
-    ),
+    wrong: Number(pickValue(item, ["wrong", "wrong_count", "wrongCount"]) || 0),
+    total: Number(pickValue(item, ["total", "total_count", "totalCount"]) || 0),
     successRate: Number(
       pickValue(item, [
         "success_rate",
@@ -120,7 +116,7 @@ function normalizeCategoryReports(data) {
     return [];
   }
 
-  return rawCategories.map(normalizeCategoryItem);
+  return rawCategories.map((item, index) => normalizeCategoryItem(item, index));
 }
 
 function normalizeReport(data) {

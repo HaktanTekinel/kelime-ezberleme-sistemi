@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import "./Home.css";
 
@@ -92,6 +93,29 @@ const PATH_STEPS = [
   "1 yıl",
 ];
 
+const statItemShape = PropTypes.shape({
+  icon: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+});
+
+const reviewItemShape = PropTypes.shape({
+  count: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
+  linkText: PropTypes.string.isRequired,
+});
+
+const quickActionShape = PropTypes.shape({
+  icon: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
+  isPrimary: PropTypes.bool.isRequired,
+});
+
 function StatCard({ item }) {
   return (
     <article className="stat-card">
@@ -105,6 +129,10 @@ function StatCard({ item }) {
     </article>
   );
 }
+
+StatCard.propTypes = {
+  item: statItemShape.isRequired,
+};
 
 function ReviewCard({ item }) {
   return (
@@ -121,6 +149,10 @@ function ReviewCard({ item }) {
   );
 }
 
+ReviewCard.propTypes = {
+  item: reviewItemShape.isRequired,
+};
+
 function QuickActionCard({ item }) {
   const className = item.isPrimary ? "quick-card primary" : "quick-card";
 
@@ -135,6 +167,10 @@ function QuickActionCard({ item }) {
     </Link>
   );
 }
+
+QuickActionCard.propTypes = {
+  item: quickActionShape.isRequired,
+};
 
 function LearningPath() {
   return (

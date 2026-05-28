@@ -39,9 +39,9 @@
   display: inline-flex;
   padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #d6dcff;
-  font-weight: 800;
+  background: rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
+  font-weight: 850;
   font-size: 12px;
   margin-bottom: 16px;
 }
@@ -55,16 +55,16 @@
 }
 
 .hero-content h2 span {
-  color: #aeb8ff;
+  color: #c7d2fe;
 }
 
 .hero-content p {
   max-width: 650px;
   margin: 16px 0 0;
-  color: #e4e9ff;
+  color: #f8fafc;
   font-size: 15px;
   line-height: 1.7;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .hero-buttons {
@@ -137,9 +137,9 @@
 .repeat-box span,
 .section-header p,
 .mini-report-card p {
-  color: #6b7280;
+  color: #374151;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 850;
   text-transform: uppercase;
   letter-spacing: 0.35px;
 }
@@ -167,15 +167,15 @@
   border-radius: 16px;
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
-  color: #475569;
-  font-weight: 700;
+  color: #334155;
+  font-weight: 750;
   line-height: 1.55;
   font-size: 14px;
 }
 
 .card-status.muted,
 .list-status.muted {
-  color: #64748b;
+  color: #475569;
   background: #f9fafb;
 }
 
@@ -254,9 +254,9 @@
 
 .state-box p {
   margin: 0;
-  color: #64748b;
+  color: #475569;
   line-height: 1.55;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .state-box button {
@@ -310,9 +310,9 @@
 
 .stat-card p {
   margin: 0;
-  color: #6b7280;
+  color: #374151;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 850;
 }
 
 .stat-card h3 {
@@ -322,9 +322,9 @@
 }
 
 .stat-card span {
-  color: #6366f1;
+  color: #4f46e5;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .dashboard-grid,
@@ -352,8 +352,8 @@
 .review-card a,
 .mini-report-card a {
   text-decoration: none;
-  color: #4f46e5;
-  font-weight: 800;
+  color: #4338ca;
+  font-weight: 850;
   font-size: 14px;
 }
 
@@ -395,9 +395,9 @@
 
 .review-card p {
   margin: 0;
-  color: #6b7280;
+  color: #374151;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .quick-actions {
@@ -425,7 +425,7 @@
 }
 
 .quick-card.primary {
-  background: linear-gradient(135deg, #6f63f6, #7e44f1);
+  background: linear-gradient(135deg, #5b50e6, #6d28d9);
   color: white;
 }
 
@@ -433,7 +433,7 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.86);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,8 +449,8 @@
 .quick-card p {
   margin: 0;
   color: inherit;
-  opacity: 0.78;
-  font-weight: 600;
+  opacity: 0.92;
+  font-weight: 650;
   font-size: 13px;
 }
 
@@ -477,7 +477,7 @@
   height: 34px;
   border-radius: 12px;
   background: #e5e7eb;
-  color: #374151;
+  color: #1f2937;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -487,8 +487,8 @@
 
 .path-step p {
   margin: 8px 0 0;
-  font-weight: 800;
-  color: #6b7280;
+  font-weight: 850;
+  color: #374151;
   text-align: center;
   font-size: 12px;
 }
@@ -508,8 +508,8 @@
 }
 
 .mini-report-card span {
-  color: #4b5563;
-  font-weight: 600;
+  color: #374151;
+  font-weight: 650;
   font-size: 14px;
   line-height: 1.55;
 }

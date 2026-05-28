@@ -151,12 +151,11 @@ function AppLayout() {
         </div>
       </aside>
 
-      {sidebarOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+        {sidebarOpen && (
+            <button className="sidebar-overlay"type="button"onClick={() => setSidebarOpen(false)}
+           aria-label="Menüyü kapat"
+            />
+            )}
 
       <main className="main-area">
         <header className="topbar">
