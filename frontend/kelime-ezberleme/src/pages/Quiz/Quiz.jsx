@@ -1,15 +1,34 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "../../services/apiClient";
 import {
+  advanceQuizReviewsDemoAPI,
   getDailyQuizAPI,
   submitQuizAnswerAPI,
 } from "../../services/quizService";
 import QuizQuestionCard from "../../components/QuizQuestionCard/QuizQuestionCard";
 import "./Quiz.css";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 const ACTIVE_QUIZ_STORAGE_KEY = "kelimeEzberleme.activeQuiz.v1";
 const ACTIVE_QUIZ_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+function createEmptyMessage() {
+  return {
+    type: "",
+    text: "",
+  };
+}
+
+function createEmptyQuiz() {
+  return {
+    quiz_session_id: undefined,
+    questions: [],
+    due_count: undefined,
+    new_count: undefined,
+  };
+}
 
 function hasValue(value) {
   return value !== undefined && value !== null && value !== "";
@@ -71,16 +90,17 @@ function normalizeQuestion(question, index) {
     id: wordId || index,
     word_id: wordId,
     eng_word: engWord || "Kelime",
-    tur_word: turWord,
+    tur_word: turWord || "",
     options: Array.isArray(options) ? options : [],
-    picture_url: pickValue(question, [
-      "picture_url",
-      "pictureUrl",
-      "image_url",
-      "imageUrl",
-      "picture",
-    ]),
-    audio_url: pickValue(question, ["audio_url", "audioUrl"]),
+    picture_url:
+      pickValue(question, [
+        "picture_url",
+        "pictureUrl",
+        "image_url",
+        "imageUrl",
+        "picture",
+      ]) || "",
+    audio_url: pickValue(question, ["audio_url", "audioUrl"]) || "",
     current_stage: pickValue(question, [
       "current_stage",
       "currentStage",
@@ -169,25 +189,32 @@ function formatNumber(value) {
     return "-";
   }
 
-  const numericValue = Number(value);
+  const numberValue = Number(value);
 
-  return Number.isFinite(numericValue)
-    ? numericValue.toLocaleString("tr-TR")
-    : value;
+  if (!Number.isFinite(numberValue)) {
+    return value;
+  }
+
+  return numberValue.toLocaleString("tr-TR");
 }
 
-function getEmptyQuizData() {
-  return {
-    quiz_session_id: undefined,
-    questions: [],
-    due_count: undefined,
-    new_count: undefined,
-  };
+function formatDateTime(value) {
+  if (!value) {
+    return "-";
+  }
+
+  const dateValue = new Date(value);
+
+  if (Number.isNaN(dateValue.getTime())) {
+    return value;
+  }
+
+  return dateValue.toLocaleString("tr-TR");
 }
 
 function readActiveQuiz() {
   try {
-    const rawValue = localStorage.getItem(ACTIVE_QUIZ_STORAGE_KEY);
+    const rawValue = globalThis.localStorage.getItem(ACTIVE_QUIZ_STORAGE_KEY);
 
     if (!rawValue) {
       return null;
@@ -196,20 +223,16 @@ function readActiveQuiz() {
     const parsedValue = JSON.parse(rawValue);
     const createdAt = Number(parsedValue?.createdAt || 0);
     const isExpired = Date.now() - createdAt > ACTIVE_QUIZ_MAX_AGE_MS;
+    const questions = parsedValue?.quizData?.questions || [];
 
-    if (isExpired || !Array.isArray(parsedValue?.quizData?.questions)) {
-      localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
-      return null;
-    }
-
-    if (parsedValue.quizData.questions.length === 0) {
-      localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+    if (isExpired || questions.length === 0) {
+      globalThis.localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
       return null;
     }
 
     return parsedValue;
   } catch {
-    localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+    globalThis.localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
     return null;
   }
 }
@@ -232,15 +255,54 @@ function saveActiveQuiz({
     answeredQuestions,
   };
 
-  localStorage.setItem(ACTIVE_QUIZ_STORAGE_KEY, JSON.stringify(payload));
+  globalThis.localStorage.setItem(
+    ACTIVE_QUIZ_STORAGE_KEY,
+    JSON.stringify(payload)
+  );
 }
 
 function clearActiveQuiz() {
-  localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+  globalThis.localStorage.removeItem(ACTIVE_QUIZ_STORAGE_KEY);
+}
+
+function getImageUrl(url) {
+  if (!url) {
+    return "";
+  }
+
+  if (url.startsWith("http")) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${url}`;
+}
+
+function getSuccessRate(correctCount, totalCount) {
+  if (totalCount === 0) {
+    return 0;
+  }
+
+  return Math.round((correctCount / totalCount) * 100);
+}
+
+function getProgressPercent(currentIndex, totalCount) {
+  if (totalCount === 0) {
+    return 0;
+  }
+
+  const currentStep = Math.min(currentIndex + 1, totalCount);
+
+  return Math.round((currentStep / totalCount) * 100);
+}
+
+function getNextButtonText(currentIndex, totalCount) {
+  const isLastQuestion = currentIndex + 1 === totalCount;
+
+  return isLastQuestion ? "Sonuçları Gör" : "Sonraki Soru";
 }
 
 function Quiz() {
-  const [quizData, setQuizData] = useState(getEmptyQuizData);
+  const [quizData, setQuizData] = useState(createEmptyQuiz);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [answerResult, setAnswerResult] = useState(null);
@@ -248,7 +310,8 @@ function Quiz() {
 
   const [loading, setLoading] = useState(true);
   const [answerLoading, setAnswerLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [message, setMessage] = useState(createEmptyMessage);
 
   const questions = quizData.questions || [];
   const currentQuestion = questions[currentIndex];
@@ -257,36 +320,23 @@ function Quiz() {
     (answer) => answer.is_correct
   ).length;
 
-  const wrongCount = answeredQuestions.filter(
-    (answer) => !answer.is_correct
-  ).length;
-
+  const wrongCount = answeredQuestions.length - correctCount;
   const isQuizFinished =
     questions.length > 0 && currentIndex >= questions.length;
 
-  const progressPercent = useMemo(() => {
-    if (questions.length === 0) {
-      return 0;
-    }
+  const progressPercent = useMemo(
+    () => getProgressPercent(currentIndex, questions.length),
+    [currentIndex, questions.length]
+  );
 
-    const currentStep = Math.min(currentIndex + 1, questions.length);
-    return Math.round((currentStep / questions.length) * 100);
-  }, [currentIndex, questions.length]);
+  const successRate = getSuccessRate(correctCount, questions.length);
 
-  const successRate = questions.length
-    ? Math.round((correctCount / questions.length) * 100)
-    : 0;
-
-  const getImageUrl = (pictureUrl) => {
-    if (!pictureUrl) {
-      return "";
-    }
-
-    if (pictureUrl.startsWith("http")) {
-      return pictureUrl;
-    }
-
-    return `${API_BASE_URL}${pictureUrl}`;
+  const resetQuizScreen = () => {
+    setQuizData(createEmptyQuiz());
+    setCurrentIndex(0);
+    setSelectedAnswer("");
+    setAnswerResult(null);
+    setAnsweredQuestions([]);
   };
 
   const loadDailyQuiz = useCallback(async ({ forceNew = false } = {}) => {
@@ -295,12 +345,8 @@ function Quiz() {
     }
 
     setLoading(true);
-    setMessage({ type: "", text: "" });
-    setQuizData(getEmptyQuizData());
-    setCurrentIndex(0);
-    setSelectedAnswer("");
-    setAnswerResult(null);
-    setAnsweredQuestions([]);
+    setMessage(createEmptyMessage());
+    resetQuizScreen();
 
     try {
       const data = await getDailyQuizAPI();
@@ -333,7 +379,7 @@ function Quiz() {
     const activeQuiz = readActiveQuiz();
 
     if (activeQuiz) {
-      setQuizData(activeQuiz.quizData || getEmptyQuizData());
+      setQuizData(activeQuiz.quizData || createEmptyQuiz());
       setCurrentIndex(Number(activeQuiz.currentIndex || 0));
       setSelectedAnswer(activeQuiz.selectedAnswer || "");
       setAnswerResult(activeQuiz.answerResult || null);
@@ -374,7 +420,7 @@ function Quiz() {
     const hasActiveQuiz = questions.length > 0 && !isQuizFinished;
 
     if (hasActiveQuiz) {
-      const isConfirmed = window.confirm(
+      const isConfirmed = globalThis.confirm(
         "Devam eden quiz sıfırlanacak. Yeni quiz başlatmak istiyor musun?"
       );
 
@@ -386,13 +432,42 @@ function Quiz() {
     loadDailyQuiz({ forceNew: true });
   };
 
+  const handleAdvanceDemoReviews = async () => {
+    setDemoLoading(true);
+    setMessage(createEmptyMessage());
+
+    try {
+      const data = await advanceQuizReviewsDemoAPI();
+      const advancedCount = data?.advanced_count ?? data?.advancedCount ?? 0;
+
+      clearActiveQuiz();
+
+      setMessage({
+        type: "success",
+        text:
+          advancedCount > 0
+            ? `${advancedCount} kelimenin tekrar zamanı bugüne çekildi. Şimdi "Yeni Quiz Başlat" ile tekrar sorularını görebilirsin.`
+            : "İleri alınacak bekleyen tekrar bulunamadı. Önce quizde doğru cevap verip bir tekrar oluştur.",
+      });
+
+      await loadDailyQuiz({ forceNew: true });
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Demo zamanı ileri alınamadı. Backend çalışıyor mu kontrol et.",
+      });
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   const handleSelectAnswer = (option) => {
     if (answerResult) {
       return;
     }
 
     setSelectedAnswer(option);
-    setMessage({ type: "", text: "" });
+    setMessage(createEmptyMessage());
   };
 
   const handleSubmitAnswer = async () => {
@@ -413,7 +488,7 @@ function Quiz() {
     }
 
     setAnswerLoading(true);
-    setMessage({ type: "", text: "" });
+    setMessage(createEmptyMessage());
 
     try {
       const data = await submitQuizAnswerAPI({
@@ -423,6 +498,7 @@ function Quiz() {
       });
 
       const normalizedResult = normalizeAnswerResult(data);
+
       setAnswerResult(normalizedResult);
 
       if (normalizedResult.quiz_session_id && !quizData.quiz_session_id) {
@@ -432,8 +508,8 @@ function Quiz() {
         }));
       }
 
-      setAnsweredQuestions((prevAnswers) => [
-        ...prevAnswers,
+      setAnsweredQuestions((previousAnswers) => [
+        ...previousAnswers,
         {
           word_id: currentQuestion.word_id || currentQuestion.id,
           eng_word: currentQuestion.eng_word,
@@ -452,10 +528,301 @@ function Quiz() {
   };
 
   const handleNextQuestion = () => {
-    setCurrentIndex((prevIndex) => prevIndex + 1);
+    setCurrentIndex((previousIndex) => previousIndex + 1);
     setSelectedAnswer("");
     setAnswerResult(null);
-    setMessage({ type: "", text: "" });
+    setMessage(createEmptyMessage());
+  };
+
+  const renderMessage = () => {
+    if (!message.text) {
+      return null;
+    }
+
+    return (
+      <section className={`quiz-message ${message.type}`}>
+        {message.text}
+      </section>
+    );
+  };
+
+  const renderDemoPanel = () => (
+    <section className="quiz-demo-panel">
+      <div>
+        <span>Sunum Modu</span>
+        <h3>6 tekrar algoritmasını hızlı göster</h3>
+        <p>
+          Doğru cevaplanan kelimeler normalde 1 gün, 1 hafta, 1 ay, 3 ay, 6 ay
+          ve 1 yıl aralıklarla tekrar gelir. Bu buton bekleyen tekrarları
+          bugüne çeker.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        className="quiz-demo-button"
+        onClick={handleAdvanceDemoReviews}
+        disabled={demoLoading || loading}
+      >
+        {demoLoading ? "İleri alınıyor..." : "Demo: Zamanı İleri Al"}
+      </button>
+    </section>
+  );
+
+  const renderAnswerStatus = () => {
+    if (!answerResult) {
+      return null;
+    }
+
+    return (
+      <section
+        className={`quiz-answer-status ${
+          answerResult.is_correct ? "correct" : "wrong"
+        }`}
+      >
+        <div>
+          <strong>{answerResult.is_correct ? "Doğru cevap" : "Yanlış cevap"}</strong>
+          <p>{answerResult.message || "Cevap kaydedildi."}</p>
+        </div>
+
+        <div className="quiz-stage-info">
+          <span>6 tekrar aşaması</span>
+          <strong>{formatNumber(answerResult.current_stage)} / 6</strong>
+        </div>
+
+        <div className="quiz-stage-info">
+          <span>Sonraki tekrar</span>
+          <strong>
+            {answerResult.is_learned
+              ? "Öğrenildi"
+              : formatDateTime(answerResult.next_review_at)}
+          </strong>
+        </div>
+      </section>
+    );
+  };
+
+  const renderLoadingState = () => (
+    <section className="quiz-state">
+      <div className="quiz-state-icon">🧠</div>
+      <h3>Quiz hazırlanıyor...</h3>
+      <p>Günlük çalışma soruların yükleniyor.</p>
+    </section>
+  );
+
+  const renderEmptyState = () => (
+    <section className="quiz-state empty">
+      <div className="quiz-state-icon">📝</div>
+      <h3>Bugün için soru bulunamadı</h3>
+      <p>
+        Kelime havuzunda yeterli soru olmadığında veya bugün çözülmesi gereken
+        tekrar bulunmadığında quiz listesi boş görünebilir.
+      </p>
+
+      <div className="quiz-state-actions">
+        <Link to="/add-word" className="quiz-primary-link">
+          Kelime Ekle
+        </Link>
+
+        <Link to="/words" className="quiz-secondary-link">
+          Kelimelerime Git
+        </Link>
+      </div>
+    </section>
+  );
+
+  const renderReviewList = () => (
+    <div className="quiz-review-list">
+      {answeredQuestions.map((answer, index) => (
+        <article
+          key={`${answer.word_id}-${index}`}
+          className={`quiz-review-item ${
+            answer.is_correct ? "correct" : "wrong"
+          }`}
+        >
+          <div>
+            <h4>{answer.eng_word}</h4>
+
+            <p>
+              Senin cevabın: <strong>{answer.selected_answer}</strong>
+            </p>
+
+            {answer.correct_answer && (
+              <p>
+                Doğru cevap: <strong>{answer.correct_answer}</strong>
+              </p>
+            )}
+
+            {hasValue(answer.current_stage) && (
+              <p>
+                6 tekrar aşaması: <strong>{answer.current_stage} / 6</strong>
+              </p>
+            )}
+          </div>
+
+          <span>{answer.is_correct ? "Doğru" : "Yanlış"}</span>
+        </article>
+      ))}
+    </div>
+  );
+
+  const renderResultCard = () => (
+    <section className="quiz-result-card">
+      <div className="result-icon">🏁</div>
+
+      <h3>Quiz tamamlandı</h3>
+
+      <p>
+        Bugünkü quiz sonucunu aşağıdan inceleyebilir, istersen yeni bir çalışma
+        başlatabilirsin.
+      </p>
+
+      <div className="quiz-result-grid">
+        <div>
+          <strong>{formatNumber(questions.length)}</strong>
+          <p>Toplam Soru</p>
+        </div>
+
+        <div>
+          <strong>{formatNumber(correctCount)}</strong>
+          <p>Doğru</p>
+        </div>
+
+        <div>
+          <strong>{formatNumber(wrongCount)}</strong>
+          <p>Yanlış</p>
+        </div>
+
+        <div>
+          <strong>%{successRate}</strong>
+          <p>Başarı</p>
+        </div>
+      </div>
+
+      {renderReviewList()}
+
+      <div className="quiz-result-actions">
+        <button
+          type="button"
+          className="quiz-primary-button"
+          onClick={() => loadDailyQuiz({ forceNew: true })}
+        >
+          Yeni Quiz Başlat
+        </button>
+
+        <button
+          type="button"
+          className="quiz-demo-button"
+          onClick={handleAdvanceDemoReviews}
+          disabled={demoLoading || loading}
+        >
+          {demoLoading ? "İleri alınıyor..." : "Demo: Zamanı İleri Al"}
+        </button>
+
+        <Link to="/home" className="quiz-secondary-link">
+          Ana Sayfa
+        </Link>
+      </div>
+    </section>
+  );
+
+  const renderSidePanel = () => (
+    <aside className="quiz-side-panel">
+      <div className="quiz-stat-card">
+        <span>Toplam Soru</span>
+        <strong>{formatNumber(questions.length)}</strong>
+      </div>
+
+      <div className="quiz-stat-card">
+        <span>Tekrar Sorusu</span>
+        <strong>{formatNumber(quizData.due_count)}</strong>
+      </div>
+
+      <div className="quiz-stat-card">
+        <span>Yeni Soru</span>
+        <strong>{formatNumber(quizData.new_count)}</strong>
+      </div>
+
+      <div className="quiz-stat-card">
+        <span>Doğru / Yanlış</span>
+        <strong>
+          {formatNumber(correctCount)} / {formatNumber(wrongCount)}
+        </strong>
+      </div>
+    </aside>
+  );
+
+  const renderQuizAction = () => {
+    if (!answerResult) {
+      return (
+        <button
+          type="button"
+          className="quiz-primary-button"
+          onClick={handleSubmitAnswer}
+          disabled={!selectedAnswer || answerLoading}
+        >
+          {answerLoading ? "Gönderiliyor..." : "Cevabı Gönder"}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className="quiz-primary-button"
+        onClick={handleNextQuestion}
+      >
+        {getNextButtonText(currentIndex, questions.length)}
+      </button>
+    );
+  };
+
+  const renderQuizLayout = () => (
+    <section className="quiz-layout">
+      {renderSidePanel()}
+
+      <section className="quiz-card">
+        <div className="quiz-progress-row">
+          <span>
+            Soru {currentIndex + 1} / {questions.length}
+          </span>
+
+          <strong>{progressPercent}%</strong>
+        </div>
+
+        <div className="quiz-progress-bar">
+          <div style={{ width: `${progressPercent}%` }} />
+        </div>
+
+        <QuizQuestionCard
+          question={currentQuestion}
+          selectedAnswer={selectedAnswer}
+          answerResult={answerResult}
+          onSelectAnswer={handleSelectAnswer}
+          getImageUrl={getImageUrl}
+        />
+
+        {renderAnswerStatus()}
+
+        <div className="quiz-actions">{renderQuizAction()}</div>
+      </section>
+    </section>
+  );
+
+  const renderContent = () => {
+    if (loading) {
+      return renderLoadingState();
+    }
+
+    if (questions.length === 0) {
+      return renderEmptyState();
+    }
+
+    if (isQuizFinished) {
+      return renderResultCard();
+    }
+
+    return renderQuizLayout();
   };
 
   return (
@@ -489,183 +856,9 @@ function Quiz() {
         </div>
       </section>
 
-      {message.text && (
-        <section className={`quiz-message ${message.type}`}>
-          {message.text}
-        </section>
-      )}
-
-      {loading ? (
-        <section className="quiz-state">
-          <div className="quiz-state-icon">🧠</div>
-          <h3>Quiz hazırlanıyor...</h3>
-          <p>Günlük çalışma soruların yükleniyor.</p>
-        </section>
-      ) : questions.length === 0 ? (
-        <section className="quiz-state empty">
-          <div className="quiz-state-icon">📝</div>
-          <h3>Bugün için soru bulunamadı</h3>
-          <p>
-            Kelime havuzunda yeterli soru olmadığında veya bugün çözülmesi
-            gereken tekrar bulunmadığında quiz listesi boş görünebilir.
-          </p>
-
-          <div className="quiz-state-actions">
-            <Link to="/add-word" className="quiz-primary-link">
-              Kelime Ekle
-            </Link>
-
-            <Link to="/words" className="quiz-secondary-link">
-              Kelimelerime Git
-            </Link>
-          </div>
-        </section>
-      ) : isQuizFinished ? (
-        <section className="quiz-result-card">
-          <div className="result-icon">🏁</div>
-
-          <h3>Quiz tamamlandı</h3>
-
-          <p>
-            Bugünkü quiz sonucunu aşağıdan inceleyebilir, istersen yeni bir
-            çalışma başlatabilirsin.
-          </p>
-
-          <div className="quiz-result-grid">
-            <div>
-              <strong>{formatNumber(questions.length)}</strong>
-              <p>Toplam Soru</p>
-            </div>
-
-            <div>
-              <strong>{formatNumber(correctCount)}</strong>
-              <p>Doğru</p>
-            </div>
-
-            <div>
-              <strong>{formatNumber(wrongCount)}</strong>
-              <p>Yanlış</p>
-            </div>
-
-            <div>
-              <strong>%{successRate}</strong>
-              <p>Başarı</p>
-            </div>
-          </div>
-
-          <div className="quiz-review-list">
-            {answeredQuestions.map((answer, index) => (
-              <article
-                key={`${answer.word_id}-${index}`}
-                className={`quiz-review-item ${
-                  answer.is_correct ? "correct" : "wrong"
-                }`}
-              >
-                <div>
-                  <h4>{answer.eng_word}</h4>
-
-                  <p>
-                    Senin cevabın: <strong>{answer.selected_answer}</strong>
-                  </p>
-
-                  {answer.correct_answer && (
-                    <p>
-                      Doğru cevap: <strong>{answer.correct_answer}</strong>
-                    </p>
-                  )}
-                </div>
-
-                <span>{answer.is_correct ? "Doğru" : "Yanlış"}</span>
-              </article>
-            ))}
-          </div>
-
-          <div className="quiz-result-actions">
-            <button
-              type="button"
-              className="quiz-primary-button"
-              onClick={() => loadDailyQuiz({ forceNew: true })}
-            >
-              Yeni Quiz Başlat
-            </button>
-
-            <Link to="/home" className="quiz-secondary-link">
-              Ana Sayfa
-            </Link>
-          </div>
-        </section>
-      ) : (
-        <section className="quiz-layout">
-          <aside className="quiz-side-panel">
-            <div className="quiz-stat-card">
-              <span>Toplam Soru</span>
-              <strong>{formatNumber(questions.length)}</strong>
-            </div>
-
-            <div className="quiz-stat-card">
-              <span>Tekrar Sorusu</span>
-              <strong>{formatNumber(quizData.due_count)}</strong>
-            </div>
-
-            <div className="quiz-stat-card">
-              <span>Yeni Soru</span>
-              <strong>{formatNumber(quizData.new_count)}</strong>
-            </div>
-
-            <div className="quiz-stat-card">
-              <span>Doğru / Yanlış</span>
-              <strong>
-                {formatNumber(correctCount)} / {formatNumber(wrongCount)}
-              </strong>
-            </div>
-          </aside>
-
-          <section className="quiz-card">
-            <div className="quiz-progress-row">
-              <span>
-                Soru {currentIndex + 1} / {questions.length}
-              </span>
-
-              <strong>{progressPercent}%</strong>
-            </div>
-
-            <div className="quiz-progress-bar">
-              <div style={{ width: `${progressPercent}%` }} />
-            </div>
-
-            <QuizQuestionCard
-              question={currentQuestion}
-              selectedAnswer={selectedAnswer}
-              answerResult={answerResult}
-              onSelectAnswer={handleSelectAnswer}
-              getImageUrl={getImageUrl}
-            />
-
-            <div className="quiz-actions">
-              {!answerResult ? (
-                <button
-                  type="button"
-                  className="quiz-primary-button"
-                  onClick={handleSubmitAnswer}
-                  disabled={!selectedAnswer || answerLoading}
-                >
-                  {answerLoading ? "Gönderiliyor..." : "Cevabı Gönder"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="quiz-primary-button"
-                  onClick={handleNextQuestion}
-                >
-                  {currentIndex + 1 === questions.length
-                    ? "Sonuçları Gör"
-                    : "Sonraki Soru"}
-                </button>
-              )}
-            </div>
-          </section>
-        </section>
-      )}
+      {renderDemoPanel()}
+      {renderMessage()}
+      {renderContent()}
     </div>
   );
 }

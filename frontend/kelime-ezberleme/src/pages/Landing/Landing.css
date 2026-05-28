@@ -15,7 +15,7 @@
   min-height: 76px;
   padding: 14px 18px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(226, 232, 240, 0.92);
   backdrop-filter: blur(18px);
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055);
@@ -55,7 +55,7 @@
 .landing-brand small {
   display: block;
   margin-top: 4px;
-  color: #6b7280;
+  color: #374151;
   font-size: 12px;
   font-weight: 700;
 }
@@ -86,7 +86,7 @@
 .landing-secondary-button {
   background: white;
   color: #111827;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d1d5db;
 }
 
 .landing-register-link,
@@ -121,8 +121,8 @@
   display: inline-flex;
   padding: 8px 13px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #e0e7ff;
+  color: #3730a3;
   font-size: 12px;
   font-weight: 950;
   margin-bottom: 16px;
@@ -138,13 +138,13 @@
 }
 
 .landing-hero h1 span {
-  color: #635bff;
+  color: #4338ca;
 }
 
 .landing-hero p {
   max-width: 680px;
   margin: 20px 0 0;
-  color: #4b5563;
+  color: #374151;
   font-size: 17px;
   line-height: 1.75;
   font-weight: 600;
@@ -189,7 +189,7 @@
 .preview-word-card span,
 .preview-progress-header span {
   display: block;
-  color: #c7d2fe;
+  color: #e0e7ff;
   font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
@@ -207,7 +207,7 @@
   width: 54px;
   height: 54px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.14);
   display: grid;
   place-items: center;
   font-size: 24px;
@@ -217,8 +217,8 @@
 .preview-word-card {
   padding: 15px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -226,7 +226,7 @@
 }
 
 .preview-word-card.active {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .preview-word-card strong {
@@ -241,7 +241,7 @@
   height: 34px;
   border-radius: 12px;
   background: white;
-  color: #4f46e5;
+  color: #3730a3;
   font-weight: 950;
   display: inline-flex;
   align-items: center;
@@ -252,7 +252,7 @@
   margin-top: 4px;
   padding: 15px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .preview-progress-header {
@@ -270,7 +270,7 @@
 .preview-progress-track {
   height: 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   overflow: hidden;
 }
 
@@ -293,7 +293,7 @@
 .landing-step-card,
 .landing-extra-modules,
 .landing-cta {
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(226, 232, 240, 0.92);
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
   backdrop-filter: blur(18px);
@@ -323,7 +323,7 @@
 
 .landing-feature-card p {
   margin: 0;
-  color: #64748b;
+  color: #475569;
   line-height: 1.6;
   font-weight: 600;
   font-size: 14px;
@@ -341,7 +341,7 @@
 }
 
 .section-title span {
-  color: #4f46e5;
+  color: #3730a3;
   font-size: 12px;
   font-weight: 950;
   text-transform: uppercase;
@@ -387,7 +387,7 @@
 
 .landing-step-card p {
   margin: 0;
-  color: #64748b;
+  color: #475569;
   line-height: 1.65;
   font-weight: 600;
 }
@@ -415,7 +415,7 @@
 .landing-extra-modules p {
   max-width: 680px;
   margin: 14px 0 0;
-  color: #64748b;
+  color: #475569;
   line-height: 1.7;
   font-weight: 600;
 }
@@ -430,7 +430,7 @@
   padding: 16px;
   border-radius: 18px;
   background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #dbe3ef;
 }
 
 .extra-module-list strong {
@@ -441,7 +441,7 @@
 }
 
 .extra-module-list span {
-  color: #64748b;
+  color: #475569;
   line-height: 1.55;
   font-weight: 600;
 }
@@ -466,7 +466,7 @@
 .landing-cta p {
   max-width: 640px;
   margin: 16px auto 0;
-  color: #64748b;
+  color: #475569;
   line-height: 1.65;
   font-weight: 600;
 }

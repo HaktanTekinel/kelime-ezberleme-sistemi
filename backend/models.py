@@ -16,6 +16,10 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
+CASCADE_DELETE_ORPHAN = "all, delete-orphan"
+USER_ID_FK = "users.id"
+WORD_ID_FK = "words.id"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -27,8 +31,6 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     role = Column(String(30), default="user", nullable=False)
 
-    # Eski yapı ile uyumluluk için bırakıldı.
-    # Asıl ayar user_settings.daily_new_word_count üzerinden okunur.
     daily_quiz_limit = Column(Integer, default=10, nullable=False)
 
     total_correct_answers = Column(Integer, default=0, nullable=False)
@@ -45,7 +47,7 @@ class User(Base):
         "UserSettings",
         back_populates="user",
         uselist=False,
-        cascade="all, delete-orphan",
+        cascade=CASCADE_DELETE_ORPHAN,
     )
     words = relationship("Word", back_populates="created_by_user")
     progress_items = relationship("UserWordProgress", back_populates="user")
@@ -59,7 +61,7 @@ class UserSettings(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         unique=True,
         nullable=False,
     )
@@ -88,7 +90,7 @@ class Word(Base):
     picture_url = Column(String(255), nullable=True)
     audio_url = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_user_id = Column(Integer, ForeignKey(USER_ID_FK), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(
         TIMESTAMP,
@@ -101,7 +103,7 @@ class Word(Base):
     samples = relationship(
         "WordSample",
         back_populates="word",
-        cascade="all, delete-orphan",
+        cascade=CASCADE_DELETE_ORPHAN,
         order_by="WordSample.sample_order",
     )
     progress_items = relationship("UserWordProgress", back_populates="word")
@@ -114,7 +116,7 @@ class WordSample(Base):
     id = Column(Integer, primary_key=True, index=True)
     word_id = Column(
         Integer,
-        ForeignKey("words.id", ondelete="CASCADE"),
+        ForeignKey(WORD_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     sample_text = Column(String(500), nullable=False)
@@ -131,12 +133,12 @@ class UserWordProgress(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     word_id = Column(
         Integer,
-        ForeignKey("words.id", ondelete="CASCADE"),
+        ForeignKey(WORD_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     current_stage = Column(Integer, default=0, nullable=False)
@@ -162,7 +164,7 @@ class QuizSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     session_type = Column(String(30), default="daily", nullable=False)
@@ -177,7 +179,7 @@ class QuizSession(Base):
     answers = relationship(
         "QuizAnswer",
         back_populates="quiz_session",
-        cascade="all, delete-orphan",
+        cascade=CASCADE_DELETE_ORPHAN,
     )
 
 
@@ -192,12 +194,12 @@ class QuizAnswer(Base):
     )
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     word_id = Column(
         Integer,
-        ForeignKey("words.id", ondelete="CASCADE"),
+        ForeignKey(WORD_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     selected_answer = Column(Text, nullable=True)
@@ -219,7 +221,7 @@ class PasswordResetToken(Base):
     token = Column(String(128), unique=True, nullable=False)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     expires_at = Column(TIMESTAMP, nullable=True)
@@ -233,7 +235,7 @@ class ReportSnapshot(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     report_date = Column(Date, server_default=func.current_date(), nullable=False)
@@ -250,12 +252,12 @@ class WordleGame(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     target_word_id = Column(
         Integer,
-        ForeignKey("words.id", ondelete="CASCADE"),
+        ForeignKey(WORD_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     status = Column(String(20), default="active", nullable=False)
@@ -275,7 +277,7 @@ class WordleGuess(Base):
     )
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     guess = Column(String(150), nullable=False)
@@ -289,7 +291,7 @@ class WordChainStory(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(USER_ID_FK, ondelete="CASCADE"),
         nullable=False,
     )
     prompt_words_json = Column(JSON, nullable=False)

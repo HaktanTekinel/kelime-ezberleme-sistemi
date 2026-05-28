@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import "../../styles/auth.css";
 
@@ -20,5 +21,17 @@ function AuthLayout({ title, subtitle, children, footer }) {
     </main>
   );
 }
+
+AuthLayout.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  footer: PropTypes.node,
+};
+
+AuthLayout.defaultProps = {
+  subtitle: "",
+  footer: null,
+};
 
 export default AuthLayout;

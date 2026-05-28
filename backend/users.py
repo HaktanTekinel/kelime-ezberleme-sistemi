@@ -1,17 +1,14 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
+from auth import CurrentUser, DbSession
 import models
 import schemas
-from auth import get_current_user
-from database import get_db
+from fastapi import APIRouter
 from report_helpers import build_report_data
 
 router = APIRouter()
 
 
 def get_or_create_user_settings(
-    db: Session,
+    db: DbSession,
     user: models.User,
 ) -> models.UserSettings:
     settings = (
@@ -28,9 +25,11 @@ def get_or_create_user_settings(
         daily_new_word_count=user.daily_quiz_limit or 10,
         quiz_question_count=user.daily_quiz_limit or 10,
     )
+
     db.add(settings)
     db.commit()
     db.refresh(settings)
+
     return settings
 
 
@@ -48,26 +47,31 @@ def build_settings_response(
     )
 
 
+def get_daily_count(payload: schemas.UserSettingsUpdate) -> int | None:
+    if payload.daily_new_word_count is not None:
+        return payload.daily_new_word_count
+
+    return payload.daily_quiz_limit
+
+
 @router.get("/me/settings", response_model=schemas.UserSettingsResponse)
 def get_my_settings(
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     settings = get_or_create_user_settings(db, current_user)
+
     return build_settings_response(current_user, settings)
 
 
 @router.put("/me/settings", response_model=schemas.UserSettingsResponse)
 def update_my_settings(
     payload: schemas.UserSettingsUpdate,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     settings = get_or_create_user_settings(db, current_user)
-
-    daily_count = payload.daily_new_word_count
-    if daily_count is None:
-        daily_count = payload.daily_quiz_limit
+    daily_count = get_daily_count(payload)
 
     if daily_count is not None:
         settings.daily_new_word_count = daily_count
@@ -92,8 +96,8 @@ def update_my_settings(
 
 @router.get("/me/stats", response_model=schemas.UserStatsResponse)
 def get_my_stats(
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
     report_data = build_report_data(db, current_user.id)
 

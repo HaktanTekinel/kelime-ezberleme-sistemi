@@ -1,472 +1,325 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
-import { getDashboardSummaryAPI } from "../../services/dashboardService";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
-const REVIEW_STAGES = [
-  { stage: 1, label: "1 gün" },
-  { stage: 2, label: "1 hafta" },
-  { stage: 3, label: "1 ay" },
-  { stage: 4, label: "3 ay" },
-  { stage: 5, label: "6 ay" },
-  { stage: 6, label: "1 yıl" },
+const STATS = [
+  {
+    icon: "📚",
+    title: "Kelime Havuzu",
+    value: "Aktif",
+    description: "Kayıtlı kelimelerini listele ve düzenle",
+  },
+  {
+    icon: "🧠",
+    title: "Günlük Quiz",
+    value: "6 Tekrar",
+    description: "Tekrar zamanı gelen kelimeleri çöz",
+  },
+  {
+    icon: "📊",
+    title: "Analiz",
+    value: "Rapor",
+    description: "Başarı durumunu konu ve seviye bazında gör",
+  },
+  {
+    icon: "🎮",
+    title: "Bulmaca",
+    value: "Wordle",
+    description: "Öğrenilen kelimelerle pratik yap",
+  },
+];
+
+const REVIEW_ITEMS = [
+  {
+    count: "1",
+    title: "Bugünkü tekrarlarını çöz",
+    description: "6 tekrar sisteminde doğru cevaplar aşama ilerletir.",
+    link: "/quiz",
+    linkText: "Quize Git",
+  },
+  {
+    count: "2",
+    title: "Yeni kelime ekle",
+    description: "Kelime, anlam, örnek cümle ve görsel bilgilerini kaydet.",
+    link: "/add-word",
+    linkText: "Kelime Ekle",
+  },
+  {
+    count: "3",
+    title: "Gelişimini kontrol et",
+    description: "Analiz ekranından başarı oranlarını incele.",
+    link: "/reports",
+    linkText: "Raporu Aç",
+  },
 ];
 
 const QUICK_ACTIONS = [
   {
-    title: "Quiz'e Başla",
-    text: "Bugünkü tekrarlarını çöz",
-    path: "/quiz",
-    icon: "🧠",
-    primary: true,
-  },
-  {
-    title: "Kelime Ekle",
-    text: "Kelime havuzunu büyüt",
-    path: "/add-word",
     icon: "➕",
+    title: "Kelime Ekle",
+    description: "Yeni kelime ve örnek cümle oluştur",
+    link: "/add-word",
+    isPrimary: true,
   },
   {
-    title: "Analiz Raporu",
-    text: "Gelişimini takip et",
-    path: "/reports",
-    icon: "📊",
+    icon: "📋",
+    title: "Kelime Listesi",
+    description: "Kelimeleri ara, filtrele ve düzenle",
+    link: "/words",
+    isPrimary: false,
+  },
+  {
+    icon: "🧪",
+    title: "Quiz Çöz",
+    description: "Günlük tekrar sorularını cevapla",
+    link: "/quiz",
+    isPrimary: false,
+  },
+  {
+    icon: "🧩",
+    title: "Bulmacalar",
+    description: "Wordle ve Word Chain ekranlarını aç",
+    link: "/puzzle",
+    isPrimary: false,
   },
 ];
 
-function hasValue(value) {
-  return value !== undefined && value !== null && value !== "";
+const PATH_STEPS = [
+  "1 gün",
+  "1 hafta",
+  "1 ay",
+  "3 ay",
+  "6 ay",
+  "1 yıl",
+];
+
+const statItemShape = PropTypes.shape({
+  icon: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+});
+
+const reviewItemShape = PropTypes.shape({
+  count: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
+  linkText: PropTypes.string.isRequired,
+});
+
+const quickActionShape = PropTypes.shape({
+  icon: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
+  isPrimary: PropTypes.bool.isRequired,
+});
+
+function StatCard({ item }) {
+  return (
+    <article className="stat-card">
+      <div className="stat-icon">{item.icon}</div>
+
+      <div>
+        <p>{item.title}</p>
+        <h3>{item.value}</h3>
+        <span>{item.description}</span>
+      </div>
+    </article>
+  );
 }
 
-function pickValue(source, keys) {
-  if (!source) {
-    return undefined;
-  }
+StatCard.propTypes = {
+  item: statItemShape.isRequired,
+};
 
-  for (const key of keys) {
-    if (hasValue(source[key])) {
-      return source[key];
-    }
-  }
+function ReviewCard({ item }) {
+  return (
+    <article className="review-card">
+      <div className="review-count">{item.count}</div>
 
-  return undefined;
+      <div>
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+      </div>
+
+      <Link to={item.link}>{item.linkText}</Link>
+    </article>
+  );
 }
 
-function formatNumber(value) {
-  if (!hasValue(value)) {
-    return "-";
-  }
+ReviewCard.propTypes = {
+  item: reviewItemShape.isRequired,
+};
 
-  return Number.isFinite(Number(value))
-    ? Number(value).toLocaleString("tr-TR")
-    : value;
+function QuickActionCard({ item }) {
+  const className = item.isPrimary ? "quick-card primary" : "quick-card";
+
+  return (
+    <Link className={className} to={item.link}>
+      <span>{item.icon}</span>
+
+      <div>
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+      </div>
+    </Link>
+  );
 }
 
-function formatPercent(value) {
-  if (!hasValue(value)) {
-    return "-";
-  }
+QuickActionCard.propTypes = {
+  item: quickActionShape.isRequired,
+};
 
-  const numericValue = Number(value);
+function LearningPath() {
+  return (
+    <article className="learning-path-card">
+      <div className="section-header">
+        <div>
+          <p>6 Tekrar Sistemi</p>
+          <h2>Öğrenme yolu</h2>
+        </div>
 
-  if (!Number.isFinite(numericValue)) {
-    return value;
-  }
+        <Link to="/quiz">Tekrarları Çöz</Link>
+      </div>
 
-  return `%${Math.round(numericValue)}`;
+      <div className="path-steps">
+        {PATH_STEPS.map((step, index) => (
+          <div className="path-step" key={step}>
+            <span>{index + 1}</span>
+            <p>{step}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
 }
 
-function normalizeDashboard(data) {
-  const stats = data?.stats || data?.statistics || {};
-  const dailyGoal = data?.daily_goal || data?.dailyGoal || {};
-  const nextReview = data?.next_review || data?.nextReview || null;
+function MiniReportCard() {
+  return (
+    <article className="mini-report-card">
+      <div>
+        <p>Analiz Raporu</p>
+        <h2>Başarı durumunu takip et</h2>
+        <span>
+          Hangi konularda güçlü olduğunu, hangi kelimelerde tekrar yapman
+          gerektiğini analiz ekranından görebilirsin.
+        </span>
+      </div>
 
-  const reviewPlan = Array.isArray(data?.review_plan)
-    ? data.review_plan
-    : Array.isArray(data?.reviewPlan)
-      ? data.reviewPlan
-      : [];
-
-  return {
-    dailyGoal: {
-      target: pickValue(dailyGoal, [
-        "target",
-        "daily_new_word_count",
-        "dailyNewWordCount",
-      ]),
-      completed: pickValue(dailyGoal, [
-        "completed",
-        "completed_today",
-        "completedToday",
-      ]),
-    },
-    stats: {
-      learnedWords: pickValue(stats, ["learned_words", "learnedWords"]),
-      pendingReviews: pickValue(stats, [
-        "pending_reviews",
-        "pendingReviews",
-      ]),
-      successRate: pickValue(stats, ["success_rate", "successRate"]),
-      masteredWords: pickValue(stats, ["mastered_words", "masteredWords"]),
-      weeklyNewWords: pickValue(stats, [
-        "weekly_new_words",
-        "weeklyNewWords",
-      ]),
-      successImprovement: pickValue(stats, [
-        "success_improvement",
-        "successImprovement",
-      ]),
-    },
-    reviewPlan,
-    nextReview,
-  };
-}
-
-function createStatCards(stats) {
-  const cards = [];
-
-  if (hasValue(stats.learnedWords)) {
-    cards.push({
-      title: "Öğrenilen Kelime",
-      value: formatNumber(stats.learnedWords),
-      detail: hasValue(stats.weeklyNewWords)
-        ? `+${formatNumber(stats.weeklyNewWords)} bu hafta`
-        : "",
-      icon: "📚",
-    });
-  }
-
-  if (hasValue(stats.pendingReviews)) {
-    cards.push({
-      title: "Tekrar Bekleyen",
-      value: formatNumber(stats.pendingReviews),
-      detail: "Bugün çözülmesi gereken tekrarlar",
-      icon: "⏰",
-    });
-  }
-
-  if (hasValue(stats.successRate)) {
-    cards.push({
-      title: "Başarı Oranı",
-      value: formatPercent(stats.successRate),
-      detail: hasValue(stats.successImprovement)
-        ? `+${formatNumber(stats.successImprovement)} gelişim`
-        : "",
-      icon: "📈",
-    });
-  }
-
-  if (hasValue(stats.masteredWords)) {
-    cards.push({
-      title: "6. Aşamaya Gelen",
-      value: formatNumber(stats.masteredWords),
-      detail: "Kalıcı hafıza aşamasına ulaşan kelimeler",
-      icon: "🏆",
-    });
-  }
-
-  return cards;
-}
-
-function getReviewTitle(item) {
-  return item.title || item.label || item.name || "Tekrar aralığı";
-}
-
-function getReviewCount(item) {
-  return pickValue(item, ["count", "word_count", "wordCount", "total"]);
-}
-
-function getReviewDescription(item) {
-  return item.description || item.text || item.detail || "Planlanan tekrar";
+      <Link to="/reports">Raporu İncele</Link>
+    </article>
+  );
 }
 
 function Home() {
-  const outletData = useOutletContext();
-  const currentUser = outletData?.currentUser || "Öğrenci";
-
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadDashboard = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const data = await getDashboardSummaryAPI();
-      setDashboard(normalizeDashboard(data));
-    } catch {
-      setDashboard(null);
-      setError("Veriler şu anda alınamadı. Lütfen daha sonra tekrar deneyin.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadDashboard();
-  }, [loadDashboard]);
-
-  const statCards = useMemo(
-    () => createStatCards(dashboard?.stats || {}),
-    [dashboard]
-  );
-
-  const hasDailyGoal =
-    hasValue(dashboard?.dailyGoal?.target) ||
-    hasValue(dashboard?.dailyGoal?.completed);
-
-  const dailyTarget = Number(dashboard?.dailyGoal?.target || 0);
-  const dailyCompleted = Number(dashboard?.dailyGoal?.completed || 0);
-
-  const progressPercent =
-    dailyTarget > 0
-      ? Math.min(100, Math.round((dailyCompleted / dailyTarget) * 100))
-      : 0;
-
-  const currentStage = pickValue(dashboard?.nextReview, [
-    "current_stage",
-    "currentStage",
-  ]);
-
-  const totalStage = pickValue(dashboard?.nextReview, [
-    "total_stage",
-    "totalStage",
-  ]);
-
   return (
     <div className="home-page">
       <section className="home-hero">
         <div className="hero-content">
-          <span className="hero-pill">6 Sefer Tekrar Prensibi</span>
+          <span className="hero-pill">Kelime Hafızam</span>
 
           <h2>
-            Bugünkü kelime çalışmana
-            <span> devam et.</span>
+            İngilizce kelimeleri <span>6 tekrar sistemiyle</span> kalıcı öğren.
           </h2>
 
           <p>
-            Merhaba {currentUser}, günlük hedeflerini takip et, tekrar zamanı
-            gelen kelimeleri çöz ve öğrendiğin kelimeleri kalıcı hafızaya taşı.
+            Kelime ekle, günlük quizlerini çöz, analiz raporunu incele ve
+            öğrendiğin kelimelerle bulmaca pratikleri yap.
           </p>
 
           <div className="hero-buttons">
-            <Link to="/quiz" className="primary-button">
-              Quiz'e Başla
+            <Link className="primary-button" to="/quiz">
+              Günlük Quize Başla
             </Link>
 
-            <Link to="/words" className="secondary-button">
+            <Link className="secondary-button" to="/words">
               Kelimelerimi Gör
             </Link>
           </div>
         </div>
 
-        <div className="hero-card">
+        <aside className="hero-card">
           <div className="hero-card-top">
             <div>
               <span>Bugünkü hedef</span>
-              <h3>
-                {hasDailyGoal
-                  ? `${formatNumber(dailyTarget)} yeni kelime`
-                  : "Hedef bekleniyor"}
-              </h3>
+              <h3>Tekrarlarını tamamla</h3>
             </div>
 
             <div className="hero-card-icon">🎯</div>
           </div>
 
-          {loading && (
-            <div className="card-status">Veriler yükleniyor...</div>
-          )}
+          <div className="card-status">
+            6 tekrar prensibinde her doğru cevap kelimeyi bir sonraki tekrar
+            aşamasına taşır.
+          </div>
 
-          {!loading && !hasDailyGoal && !error && (
-            <div className="card-status muted">
-              Günlük hedef bilgisi henüz bulunmuyor.
+          <div className="progress-area">
+            <div className="progress-info">
+              <span>Öğrenme ilerlemesi</span>
+              <strong>6 aşama</strong>
             </div>
-          )}
 
-          {!loading && hasDailyGoal && (
-            <div className="progress-area">
-              <div className="progress-info">
-                <span>Günlük ilerleme</span>
-                <strong>
-                  {formatNumber(dailyCompleted)} / {formatNumber(dailyTarget)}
-                </strong>
-              </div>
-
-              <div className="progress-track">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: "66%" }} />
             </div>
-          )}
+          </div>
 
-          {!loading && dashboard?.nextReview && (
-            <div className="repeat-box">
-              <div>
-                <span>Sonraki tekrar</span>
-                <strong>
-                  {dashboard.nextReview.label ||
-                    dashboard.nextReview.title ||
-                    "Tekrar zamanı"}
-                </strong>
-              </div>
-
-              {hasValue(currentStage) && hasValue(totalStage) && (
-                <span className="repeat-badge">
-                  {currentStage}/{totalStage}
-                </span>
-              )}
+          <div className="repeat-box">
+            <div>
+              <span>Tekrar aralığı</span>
+              <strong>1 gün → 1 yıl</strong>
             </div>
-          )}
-        </div>
+
+            <div className="repeat-badge">6x</div>
+          </div>
+        </aside>
       </section>
 
-      {error && (
-        <section className="state-box error-state">
-          <div>
-            <h3>Veriler alınamadı</h3>
-            <p>{error}</p>
-          </div>
-
-          <button type="button" onClick={loadDashboard}>
-            Tekrar Dene
-          </button>
-        </section>
-      )}
-
-      {!loading && !error && statCards.length > 0 && (
-        <section className="stats-grid">
-          {statCards.map((item) => (
-            <article className="stat-card" key={item.title}>
-              <div className="stat-icon">{item.icon}</div>
-
-              <div>
-                <p>{item.title}</p>
-                <h3>{item.value}</h3>
-                {item.detail && <span>{item.detail}</span>}
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
-
-      {!loading && !error && statCards.length === 0 && (
-        <section className="state-box empty-state">
-          <div>
-            <h3>Henüz gösterilecek istatistik yok</h3>
-            <p>
-              Kelime çalışmaya başladığında öğrenme durumun, tekrarların ve
-              başarı oranın burada görünecek.
-            </p>
-          </div>
-        </section>
-      )}
+      <section className="stats-grid">
+        {STATS.map((item) => (
+          <StatCard item={item} key={item.title} />
+        ))}
+      </section>
 
       <section className="dashboard-grid">
-        <div className="dashboard-column">
+        <article className="dashboard-column">
           <div className="section-header">
             <div>
               <p>Çalışma Planı</p>
-              <h2>Tekrar bekleyenler</h2>
+              <h2>Bugün ne yapmalısın?</h2>
             </div>
 
-            <Link to="/quiz">Quiz'e Git</Link>
+            <Link to="/quiz">Başla</Link>
           </div>
 
-          {loading && <div className="list-status">Tekrar planı yükleniyor...</div>}
+          <div className="review-list">
+            {REVIEW_ITEMS.map((item) => (
+              <ReviewCard item={item} key={item.title} />
+            ))}
+          </div>
+        </article>
 
-          {!loading && !error && dashboard?.reviewPlan?.length > 0 && (
-            <div className="review-list">
-              {dashboard.reviewPlan.map((item, index) => {
-                const count = getReviewCount(item);
-
-                return (
-                  <article
-                    className="review-card"
-                    key={`${getReviewTitle(item)}-${index}`}
-                  >
-                    <div className="review-count">{formatNumber(count)}</div>
-
-                    <div>
-                      <h3>{getReviewTitle(item)}</h3>
-                      <p>{getReviewDescription(item)}</p>
-                    </div>
-
-                    <Link to="/quiz">Başla</Link>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-
-          {!loading && !error && dashboard?.reviewPlan?.length === 0 && (
-            <div className="list-status muted">
-              Bugün için planlanan tekrar bulunmuyor.
-            </div>
-          )}
-        </div>
-
-        <div className="dashboard-column">
+        <article className="dashboard-column">
           <div className="section-header">
             <div>
-              <p>Hızlı Erişim</p>
-              <h2>Modüller</h2>
+              <p>Kısayollar</p>
+              <h2>Hızlı işlemler</h2>
             </div>
           </div>
 
           <div className="quick-actions">
             {QUICK_ACTIONS.map((item) => (
-              <Link
-                to={item.path}
-                className={item.primary ? "quick-card primary" : "quick-card"}
-                key={item.title}
-              >
-                <span>{item.icon}</span>
-
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </div>
-              </Link>
+              <QuickActionCard item={item} key={item.title} />
             ))}
           </div>
-        </div>
+        </article>
       </section>
 
       <section className="bottom-grid">
-        <article className="learning-path-card">
-          <div className="section-header">
-            <div>
-              <p>6 Aşamalı Sistem</p>
-              <h2>Tekrar aralıkları</h2>
-            </div>
-          </div>
-
-          <div className="path-steps">
-            {REVIEW_STAGES.map((item) => (
-              <div className="path-step" key={item.stage}>
-                <span>{item.stage}</span>
-                <p>{item.label}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="mini-report-card">
-          <div>
-            <p>Analiz Raporu</p>
-            <h2>Öğrenme gelişimini takip et.</h2>
-            <span>
-              Doğru cevapların, tekrar performansın ve başarı oranların rapor
-              ekranında görüntülenir.
-            </span>
-          </div>
-
-          <Link to="/reports">Raporu Aç</Link>
-        </article>
+        <LearningPath />
+        <MiniReportCard />
       </section>
     </div>
   );

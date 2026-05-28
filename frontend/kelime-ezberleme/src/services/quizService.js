@@ -34,3 +34,14 @@ export const submitQuizAnswerAPI = async ({
 
   return handleResponse(response);
 };
+
+export const advanceQuizReviewsDemoAPI = async () => {
+  const response = await fetch(`${API_BASE_URL}/quiz/demo/advance-reviews`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+    },
+  });
+
+  return handleResponse(response);
+};

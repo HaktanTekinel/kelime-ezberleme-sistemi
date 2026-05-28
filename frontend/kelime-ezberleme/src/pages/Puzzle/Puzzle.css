@@ -107,7 +107,7 @@
 .puzzle-state p {
   margin: 0;
   max-width: 520px;
-  color: #64748b;
+  color: #475569;
   line-height: 1.6;
   font-weight: 600;
 }
@@ -168,7 +168,7 @@
 
 .puzzle-board-header p {
   margin: 0 0 5px;
-  color: #6b7280;
+  color: #374151;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -187,7 +187,7 @@
   padding: 0 12px;
   border-radius: 14px;
   background: #eef2ff;
-  color: #4f46e5;
+  color: #3730a3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -212,7 +212,7 @@
   min-height: 150px;
   border-radius: 16px;
   border: 1px dashed #cbd5e1;
-  color: #64748b;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,8 +256,8 @@
 }
 
 .letter-box.absent {
-  background: #64748b;
-  border-color: #64748b;
+  background: #475569;
+  border-color: #475569;
   color: white;
 }
 
@@ -354,7 +354,7 @@
 }
 
 .puzzle-info-list span {
-  color: #64748b;
+  color: #475569;
   line-height: 1.55;
   font-size: 13px;
   font-weight: 700;
@@ -376,11 +376,11 @@
   gap: 10px;
 }
 
-.legend-list span {
+.legend-list > span {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #64748b;
+  color: #475569;
   font-size: 13px;
   font-weight: 750;
 }
@@ -401,7 +401,7 @@
 }
 
 .legend-color.absent {
-  background: #64748b;
+  background: #475569;
 }
 
 @media (max-width: 1100px) {
@@ -481,7 +481,7 @@
 
 .puzzle-history-header p {
   margin: 0 0 5px;
-  color: #6b7280;
+  color: #374151;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -515,7 +515,7 @@
   border-radius: 16px;
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
-  color: #64748b;
+  color: #475569;
   font-weight: 750;
   text-align: center;
 }
@@ -545,7 +545,7 @@
 }
 
 .puzzle-history-item span {
-  color: #64748b;
+  color: #475569;
   font-size: 13px;
   font-weight: 700;
 }
@@ -561,7 +561,7 @@
   padding: 7px 10px;
   border-radius: 999px;
   background: #eef2ff;
-  color: #4f46e5;
+  color: #3730a3;
   font-size: 12px;
   font-weight: 850;
 }

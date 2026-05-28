@@ -1,16 +1,15 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 import models
-from auth import get_current_user
-from database import get_db
+from auth import CurrentUser, DbSession
 
 router = APIRouter()
 
 TOTAL_REVIEW_STAGE = 6
+DEFAULT_DAILY_GOAL = 10
 
 REVIEW_STAGE_LABELS = {
     1: "1 gün sonra",
@@ -40,7 +39,11 @@ REVIEW_PLAN_ITEMS = [
 ]
 
 
-def get_user_daily_goal(db: Session, user: models.User) -> int:
+def get_utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def get_user_daily_goal(db: DbSession, user: models.User) -> int:
     settings = (
         db.query(models.UserSettings)
         .filter(models.UserSettings.user_id == user.id)
@@ -50,7 +53,7 @@ def get_user_daily_goal(db: Session, user: models.User) -> int:
     if settings and settings.daily_new_word_count:
         return settings.daily_new_word_count
 
-    return user.daily_quiz_limit or 10
+    return user.daily_quiz_limit or DEFAULT_DAILY_GOAL
 
 
 def get_success_rate(correct_count: int, total_count: int) -> float:
@@ -61,7 +64,7 @@ def get_success_rate(correct_count: int, total_count: int) -> float:
 
 
 def get_answer_counts(
-    db: Session,
+    db: DbSession,
     user_id: int,
     start_date: datetime | None = None,
     end_date: datetime | None = None,
@@ -75,16 +78,14 @@ def get_answer_counts(
         query = query.filter(models.QuizAnswer.answered_at < end_date)
 
     answers = query.all()
-
     correct_count = sum(1 for answer in answers if answer.is_correct)
     wrong_count = sum(1 for answer in answers if not answer.is_correct)
-    total_count = correct_count + wrong_count
 
-    return total_count, correct_count, wrong_count
+    return correct_count + wrong_count, correct_count, wrong_count
 
 
-def get_success_improvement(db: Session, user_id: int) -> float:
-    now = datetime.utcnow()
+def get_success_improvement(db: DbSession, user_id: int) -> float:
+    now = get_utc_now()
     this_week_start = now - timedelta(days=7)
     previous_week_start = now - timedelta(days=14)
 
@@ -102,23 +103,23 @@ def get_success_improvement(db: Session, user_id: int) -> float:
         end_date=this_week_start,
     )
 
-    this_rate = get_success_rate(this_correct, this_total)
-    previous_rate = get_success_rate(previous_correct, previous_total)
-
     if previous_total == 0:
         return 0.0
+
+    this_rate = get_success_rate(this_correct, this_total)
+    previous_rate = get_success_rate(previous_correct, previous_total)
 
     return round(this_rate - previous_rate, 2)
 
 
-def get_review_plan(db: Session, user_id: int) -> list[dict]:
+def get_review_plan(db: DbSession, user_id: int) -> list[dict]:
     review_plan = []
 
     for item in REVIEW_PLAN_ITEMS:
         count = (
             db.query(models.UserWordProgress)
             .filter(models.UserWordProgress.user_id == user_id)
-            .filter(models.UserWordProgress.is_learned == False)
+            .filter(models.UserWordProgress.is_learned.is_(False))
             .filter(models.UserWordProgress.current_stage == item["stage"])
             .count()
         )
@@ -134,11 +135,11 @@ def get_review_plan(db: Session, user_id: int) -> list[dict]:
     return review_plan
 
 
-def get_next_review(db: Session, user_id: int) -> dict:
+def get_next_review(db: DbSession, user_id: int) -> dict:
     progress = (
         db.query(models.UserWordProgress)
         .filter(models.UserWordProgress.user_id == user_id)
-        .filter(models.UserWordProgress.is_learned == False)
+        .filter(models.UserWordProgress.is_learned.is_(False))
         .filter(models.UserWordProgress.next_review_at.isnot(None))
         .order_by(models.UserWordProgress.next_review_at.asc())
         .first()
@@ -158,17 +159,46 @@ def get_next_review(db: Session, user_id: int) -> dict:
     }
 
 
+def get_learned_word_count(db: DbSession, user_id: int) -> int:
+    return (
+        db.query(models.UserWordProgress)
+        .filter(models.UserWordProgress.user_id == user_id)
+        .filter(models.UserWordProgress.is_learned.is_(True))
+        .count()
+    )
+
+
+def get_pending_review_count(db: DbSession, user_id: int, now: datetime) -> int:
+    return (
+        db.query(models.UserWordProgress)
+        .filter(models.UserWordProgress.user_id == user_id)
+        .filter(models.UserWordProgress.is_learned.is_(False))
+        .filter(models.UserWordProgress.next_review_at.isnot(None))
+        .filter(models.UserWordProgress.next_review_at <= now)
+        .count()
+    )
+
+
+def get_weekly_new_word_count(db: DbSession, user_id: int, week_start: datetime) -> int:
+    return (
+        db.query(func.count(func.distinct(models.QuizAnswer.word_id)))
+        .filter(models.QuizAnswer.user_id == user_id)
+        .filter(models.QuizAnswer.answered_at >= week_start)
+        .scalar()
+        or 0
+    )
+
+
 @router.get("/summary")
 def get_dashboard_summary(
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser,
+    db: DbSession,
 ):
-    now = datetime.utcnow()
+    now = get_utc_now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week_start = now - timedelta(days=7)
 
     daily_target = get_user_daily_goal(db, current_user)
-
     today_total, today_correct, _ = get_answer_counts(
         db=db,
         user_id=current_user.id,
@@ -181,29 +211,9 @@ def get_dashboard_summary(
         user_id=current_user.id,
     )
 
-    learned_words = (
-        db.query(models.UserWordProgress)
-        .filter(models.UserWordProgress.user_id == current_user.id)
-        .filter(models.UserWordProgress.is_learned == True)
-        .count()
-    )
-
-    pending_reviews = (
-        db.query(models.UserWordProgress)
-        .filter(models.UserWordProgress.user_id == current_user.id)
-        .filter(models.UserWordProgress.is_learned == False)
-        .filter(models.UserWordProgress.next_review_at.isnot(None))
-        .filter(models.UserWordProgress.next_review_at <= now)
-        .count()
-    )
-
-    weekly_new_words = (
-        db.query(func.count(func.distinct(models.QuizAnswer.word_id)))
-        .filter(models.QuizAnswer.user_id == current_user.id)
-        .filter(models.QuizAnswer.answered_at >= week_start)
-        .scalar()
-        or 0
-    )
+    learned_words = get_learned_word_count(db, current_user.id)
+    pending_reviews = get_pending_review_count(db, current_user.id, now)
+    weekly_new_words = get_weekly_new_word_count(db, current_user.id, week_start)
 
     return {
         "daily_goal": {

@@ -45,7 +45,11 @@ function normalizeStatus(status) {
     return "present";
   }
 
-  if (["absent", "gray", "grey", "wrong", "not_found", "yok"].includes(normalized)) {
+  if (
+    ["absent", "gray", "grey", "wrong", "not_found", "yok"].includes(
+      normalized
+    )
+  ) {
     return "absent";
   }
 
@@ -63,8 +67,15 @@ function normalizeFeedback(rawFeedback, fallbackGuess) {
       }
 
       return {
-        letter: item.letter || item.char || item.character || fallbackGuess?.[index] || "",
-        status: normalizeStatus(item.status || item.result || item.state || item.color),
+        letter:
+          item.letter ||
+          item.char ||
+          item.character ||
+          fallbackGuess?.[index] ||
+          "",
+        status: normalizeStatus(
+          item.status || item.result || item.state || item.color
+        ),
       };
     });
   }
@@ -85,13 +96,17 @@ function normalizeGuess(item, index) {
     (typeof item === "string" ? item : "");
 
   return {
-    id: pickValue(item, ["id", "guess_id", "guessId"]) || `${guessText}-${index}`,
+    id:
+      pickValue(item, ["id", "guess_id", "guessId"]) ||
+      `${guessText}-${index}`,
     guess: guessText,
     feedback: normalizeFeedback(
       pickValue(item, ["feedback", "letters", "result", "results"]),
       guessText
     ),
-    isCorrect: Boolean(pickValue(item, ["is_correct", "isCorrect", "correct", "won"])),
+    isCorrect: Boolean(
+      pickValue(item, ["is_correct", "isCorrect", "correct", "won"])
+    ),
   };
 }
 
@@ -122,11 +137,21 @@ function normalizeGame(data) {
     status: pickValue(gameData, ["status", "state"]) || "active",
     wordLength:
       Number(
-        pickValue(gameData, ["word_length", "wordLength", "letter_count", "letterCount"])
+        pickValue(gameData, [
+          "word_length",
+          "wordLength",
+          "letter_count",
+          "letterCount",
+        ])
       ) || undefined,
     maxAttempts:
       Number(
-        pickValue(gameData, ["max_attempts", "maxAttempts", "attempt_limit", "attemptLimit"])
+        pickValue(gameData, [
+          "max_attempts",
+          "maxAttempts",
+          "attempt_limit",
+          "attemptLimit",
+        ])
       ) || undefined,
     attemptsUsed:
       Number(
@@ -140,13 +165,19 @@ function normalizeGame(data) {
       ) || guesses.length,
     message: data?.message || pickValue(gameData, ["message", "detail"]),
     guesses,
-    createdAt: pickValue(gameData, ["created_at", "createdAt", "started_at", "startedAt"]),
+    createdAt: pickValue(gameData, [
+      "created_at",
+      "createdAt",
+      "started_at",
+      "startedAt",
+    ]),
     finishedAt: pickValue(gameData, ["finished_at", "finishedAt"]),
   };
 }
 
 function normalizeGuessResponse(data, currentGame) {
-  const resultData = data?.result || data?.guess_result || data?.guessResult || data || {};
+  const resultData =
+    data?.result || data?.guess_result || data?.guessResult || data || {};
 
   const gameFromResponse =
     resultData.game ||
@@ -156,7 +187,9 @@ function normalizeGuessResponse(data, currentGame) {
     data?.wordle_game ||
     data?.wordleGame;
 
-  const normalizedGame = gameFromResponse ? normalizeGame(gameFromResponse) : null;
+  const normalizedGame = gameFromResponse
+    ? normalizeGame(gameFromResponse)
+    : null;
   const guessText = pickValue(resultData, ["guess", "word", "answer", "text"]);
 
   const singleGuess = guessText
@@ -182,7 +215,9 @@ function normalizeGuessResponse(data, currentGame) {
 
 function normalizeHistoryItem(item, index) {
   const guesses = Array.isArray(item?.guesses)
-    ? item.guesses.map((guessItem, guessIndex) => normalizeGuess(guessItem, guessIndex))
+    ? item.guesses.map((guessItem, guessIndex) =>
+        normalizeGuess(guessItem, guessIndex)
+      )
     : [];
 
   return {
@@ -190,7 +225,10 @@ function normalizeHistoryItem(item, index) {
     status: pickValue(item, ["status", "state"]) || "active",
     targetWord: pickValue(item, ["target_word", "targetWord", "word", "eng_word"]),
     wordLength: Number(pickValue(item, ["word_length", "wordLength"])) || undefined,
-    attemptsUsed: Number(pickValue(item, ["attempt_count", "attempts_used", "attemptsUsed"])) || 0,
+    attemptsUsed:
+      Number(
+        pickValue(item, ["attempt_count", "attempts_used", "attemptsUsed"])
+      ) || 0,
     maxAttempts: Number(pickValue(item, ["max_attempts", "maxAttempts"])) || undefined,
     startedAt: pickValue(item, ["started_at", "startedAt", "created_at", "createdAt"]),
     finishedAt: pickValue(item, ["finished_at", "finishedAt"]),
@@ -211,9 +249,15 @@ function normalizeHistoryResponse(data) {
 function isGameFinished(game) {
   const status = String(game?.status || "").toLowerCase();
 
-  return ["won", "lost", "finished", "completed", "bitti", "kazandi", "kaybetti"].includes(
-    status
-  );
+  return [
+    "won",
+    "lost",
+    "finished",
+    "completed",
+    "bitti",
+    "kazandi",
+    "kaybetti",
+  ].includes(status);
 }
 
 function getGameResultText(game) {
@@ -243,6 +287,58 @@ function getStatusText(status) {
   if (normalized === "active") return "Devam ediyor";
 
   return "Tamamlandı";
+}
+
+function getNextGameStatus(result, previousStatus) {
+  if (result.isCorrect) {
+    return "won";
+  }
+
+  if (result.isFinished) {
+    return "finished";
+  }
+
+  return previousStatus || "active";
+}
+
+function getAttemptsText(maxAttempts, attemptsUsed) {
+  if (maxAttempts) {
+    return `${attemptsUsed}/${maxAttempts}`;
+  }
+
+  return `${attemptsUsed} deneme`;
+}
+
+function getWordLengthText(wordLength) {
+  if (wordLength) {
+    return `${wordLength} harf`;
+  }
+
+  return "Belirtilmedi";
+}
+
+function getRemainingAttemptsText(remainingAttempts) {
+  if (remainingAttempts === undefined) {
+    return "Sınır belirtilmedi";
+  }
+
+  return `${remainingAttempts} hak`;
+}
+
+function getGameStatusLabel(finished) {
+  if (finished) {
+    return "Tamamlandı";
+  }
+
+  return "Devam ediyor";
+}
+
+function getGuessPlaceholder(wordLength) {
+  if (wordLength) {
+    return `${wordLength} harfli tahmin yaz`;
+  }
+
+  return "Tahminini yaz";
 }
 
 function formatDate(value) {
@@ -332,7 +428,10 @@ function Puzzle() {
     setNotice("");
 
     try {
-      const data = await startWordleGameAPI({ restart: true, wordLength: null });
+      const data = await startWordleGameAPI({
+        restart: true,
+        wordLength: null,
+      });
       const normalizedGame = normalizeGame(data);
 
       setGame(normalizedGame);
@@ -340,7 +439,9 @@ function Puzzle() {
       setNotice("Yeni bulmaca başladı.");
       loadHistory();
     } catch {
-      setError("Bulmaca başlatılamadı. Öğrenilmiş kelime yoksa önce quiz ile kelime öğrenmelisin.");
+      setError(
+        "Bulmaca başlatılamadı. Öğrenilmiş kelime yoksa önce quiz ile kelime öğrenmelisin."
+      );
     } finally {
       setStarting(false);
     }
@@ -404,12 +505,7 @@ function Puzzle() {
           ...prevGame,
           guesses: [...(prevGame?.guesses || []), result.guess],
           attemptsUsed: (prevGame?.attemptsUsed || 0) + 1,
-          status:
-            result.isFinished || result.isCorrect
-              ? result.isCorrect
-                ? "won"
-                : "finished"
-              : prevGame?.status || "active",
+          status: getNextGameStatus(result, prevGame?.status),
           message: result.message || prevGame?.message,
         }));
       }
@@ -462,7 +558,9 @@ function Puzzle() {
       {!loading && (
         <>
           {(error || notice) && (
-            <section className={`puzzle-message ${error ? "error" : "success"}`}>
+            <section
+              className={`puzzle-message ${error ? "error" : "success"}`}
+            >
               {error || notice}
             </section>
           )}
@@ -476,7 +574,11 @@ function Puzzle() {
                 olduğunda çalışma burada görüntülenir.
               </p>
 
-              <button type="button" onClick={handleStartGame} disabled={starting}>
+              <button
+                type="button"
+                onClick={handleStartGame}
+                disabled={starting}
+              >
                 {starting ? "Başlatılıyor..." : "Bulmaca Başlat"}
               </button>
             </section>
@@ -492,7 +594,7 @@ function Puzzle() {
                   </div>
 
                   <div className="attempt-badge">
-                    {maxAttempts ? `${attemptsUsed}/${maxAttempts}` : `${attemptsUsed} deneme`}
+                    {getAttemptsText(maxAttempts, attemptsUsed)}
                   </div>
                 </div>
 
@@ -511,11 +613,17 @@ function Puzzle() {
                       </div>
                     ))
                   ) : (
-                    <div className="board-empty">İlk tahminini girerek bulmacaya başla.</div>
+                    <div className="board-empty">
+                      İlk tahminini girerek bulmacaya başla.
+                    </div>
                   )}
                 </div>
 
-                {finished && <div className="game-result">{game.message || getGameResultText(game)}</div>}
+                {finished && (
+                  <div className="game-result">
+                    {game.message || getGameResultText(game)}
+                  </div>
+                )}
 
                 {!finished && (
                   <form className="guess-form" onSubmit={handleSubmitGuess}>
@@ -531,7 +639,7 @@ function Puzzle() {
                           setNotice("");
                         }}
                         maxLength={wordLength || 30}
-                        placeholder={wordLength ? `${wordLength} harfli tahmin yaz` : "Tahminini yaz"}
+                        placeholder={getGuessPlaceholder(wordLength)}
                       />
                     </label>
 
@@ -548,19 +656,19 @@ function Puzzle() {
                 <div className="puzzle-info-list">
                   <div>
                     <strong>Kelime uzunluğu</strong>
-                    <span>{wordLength ? `${wordLength} harf` : "Belirtilmedi"}</span>
+                    <span>{getWordLengthText(wordLength)}</span>
                   </div>
 
                   <div>
                     <strong>Kalan deneme</strong>
                     <span>
-                      {remainingAttempts !== undefined ? `${remainingAttempts} hak` : "Sınır belirtilmedi"}
+                      {getRemainingAttemptsText(remainingAttempts)}
                     </span>
                   </div>
 
                   <div>
                     <strong>Durum</strong>
-                    <span>{finished ? "Tamamlandı" : "Devam ediyor"}</span>
+                    <span>{getGameStatusLabel(finished)}</span>
                   </div>
                 </div>
 
@@ -570,17 +678,17 @@ function Puzzle() {
                   <div className="legend-list">
                     <span>
                       <i className="legend-color correct" />
-                      Doğru harf, doğru yer
+                      <span>Doğru harf, doğru yer</span>
                     </span>
 
                     <span>
                       <i className="legend-color present" />
-                      Doğru harf, farklı yer
+                      <span>Doğru harf, farklı yer</span>
                     </span>
 
                     <span>
                       <i className="legend-color absent" />
-                      Kelimede yok
+                      <span>Kelimede yok</span>
                     </span>
                   </div>
                 </div>
@@ -595,19 +703,27 @@ function Puzzle() {
                 <h3>Önceki bulmacalar</h3>
               </div>
 
-              <button type="button" onClick={loadHistory} disabled={historyLoading}>
+              <button
+                type="button"
+                onClick={loadHistory}
+                disabled={historyLoading}
+              >
                 {historyLoading ? "Yükleniyor..." : "Geçmişi Yenile"}
               </button>
             </div>
 
             {history.length === 0 ? (
-              <div className="puzzle-history-empty">Henüz kayıtlı bulmaca geçmişi yok.</div>
+              <div className="puzzle-history-empty">
+                Henüz kayıtlı bulmaca geçmişi yok.
+              </div>
             ) : (
               <div className="puzzle-history-list">
                 {history.map((item) => (
                   <div className="puzzle-history-item" key={item.id}>
                     <div>
-                      <strong>{item.targetWord || "Aktif oyunda kelime gizli"}</strong>
+                      <strong>
+                        {item.targetWord || "Aktif oyunda kelime gizli"}
+                      </strong>
                       <span>{formatDate(item.finishedAt || item.startedAt)}</span>
                     </div>
 
@@ -616,7 +732,9 @@ function Puzzle() {
                       <span>
                         {item.attemptsUsed}/{item.maxAttempts || 6} deneme
                       </span>
-                      <span>{item.wordLength ? `${item.wordLength} harf` : "-"}</span>
+                      <span>
+                        {item.wordLength ? `${item.wordLength} harf` : "-"}
+                      </span>
                     </div>
                   </div>
                 ))}

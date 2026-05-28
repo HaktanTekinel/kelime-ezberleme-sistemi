@@ -107,26 +107,109 @@ def reset_broken_sqlite_database_if_needed(engine: Engine) -> None:
 
 
 def normalize_difficulty(row: dict, row_index: int) -> int:
-    raw_value = (row.get("difficulty_level") or "").strip()
-    if raw_value.isdigit():
-        return min(max(int(raw_value), 1), 10)
-
-    # Eski CSV sadece CEFR level içeriyordu. Yedek dönüşüm.
     cefr = (row.get("level") or "").strip().upper()
     fallback_map = {
         "A1": 1,
-        "A2": 3,
-        "B1": 5,
-        "B2": 7,
-        "C1": 9,
-        "C2": 10,
+        "A2": 2,
+        "B1": 3,
+        "B2": 4,
+        "C1": 5,
+        "C2": 6,
     }
 
     if cefr in fallback_map:
         return fallback_map[cefr]
 
-    return (row_index % 10) + 1
+    raw_value = (row.get("difficulty_level") or "").strip()
+    if raw_value.isdigit():
+        return min(max(int(raw_value), 1), 6)
 
+    return (row_index % 6) + 1
+
+
+TOPIC_KEYWORDS = {
+    "Hayvanlar": (
+        "animal", "animals", "bear", "bird", "cat", "dog", "fish", "horse", "lion", "monkey", "rabbit", "tiger", "wolf", "zebra", "zoo", "zoology", "zoologist",
+        "hayvan", "kuş", "kedi", "köpek", "balık", "at", "aslan", "kaplan", "kurt", "ayı", "zebra", "zooloji", "zoolog"
+    ),
+    "Yiyecek ve İçecek": (
+        "apple", "banana", "bread", "cake", "candy", "cheese", "chicken", "coffee", "drink", "eat", "egg", "food", "fruit", "garlic", "juice", "meal", "milk", "onion", "orange", "pancake", "papaya", "rice", "salad", "salmon", "sausage", "tea", "vegetable", "walnut", "water",
+        "elma", "muz", "ekmek", "pasta", "şeker", "peynir", "tavuk", "kahve", "içecek", "yemek", "yumurta", "meyve", "sarımsak", "süt", "soğan", "portakal", "salata", "çay", "sebze", "ceviz", "su"
+    ),
+    "Doğa": (
+        "air", "beach", "cloud", "dark", "earth", "ecology", "ecological", "flower", "forest", "garden", "grass", "hill", "island", "lake", "land", "leaf", "mountain", "nature", "ocean", "plant", "rain", "river", "sea", "sky", "snow", "tree", "weather", "wind",
+        "hava", "plaj", "bulut", "dünya", "çiçek", "orman", "bahçe", "çim", "tepe", "ada", "göl", "dağ", "doğa", "okyanus", "bitki", "yağmur", "nehir", "deniz", "gökyüzü", "kar", "ağaç", "rüzgar"
+    ),
+    "Eğitim": (
+        "answer", "book", "campus", "class", "course", "education", "educational", "exam", "homework", "language", "learn", "lesson", "library", "page", "pen", "read", "school", "student", "study", "teacher", "test", "university", "vocabulary", "write",
+        "cevap", "kitap", "kampüs", "sınıf", "kurs", "eğitim", "sınav", "ödev", "dil", "öğren", "ders", "kütüphane", "sayfa", "kalem", "oku", "okul", "öğrenci", "çalış", "öğretmen", "üniversite", "kelime", "yaz"
+    ),
+    "İş Dünyası": (
+        "account", "agreement", "business", "career", "company", "customer", "deal", "employee", "factory", "job", "manager", "meeting", "occupation", "office", "project", "report", "salary", "sale", "service", "team", "work", "worker",
+        "hesap", "anlaşma", "iş", "kariyer", "şirket", "müşteri", "çalışan", "fabrika", "meslek", "ofis", "proje", "rapor", "maaş", "satış", "hizmet", "takım"
+    ),
+    "Teknoloji": (
+        "app", "camera", "computer", "data", "device", "digital", "email", "internet", "keyboard", "laptop", "message", "online", "phone", "robot", "screen", "software", "system", "technology", "video", "website",
+        "uygulama", "kamera", "bilgisayar", "veri", "cihaz", "dijital", "e-posta", "internet", "klavye", "laptop", "mesaj", "çevrim", "telefon", "robot", "ekran", "yazılım", "sistem", "teknoloji", "video", "web"
+    ),
+    "Sağlık": (
+        "back", "body", "doctor", "exercise", "fatigue", "health", "heart", "hospital", "ill", "medicine", "neck", "pain", "pandemic", "patient", "sleep", "sport", "strong", "tired", "walk",
+        "vücut", "doktor", "egzersiz", "sağlık", "kalp", "hastane", "hasta", "ilaç", "boyun", "ağrı", "pandemi", "uyku", "spor", "güçlü", "yorgun", "yürü"
+    ),
+    "Seyahat": (
+        "airport", "arrive", "bus", "car", "carrier", "ecotourism", "flight", "hotel", "journey", "map", "passport", "plane", "road", "station", "taxi", "ticket", "tour", "train", "travel", "trip", "vacation", "visit",
+        "havaalanı", "varmak", "otobüs", "araba", "uçuş", "otel", "yolculuk", "harita", "pasaport", "uçak", "yol", "istasyon", "taksi", "bilet", "tur", "tren", "seyahat", "gezi", "tatil", "ziyaret"
+    ),
+    "Duygular": (
+        "afraid", "angry", "bored", "calm", "cry", "emotion", "excited", "fear", "feel", "glad", "happy", "happiness", "hope", "laugh", "love", "sad", "smile", "surprise", "worry",
+        "kork", "kızgın", "sıkılmış", "sakin", "ağla", "duygu", "heyecan", "mutlu", "umut", "gül", "sevgi", "üzgün", "gülümse", "şaş", "endişe"
+    ),
+    "Davranış ve Kişilik": (
+        "action", "activity", "active", "bad", "badly", "brave", "careful", "clever", "easily", "friendly", "hardly", "honest", "kind", "kindly", "lazy", "noble", "polite", "quiet", "rude", "serious", "shy", "smart", "wordsmith",
+        "davranış", "eylem", "aktif", "kötü", "cesur", "dikkatli", "zeki", "kolayca", "dostça", "dürüst", "nazik", "tembel", "soylu", "kibar", "sessiz", "kaba", "ciddi", "utangaç"
+    ),
+    "Sanat ve Kültür": (
+        "actor", "art", "artist", "cinema", "culture", "dance", "dancing", "film", "magazine", "movie", "music", "paint", "painting", "picture", "song", "story", "theatre", "writer",
+        "aktör", "sanat", "sanatçı", "sinema", "kültür", "dans", "film", "dergi", "müzik", "boya", "resim", "şarkı", "hikaye", "tiyatro", "yazar"
+    ),
+    "Bilim": (
+        "biology", "calculation", "calculate", "chemistry", "economics", "energy", "experiment", "gravity", "history", "laboratory", "math", "physics", "research", "science", "space",
+        "biyoloji", "hesaplama", "kimya", "ekonomi", "enerji", "deney", "yerçekimi", "tarih", "laboratuvar", "matematik", "fizik", "araştırma", "bilim", "uzay"
+    ),
+    "Günlük Yaşam": (
+        "about", "above", "address", "after", "afternoon", "again", "always", "baby", "bag", "ball", "bar", "baseball", "basketball", "bed", "breakfast", "call", "card", "cash", "city", "dad", "daddy", "date", "day", "door", "ear", "early", "face", "family", "farm", "farmer", "gift", "girl", "girlfriend", "hair", "haircut", "hand", "home", "house", "jacket", "jeans", "kitchen", "lunch", "market", "money", "morning", "name", "night", "pants", "room", "shop", "street", "time", "today", "tomorrow", "waiter", "wall", "yes",
+        "hakkında", "yukarı", "adres", "sonra", "öğleden", "bebek", "çanta", "top", "yatak", "kahvaltı", "ara", "kart", "nakit", "şehir", "baba", "tarih", "gün", "kapı", "kulak", "erken", "yüz", "aile", "çiftlik", "hediye", "kız", "saç", "el", "ev", "ceket", "kot", "mutfak", "öğle", "market", "para", "sabah", "isim", "gece", "pantolon", "oda", "mağaza", "sokak", "zaman", "bugün", "yarın", "garson", "duvar", "evet"
+    ),
+}
+ORDER = list(TOPIC_KEYWORDS)
+
+
+def tokenize_topic_text(row: dict) -> set[str]:
+    normalized = []
+    text = f"{row.get('eng_word', '')} {row.get('tur_word', '')}".lower()
+
+    for char in text:
+        normalized.append(char if char.isalnum() else " ")
+
+    return set("".join(normalized).split())
+
+
+def has_topic_keyword(text: str, tokens: set[str], keyword: str) -> bool:
+    if len(keyword) <= 4:
+        return keyword in tokens
+
+    return keyword in text
+
+
+def infer_topic(row: dict) -> str:
+    text = f"{row.get('eng_word', '')} {row.get('tur_word', '')}".lower()
+    tokens = tokenize_topic_text(row)
+
+    for topic in ORDER:
+        if any(has_topic_keyword(text, tokens, keyword) for keyword in TOPIC_KEYWORDS[topic]):
+            return topic
+
+    return "Genel"
 
 def clean_text(value: str | None) -> str | None:
     value = (value or "").strip()
@@ -147,7 +230,7 @@ def upsert_word_from_row(db: Session, row: dict, row_index: int) -> bool:
     )
 
     difficulty_level = normalize_difficulty(row, row_index)
-    topic = clean_text(row.get("topic")) or clean_text(row.get("level")) or "Genel"
+    topic = clean_text(row.get("topic")) or infer_topic(row)
 
     if not word:
         word = models.Word(

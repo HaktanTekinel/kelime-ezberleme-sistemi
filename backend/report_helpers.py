@@ -5,34 +5,6 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 
-CEFR_LEVELS = ("A1", "A2", "B1", "B2", "C1", "C2")
-CEFR_ORDER = {level: index for index, level in enumerate(CEFR_LEVELS, start=1)}
-
-
-def get_cefr_level(difficulty_level: int | None) -> str:
-    level = difficulty_level or 1
-
-    if level <= 2:
-        return "A1"
-
-    if level <= 4:
-        return "A2"
-
-    if level <= 6:
-        return "B1"
-
-    if level <= 8:
-        return "B2"
-
-    if level <= 9:
-        return "C1"
-
-    return "C2"
-
-
-def is_cefr_level_name(value: str | None) -> bool:
-    return str(value or "").strip().upper() in CEFR_LEVELS
-
 
 def get_answer_rows(db: Session, user_id: int) -> list[tuple[models.QuizAnswer, models.Word]]:
     return (
@@ -71,17 +43,25 @@ def create_category_bucket() -> dict:
     }
 
 
+CEFR_LEVELS = ("A1", "A2", "B1", "B2", "C1", "C2")
+
+
+def get_cefr_level_label(word: models.Word) -> str:
+    topic = (word.topic or "").strip().upper()
+
+    if topic in CEFR_LEVELS:
+        return topic
+
+    level = word.difficulty_level or 1
+    index = min(max(level, 1), len(CEFR_LEVELS)) - 1
+    return CEFR_LEVELS[index]
+
+
 def get_category_names(word: models.Word) -> list[str]:
-    category_names = []
-    topic = (word.topic or "").strip()
-
-    if topic and not is_cefr_level_name(topic):
-        category_names.append(topic)
-    elif not topic:
-        category_names.append("Genel")
-
-    category_names.append(get_cefr_level(word.difficulty_level))
-    return category_names
+    return [
+        word.topic or "Genel",
+        get_cefr_level_label(word),
+    ]
 
 
 def build_word_item(word: models.Word) -> schemas.CategoryWordItem:
@@ -127,13 +107,10 @@ def build_category_report(name: str, bucket: dict) -> schemas.CategoryReport:
 
 def sort_category_reports(reports: list[schemas.CategoryReport]) -> list[schemas.CategoryReport]:
     def sort_key(report: schemas.CategoryReport) -> tuple[int, int | str]:
-        name = report.name.strip()
-        cefr_name = name.upper()
+        if report.name in CEFR_LEVELS:
+            return (0, CEFR_LEVELS.index(report.name))
 
-        if cefr_name in CEFR_ORDER:
-            return (0, CEFR_ORDER[cefr_name])
-
-        return (1, name)
+        return (1, report.name)
 
     return sorted(reports, key=sort_key)
 
@@ -154,8 +131,8 @@ def build_category_reports(
             add_word_to_categories(stats, word, "wrong")
 
     reports = [
-        build_category_report(name=name, bucket=bucket)
-        for name, bucket in stats.items()
+        build_category_report(name=category_name, bucket=bucket)
+        for category_name, bucket in stats.items()
     ]
 
     return sort_category_reports(reports)
