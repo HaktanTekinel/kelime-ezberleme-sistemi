@@ -1,42 +1,64 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL, handleResponse } from "./apiClient";
 
-export async function loginAPI(usernameOrEmail, password) {
-  const response = await fetch(`${API_URL}/login`, {
+export const registerAPI = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      username_or_email: usernameOrEmail,
-      password: password,
-    }),
+    body: JSON.stringify(formData),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Giriş başarısız.");
-  }
+  return handleResponse(response);
+};
 
-  return response.json();
-}
+export const loginAPI = async (formData) => {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
 
-export async function registerAPI(username, email, password) {
-  const response = await fetch(`${API_URL}/register`, {
+  return handleResponse(response);
+};
+
+export const forgotPasswordAPI = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      username,
       email,
-      password,
     }),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Kayıt başarısız.");
-  }
+  return handleResponse(response);
+};
 
-  return response.json();
-}
+export const resetPasswordAPI = async ({ resetToken, newPassword }) => {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reset_token: resetToken,
+      resetToken,
+      new_password: newPassword,
+      newPassword,
+    }),
+  });
+
+  return handleResponse(response);
+};
+
+export const logoutAPI = async () => {
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+  });
+
+  return handleResponse(response);
+};
